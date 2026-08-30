@@ -45,7 +45,7 @@ rows: [
 
 function number(value, name) {
 const n = Number(value);
-if (!Number.isFinite(n)) throw new Error(${name} must be a valid number.);
+if (!Number.isFinite(n)) throw new Error('${name} must be a valid number.');
 return n;
 }
 
