@@ -78,6 +78,7 @@ const CHARTS = {
   }
 };
 
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -87,6 +88,7 @@ function json(data, status = 200) {
     }
   });
 }
+
 
 function number(value, name) {
   if (
@@ -105,6 +107,7 @@ function number(value, name) {
 
   return n;
 }
+
 
 async function calculate(request) {
   try {
@@ -183,6 +186,7 @@ async function calculate(request) {
     );
   }
 }
+
 
 async function getSite(request, env) {
   try {
