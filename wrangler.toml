@@ -1,4 +1,4 @@
-name = 'fuel-calculator'
+name = "generator-fuel-calculator-2"
 main = "worker.js"
 compatibility_date = "2026-08-31"
 
