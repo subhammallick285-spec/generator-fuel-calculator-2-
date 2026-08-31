@@ -380,41 +380,23 @@ async function updateSite(request, env) {
 }
 
 
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
+if (
+  url.pathname === "/api/admin/update-site" &&
+  request.method === "POST"
+) {
+  return updateSite(request, env);
+}
 
-    if (
-      url.pathname === "/api/calculate" &&
-      request.method === "POST"
-    ) {
-      return calculate(request);
-    }
+if (
+  url.pathname === "/api/debug-config" &&
+  request.method === "GET"
+) {
+  return json({
+    success: true,
+    db: !!env.DB,
+    assets: !!env.ASSETS,
+    admin_key: !!env.ADMIN_KEY
+  });
+}
 
-    if (
-      url.pathname === "/api/calculate" &&
-      request.method === "GET"
-    ) {
-      return json({
-        success: true,
-        message: "Generator Fuel Calculator API is working."
-      });
-    }
-
-    if (
-      url.pathname === "/api/site" &&
-      request.method === "GET"
-    ) {
-      return getSite(request, env);
-    }
-
-    if (
-      url.pathname === "/api/admin/update-site" &&
-      request.method === "POST"
-    ) {
-      return updateSite(request, env);
-    }
-
-    return env.ASSETS.fetch(request);
-  }
-};
+return env.ASSETS.fetch(request);
