@@ -249,6 +249,137 @@ async function getSite(request, env) {
 }
 
 
+async function updateSite(request, env) {
+  try {
+    const adminKey = request.headers.get("X-Admin-Key");
+
+    if (!env.ADMIN_KEY) {
+      return json(
+        {
+          success: false,
+          error: "ADMIN_KEY is not configured in Cloudflare."
+        },
+        500
+      );
+    }
+
+    if (!adminKey || adminKey !== env.ADMIN_KEY) {
+      return json(
+        {
+          success: false,
+          error: "Unauthorized."
+        },
+        401
+      );
+    }
+
+    const body = await request.json();
+
+    const siteId = String(body.site_id || "").trim();
+
+    if (!siteId) {
+      throw new Error("site_id is required.");
+    }
+
+    const hmr = number(body.current_hmr, "Current HMR");
+    const kwh = number(body.current_kwh, "Current kWh");
+    const balance = number(body.current_balance, "Current balance");
+
+    const model = String(body.model || "").trim();
+
+    if (!CHARTS[model]) {
+      throw new Error("Please select a valid generator model.");
+    }
+
+    const existing = await env.DB
+      .prepare(`
+        SELECT site_id
+        FROM sites
+        WHERE site_id = ?
+        LIMIT 1
+      `)
+      .bind(siteId)
+      .first();
+
+    if (!existing) {
+      return json(
+        {
+          success: false,
+          error: "Site ID not found."
+        },
+        404
+      );
+    }
+
+    const now = new Date().toISOString();
+
+    await env.DB
+      .prepare(`
+        UPDATE sites
+        SET
+          model = ?,
+          current_hmr = ?,
+          current_kwh = ?,
+          current_balance = ?,
+          last_updated = ?,
+          data_source = 'manual'
+        WHERE site_id = ?
+      `)
+      .bind(
+        model,
+        hmr,
+        kwh,
+        balance,
+        now,
+        siteId
+      )
+      .run();
+
+    await env.DB
+      .prepare(`
+        INSERT INTO readings
+        (
+          site_id,
+          hmr,
+          kwh,
+          balance,
+          reading_date,
+          source
+        )
+        VALUES (?, ?, ?, ?, ?, 'manual')
+      `)
+      .bind(
+        siteId,
+        hmr,
+        kwh,
+        balance,
+        now
+      )
+      .run();
+
+    return json({
+      success: true,
+      message: "Site updated successfully.",
+      site_id: siteId,
+      current_hmr: hmr,
+      current_kwh: kwh,
+      current_balance: balance,
+      updated_at: now,
+      source: "manual"
+    });
+
+  } catch (error) {
+    return json(
+      {
+        success: false,
+        error: error?.message || "Site update failed."
+      },
+      400
+    );
+  }
+}
+
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -275,6 +406,13 @@ export default {
       request.method === "GET"
     ) {
       return getSite(request, env);
+    }
+
+    if (
+      url.pathname === "/api/admin/update-site" &&
+      request.method === "POST"
+    ) {
+      return updateSite(request, env);
     }
 
     return env.ASSETS.fetch(request);
