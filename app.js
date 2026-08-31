@@ -1,8 +1,8 @@
-const $ = id => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
 
 $("calculate").addEventListener("click", async () => {
   $("error").textContent = "";
-  
+
   const payload = {
     model: $("model").value,
     A: $("a").value,
@@ -15,49 +15,71 @@ $("calculate").addEventListener("click", async () => {
   try {
     const res = await fetch("/api/calculate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
       body: JSON.stringify(payload)
     });
 
-    // Handle non-200 responses safely BEFORE running .json()
-    if (!res.ok) {
-      const errText = await res.text();
-      let errMsg = "Calculation failed.";
+    // Read the response as TEXT first.
+    // This prevents "Unexpected end of JSON input".
+    const responseText = await res.text();
+
+    let data = {};
+
+    if (responseText.trim()) {
       try {
-        const errJson = JSON.parse(errText);
-        errMsg = errJson.error || errMsg;
-      } catch (e) {
-        errMsg = `Server Error (${res.status}): Make sure calculate.js returns valid JSON.`;
+        data = JSON.parse(responseText);
+      } catch (jsonError) {
+        throw new Error(
+          `Server returned invalid JSON (${res.status}). Response: ${responseText.substring(0, 300)}`
+        );
       }
-      throw new Error(errMsg);
     }
 
-    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(
+        data.error ||
+        `Server Error (${res.status}): ${res.statusText || "Request failed."}`
+      );
+    }
 
-    // Display calculated output
+    if (!data.success) {
+      throw new Error(data.error || "Calculation failed.");
+    }
+
     $("resultCard").classList.remove("hidden");
-    $("result").textContent = data.T ? data.T.toFixed(2) : "0.00";
-    if ($("z")) $("z").textContent = data.Z ? data.Z.toFixed(4) : "";
-    if ($("y")) $("y").textContent = data.Y ? data.Y.toFixed(4) : "";
-    if ($("x")) $("x").textContent = data.X ? data.X.toFixed(4) : "";
-    if ($("l")) $("l").textContent = data.L ? data.L.toFixed(2) + " L/hr" : "";
-    if ($("s")) $("s").textContent = data.S ? data.S.toFixed(2) : "";
-    if ($("t")) $("t").textContent = data.T ? data.T.toFixed(2) : "";
-    
-    if ($("band") && data.modelName) {
-      $("band").textContent = `${data.modelName}: X = ${data.X ? data.X.toFixed(4) : ""} falls in ${data.band || "chart"}`;
-    }
+
+    $("result").textContent = Number(data.T).toFixed(2);
+    $("z").textContent = Number(data.Z).toFixed(4);
+    $("y").textContent = Number(data.Y).toFixed(4);
+    $("x").textContent = Number(data.X).toFixed(4);
+    $("l").textContent = Number(data.L).toFixed(2) + " L/hr";
+    $("s").textContent = Number(data.S).toFixed(2);
+    $("t").textContent = Number(data.T).toFixed(2);
+
+    $("band").textContent =
+      `${data.modelName}: X = ${Number(data.X).toFixed(4)} ` +
+      `falls in ${data.band}; chart value L = ` +
+      `${Number(data.L).toFixed(2)} L/hr.`;
+
   } catch (err) {
     $("resultCard").classList.add("hidden");
-    $("error").textContent = err.message;
+    $("error").textContent =
+      err.message || "Something went wrong.";
   }
 });
 
 $("clear").addEventListener("click", () => {
-  ["a", "b", "c", "d", "e"].forEach(id => {
-    if ($(id)) $(id).value = "";
-  });
+  ["a", "b", "c", "d", "e"].forEach(
+    (id) => $(id).value = ""
+  );
+
+  $("model").selectedIndex = 0;
+
   $("resultCard").classList.add("hidden");
   $("error").textContent = "";
+
   $("a").focus();
 });
