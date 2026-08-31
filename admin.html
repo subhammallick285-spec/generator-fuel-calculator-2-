@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>Admin - Generator Fuel Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">ADMIN PANEL</p>
+        <h1>Site Data Update</h1>
+        <p class="subtitle">Update the latest generator readings.</p>
+      </div>
+      <div class="badge">ADMIN</div>
+    </header>
+
+    <section class="card">
+      <h2>Site Information</h2>
+      <label class="field">
+        <span>Site ID</span>
+        <input id="siteId" type="text" placeholder="e.g. TEST001" autocomplete="off">
+      </label>
+      <button id="loadSite" class="secondary">Load Current Data</button>
+    </section>
+
+    <section id="siteCard" class="card hidden">
+      <h2>Update Readings</h2>
+
+      <label class="field">
+        <span>Generator model</span>
+        <select id="model">
+          <option value="eicher10">Eicher 10 KVA</option>
+          <option value="eicher20">Eicher 20 KVA</option>
+          <option value="koel20">KOEL 20 KVA</option>
+          <option value="mahindra20">Mahindra 20 KVA</option>
+          <option value="mahindra10">Mahindra 10 KVA</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Current HMR</span>
+        <input id="hmr" type="number" inputmode="decimal" step="any" placeholder="Current HMR">
+      </label>
+
+      <label class="field">
+        <span>Current kWh</span>
+        <input id="kwh" type="number" inputmode="decimal" step="any" placeholder="Current kWh">
+      </label>
+
+      <label class="field">
+        <span>Current balance</span>
+        <input id="balance" type="number" inputmode="decimal" step="any" placeholder="Current balance">
+      </label>
+
+      <button id="updateSite" class="primary">Update Site</button>
+      <p id="message" role="status"></p>
+      <p id="error" class="error" role="alert"></p>
+    </section>
+  </main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+$("loadSite").addEventListener("click", async () => {
+  $("error").textContent = "";
+  $("message").textContent = "";
+
+  const siteId = $("siteId").value.trim();
+
+  if (!siteId) {
+    $("error").textContent = "Please enter a Site ID.";
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/site?site_id=${encodeURIComponent(siteId)}`);
+    const text = await res.text();
+    let data = {};
+
+    if (text.trim()) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Server returned invalid JSON (${res.status}).`);
+      }
+    }
+
+    if (!res.ok) {
+      throw new Error(data.error || `Server Error (${res.status}).`);
+    }
+
+    if (!data.success || !data.site) {
+      throw new Error(data.error || "Site could not be loaded.");
+    }
+
+    const site = data.site;
+    $("model").value = site.model || "eicher10";
+    $("hmr").value = site.current_hmr ?? "";
+    $("kwh").value = site.current_kwh ?? "";
+    $("balance").value = site.current_balance ?? "";
+    $("siteCard").classList.remove("hidden");
+    $("message").textContent = `Loaded: ${site.site_name || site.site_id}`;
+
+  } catch (err) {
+    $("siteCard").classList.add("hidden");
+    $("error").textContent = err.message || "Unable to load site.";
+  }
+});
+
+$("updateSite").addEventListener("click", async () => {
+  $("error").textContent = "";
+  $("message").textContent = "";
+
+  const siteId = $("siteId").value.trim();
+  const model = $("model").value;
+  const hmr = $("hmr").value;
+  const kwh = $("kwh").value;
+  const balance = $("balance").value;
+
+  if (!siteId) {
+    $("error").textContent = "Site ID is required.";
+    return;
+  }
+
+  if (hmr === "" || kwh === "" || balance === "") {
+    $("error").textContent = "Please enter HMR, kWh and balance.";
+    return;
+  }
+
+  const adminKey = prompt("Enter your Admin Key:");
+
+  if (!adminKey) {
+    $("error").textContent = "Update cancelled.";
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/admin/update-site", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-Admin-Key": adminKey
+      },
+      body: JSON.stringify({
+        site_id: siteId,
+        model: model,
+        current_hmr: hmr,
+        current_kwh: kwh,
+        current_balance: balance
+      })
+    });
+
+    const text = await res.text();
+    let data = {};
+
+    if (text.trim()) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Server returned invalid JSON (${res.status}).`);
+      }
+    }
+
+    if (!res.ok) {
+      throw new Error(data.error || `Server Error (${res.status}).`);
+    }
+
+    if (!data.success) {
+      throw new Error(data.error || "Site update failed.");
+    }
+
+    $("message").textContent = "Site updated successfully.";
+    $("error").textContent = "";
+
+  } catch (err) {
+    $("error").textContent = err.message || "Unable to update site.";
+  }
+});
+</script>
+</body>
+</html>
