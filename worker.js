@@ -184,6 +184,67 @@ async function calculate(request) {
   }
 }
 
+async function getSite(request, env) {
+  try {
+    const url = new URL(request.url);
+    const siteId = url.searchParams.get("site_id");
+
+    if (!siteId) {
+      return json(
+        {
+          success: false,
+          error: "site_id is required."
+        },
+        400
+      );
+    }
+
+    const result = await env.DB
+      .prepare(`
+        SELECT
+          site_id,
+          site_name,
+          model,
+          current_hmr,
+          current_kwh,
+          current_balance,
+          last_updated,
+          screenshot_url,
+          data_source
+        FROM sites
+        WHERE site_id = ?
+        LIMIT 1
+      `)
+      .bind(siteId)
+      .first();
+
+    if (!result) {
+      return json(
+        {
+          success: false,
+          error: "Site ID not found."
+        },
+        404
+      );
+    }
+
+    return json({
+      success: true,
+      site: result
+    });
+
+  } catch (error) {
+    return json(
+      {
+        success: false,
+        error: error?.message || "Database error."
+      },
+      500
+    );
+  }
+}
+
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -203,6 +264,13 @@ export default {
         success: true,
         message: "Generator Fuel Calculator API is working."
       });
+    }
+
+    if (
+      url.pathname === "/api/site" &&
+      request.method === "GET"
+    ) {
+      return getSite(request, env);
     }
 
     return env.ASSETS.fetch(request);
