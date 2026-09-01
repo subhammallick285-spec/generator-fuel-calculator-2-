@@ -1,658 +1,61 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0b1220">
-
-  <title>Admin Panel - Generator Fuel Calculator</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f5f8;
-      color: #111827;
-    }
-
-    .app-shell {
-      width: 100%;
-      max-width: 620px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .topbar {
-      background: #0b1220;
-      color: white;
-      border-radius: 18px;
-      padding: 22px;
-      margin-bottom: 18px;
-    }
-
-    .eyebrow {
-      margin: 0 0 6px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      opacity: .75;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 28px;
-    }
-
-    .subtitle {
-      margin: 8px 0 0;
-      opacity: .8;
-    }
-
-    .card {
-      background: white;
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 18px;
-      box-shadow: 0 4px 18px rgba(0,0,0,.06);
-    }
-
-    h2 {
-      margin: 0 0 18px;
-      font-size: 20px;
-    }
-
-    .field {
-      display: block;
-      margin-bottom: 15px;
-    }
-
-    .field span {
-      display: block;
-      margin-bottom: 7px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    input,
-    select {
-      width: 100%;
-      padding: 13px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      font-size: 16px;
-      background: white;
-    }
-
-    input:focus,
-    select:focus {
-      outline: none;
-      border-color: #2563eb;
-    }
-
-    button {
-      width: 100%;
-      border: 0;
-      border-radius: 10px;
-      padding: 14px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: .6;
-      cursor: wait;
-    }
-
-    .primary {
-      background: #111827;
-      color: white;
-    }
-
-    .secondary {
-      background: #e5e7eb;
-      color: #111827;
-      margin-top: 10px;
-    }
-
-    .upload-button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 52px;
-      border-radius: 10px;
-      background: #111827;
-      color: white;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .upload-button input {
-      display: none;
-    }
-
-    .or {
-      text-align: center;
-      margin: 18px 0;
-      font-size: 13px;
-      font-weight: 700;
-      color: #6b7280;
-      letter-spacing: 1px;
-    }
-
-    .preview {
-      display: none;
-      margin-top: 18px;
-    }
-
-    .preview.show {
-      display: block;
-    }
-
-    .preview img {
-      display: block;
-      width: 100%;
-      max-height: 350px;
-      object-fit: contain;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      background: #f9fafb;
-    }
-
-    .file-name {
-      margin-top: 8px;
-      font-size: 13px;
-      color: #6b7280;
-      word-break: break-all;
-    }
-
-    .manual-section {
-      display: none;
-    }
-
-    .manual-section.show {
-      display: block;
-    }
-
-    .message {
-      display: none;
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .message.success {
-      display: block;
-      background: #ecfdf5;
-      color: #065f46;
-    }
-
-    .message.error {
-      display: block;
-      background: #fef2f2;
-      color: #991b1b;
-    }
-
-    .info {
-      padding: 12px;
-      border-radius: 10px;
-      background: #f3f4f6;
-      color: #4b5563;
-      font-size: 13px;
-      line-height: 1.5;
-      margin-bottom: 15px;
-    }
-
-    .site-info {
-      display: none;
-      border-top: 1px solid #e5e7eb;
-      margin-top: 20px;
-      padding-top: 18px;
-    }
-
-    .site-info.show {
-      display: block;
-    }
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-      padding: 9px 0;
-      border-bottom: 1px solid #f0f0f0;
-    }
-
-    .info-row span:first-child {
-      color: #6b7280;
-    }
-
-    .info-row strong {
-      text-align: right;
-    }
-
-    footer {
-      text-align: center;
-      color: #6b7280;
-      font-size: 12px;
-      padding: 10px 0 20px;
-    }
-  </style>
-</head>
-
-<body>
-
-<main class="app-shell">
-
-  <header class="topbar">
-    <p class="eyebrow">GENERATOR TOOL</p>
-    <h1>Admin Panel</h1>
-    <p class="subtitle">Update generator readings.</p>
-  </header>
-
-
-  <!-- ADMIN KEY -->
-
-  <section class="card">
-
-    <h2>Administrator</h2>
-
-    <label class="field">
-      <span>Admin Key</span>
-
-      <input
-        id="adminKey"
-        type="password"
-        autocomplete="off"
-        placeholder="Enter admin key"
-      >
-    </label>
-
-    <div id="authMessage" class="message"></div>
-
-  </section>
-
-
-  <!-- SITE -->
-
-  <section class="card">
-
-    <h2>Site</h2>
-
-    <label class="field">
-
-      <span>Site ID</span>
-
-      <input
-        id="siteId"
-        type="text"
-        value="TEST001"
-        placeholder="e.g. TEST001"
-      >
-
-    </label>
-
-    <button
-      id="loadSite"
-      class="secondary"
-    >
-      Load Existing Site
-    </button>
-
-    <div id="siteInfo" class="site-info">
-
-      <div class="info-row">
-        <span>Site name</span>
-        <strong id="siteName">—</strong>
-      </div>
-
-      <div class="info-row">
-        <span>Generator model</span>
-        <strong id="siteModel">—</strong>
-      </div>
-
-      <div class="info-row">
-        <span>Current HMR</span>
-        <strong id="siteHmr">—</strong>
-      </div>
-
-      <div class="info-row">
-        <span>Current kWh</span>
-        <strong id="siteKwh">—</strong>
-      </div>
-
-      <div class="info-row">
-        <span>Current balance</span>
-        <strong id="siteBalance">—</strong>
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- PRIMARY CHOICE -->
-
-  <section class="card">
-
-    <h2>Update Reading</h2>
-
-    <div class="info">
-      Upload the generator screenshot whenever available.
-      The screenshot is the primary method for updating the
-      site reading.
-    </div>
-
-
-    <!-- UPLOAD -->
-
-    <label class="upload-button">
-
-      UPLOAD AN IMAGE
-
-      <input
-        id="imageInput"
-        type="file"
-        accept="image/*"
-      >
-
-    </label>
-
-
-    <div id="preview" class="preview">
-
-      <img
-        id="previewImage"
-        alt="Selected generator screenshot"
-      >
-
-      <div
-        id="fileName"
-        class="file-name"
-      ></div>
-
-      <button
-        id="extractButton"
-        class="primary"
-        style="margin-top:12px;"
-      >
-        Extract Details
-      </button>
-
-    </div>
-
-
-    <div class="or">
-      OR
-    </div>
-
-
-    <!-- MANUAL FALLBACK BUTTON -->
-
-    <button
-      id="manualButton"
-      class="secondary"
-      type="button"
-    >
-      ENTER MANUALLY
-    </button>
-
-  </section>
-
-
-  <!-- MANUAL FALLBACK -->
-
-  <section
-    id="manualSection"
-    class="card manual-section"
-  >
-
-    <h2>Manual Entry</h2>
-
-    <div class="info">
-      Use this option only when a generator screenshot is
-      unavailable.
-    </div>
-
-
-    <label class="field">
-
-      <span>Generator model</span>
-
-      <select id="model">
-
-        <option value="eicher10">
-          Eicher 10 KVA
-        </option>
-
-        <option value="eicher20">
-          Eicher 20 KVA
-        </option>
-
-        <option value="koel20">
-          KOEL 20 KVA
-        </option>
-
-        <option value="mahindra20">
-          Mahindra 20 KVA
-        </option>
-
-        <option value="mahindra10">
-          Mahindra 10 KVA
-        </option>
-
-      </select>
-
-    </label>
-
-
-    <label class="field">
-
-      <span>Current HMR</span>
-
-      <input
-        id="currentHmr"
-        type="number"
-        inputmode="decimal"
-        step="any"
-        placeholder="e.g. 101"
-      >
-
-    </label>
-
-
-    <label class="field">
-
-      <span>Current kWh</span>
-
-      <input
-        id="currentKwh"
-        type="number"
-        inputmode="decimal"
-        step="any"
-        placeholder="e.g. 252"
-      >
-
-    </label>
-
-
-    <label class="field">
-
-      <span>Current balance</span>
-
-      <input
-        id="currentBalance"
-        type="number"
-        inputmode="decimal"
-        step="any"
-        placeholder="e.g. 490"
-      >
-
-    </label>
-
-
-    <button
-      id="updateSite"
-      class="primary"
-    >
-      Save Manual Reading
-    </button>
-
-    <div
-      id="updateMessage"
-      class="message"
-    ></div>
-
-  </section>
-
-
-  <!-- EXTRACTION RESULT -->
-
-  <section
-    id="extractionSection"
-    class="card"
-    style="display:none;"
-  >
-
-    <h2>Extracted Details</h2>
-
-    <div class="info">
-      Review the extracted information before saving it.
-    </div>
-
-
-    <label class="field">
-
-      <span>Generator model</span>
-
-      <select id="extractedModel">
-
-        <option value="eicher10">
-          Eicher 10 KVA
-        </option>
-
-        <option value="eicher20">
-          Eicher 20 KVA
-        </option>
-
-        <option value="koel20">
-          KOEL 20 KVA
-        </option>
-
-        <option value="mahindra20">
-          Mahindra 20 KVA
-        </option>
-
-        <option value="mahindra10">
-          Mahindra 10 KVA
-        </option>
-
-      </select>
-
-    </label>
-
-
-    <label class="field">
-
-      <span>Current HMR</span>
-
-      <input
-        id="extractedHmr"
-        type="number"
-        step="any"
-      >
-
-    </label>
-
-
-    <label class="field">
-
-      <span>Current kWh</span>
-
-      <input
-        id="extractedKwh"
-        type="number"
-        step="any"
-      >
-
-    </label>
-
-
-    <label class="field">
-
-      <span>Current balance</span>
-
-      <input
-        id="extractedBalance"
-        type="number"
-        step="any"
-      >
-
-    </label>
-
-
-    <button
-      id="saveExtracted"
-      class="primary"
-    >
-      Confirm & Save
-    </button>
-
-    <div
-      id="extractMessage"
-      class="message"
-    ></div>
-
-  </section>
-
-
-  <footer>
-    Screenshot upload is the primary method.
-    Manual entry is provided as a fallback.
-  </footer>
-
-</main>
-
-
 <script>
+const $ = (id) => document.getElementById(id);
 
-  const $ = (id) =>
-    document.getElementById(id);
+function message(element, text, type) {
+  element.textContent = text;
+  element.className = "message " + type;
+}
+
+function clearMessage(element) {
+  element.textContent = "";
+  element.className = "message";
+}
 
 
-  function message(element, text, type) {
+/* =========================
+   LOAD SITE
+========================= */
 
-    element.textContent = text;
+$("loadSite").addEventListener("click", async () => {
 
-    element.className =
-      "message " + type;
+  clearMessage($("authMessage"));
 
+  const siteId = $("siteId").value.trim();
+
+  if (!siteId) {
+    message(
+      $("authMessage"),
+      "Please enter a Site ID.",
+      "error"
+    );
+    return;
   }
 
+  $("loadSite").disabled = true;
+  $("loadSite").textContent = "Loading...";
 
-  function clearMessage(element) {
+  try {
 
-    element.textContent = "";
+    const response = await fetch(
+      "/api/site?site_id=" +
+      encodeURIComponent(siteId)
+    );
 
-    element.className =
-      "message";
+    const text = await response.text();
 
-  }
+    const data = text.trim()
+      ? JSON.parse(text)
+      : {};
 
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.error || "Unable to load site."
+      );
+    }
 
-  function showSite(site) {
+    const site = data.site;
 
-    $("siteInfo")
-      .classList
-      .add("show");
-
+    $("siteInfo").classList.add("show");
 
     $("siteName").textContent =
       site.site_name ?? "—";
@@ -669,647 +72,657 @@
     $("siteBalance").textContent =
       site.current_balance ?? "—";
 
-
     if (site.model) {
-
-      $("model").value =
-        site.model;
-
-      $("extractedModel").value =
-        site.model;
-
+      $("model").value = site.model;
+      $("extractedModel").value = site.model;
     }
 
-
-    if (
-      site.current_hmr !== null &&
-      site.current_hmr !== undefined
-    ) {
-
-      $("currentHmr").value =
-        site.current_hmr;
-
+    if (site.current_hmr != null) {
+      $("currentHmr").value = site.current_hmr;
     }
 
-
-    if (
-      site.current_kwh !== null &&
-      site.current_kwh !== undefined
-    ) {
-
-      $("currentKwh").value =
-        site.current_kwh;
-
+    if (site.current_kwh != null) {
+      $("currentKwh").value = site.current_kwh;
     }
 
-
-    if (
-      site.current_balance !== null &&
-      site.current_balance !== undefined
-    ) {
-
-      $("currentBalance").value =
-        site.current_balance;
-
+    if (site.current_balance != null) {
+      $("currentBalance").value = site.current_balance;
     }
+
+    message(
+      $("authMessage"),
+      "Site loaded successfully.",
+      "success"
+    );
+
+  } catch (error) {
+
+    message(
+      $("authMessage"),
+      error.message || "Unable to load site.",
+      "error"
+    );
+
+  } finally {
+
+    $("loadSite").disabled = false;
+    $("loadSite").textContent =
+      "Load Existing Site";
 
   }
+});
 
 
-  /*
-   * LOAD EXISTING SITE
-   */
+/* =========================
+   IMAGE SELECTION
+========================= */
 
-  $("loadSite")
-    .addEventListener(
-      "click",
-      async () => {
+$("imageInput").addEventListener("change", function () {
 
-        clearMessage(
-          $("authMessage")
-        );
+  const file = this.files && this.files[0];
 
-
-        const siteId =
-          $("siteId")
-            .value
-            .trim();
-
-
-        if (!siteId) {
-
-          message(
-            $("authMessage"),
-            "Please enter a Site ID.",
-            "error"
-          );
-
-          return;
-
-        }
-
-
-        $("loadSite").disabled =
-          true;
-
-        $("loadSite").textContent =
-          "Loading...";
-
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/site?site_id=" +
-              encodeURIComponent(siteId)
-            );
-
-
-          const text =
-            await response.text();
-
-
-          const data =
-            text.trim()
-              ? JSON.parse(text)
-              : {};
-
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-
-            throw new Error(
-              data.error ||
-              "Unable to load site."
-            );
-
-          }
-
-
-          showSite(
-            data.site
-          );
-
-
-          message(
-            $("authMessage"),
-            "Site loaded successfully.",
-            "success"
-          );
-
-
-        } catch (error) {
-
-          message(
-            $("authMessage"),
-            error.message ||
-            "Unable to load site.",
-            "error"
-          );
-
-        } finally {
-
-          $("loadSite").disabled =
-            false;
-
-          $("loadSite").textContent =
-            "Load Existing Site";
-
-        }
-
-      }
-    );
-
-
-  /*
-   * IMAGE PREVIEW
-   */
-
-  $("imageInput")
-    .addEventListener(
-      "change",
-      () => {
-
-        const file =
-          $("imageInput")
-            .files[0];
-
-
-        if (!file) {
-
-          $("preview")
-            .classList
-            .remove("show");
-
-          return;
-
-        }
-
-
-        if (
-          !file.type.startsWith(
-            "image/"
-          )
-        ) {
-
-          message(
-            $("authMessage"),
-            "Please select an image file.",
-            "error"
-          );
-
-          $("imageInput").value =
-            "";
-
-          return;
-
-        }
-
-
-        const reader =
-          new FileReader();
-
-
-        reader.onload =
-          (event) => {
-
-            $("previewImage").src =
-              event.target.result;
-
-            $("fileName").textContent =
-              file.name;
-
-            $("preview")
-              .classList
-              .add("show");
-
-          };
-
-
-        reader.readAsDataURL(file);
-
-      }
-    );
-
-
-  /*
-   * MANUAL OPTION
-   */
-
-  $("manualButton")
-    .addEventListener(
-      "click",
-      () => {
-
-        const section =
-          $("manualSection");
-
-
-        section.classList.toggle(
-          "show"
-        );
-
-
-        if (
-          section.classList.contains(
-            "show"
-          )
-        ) {
-
-          section.scrollIntoView({
-            behavior: "smooth"
-          });
-
-        }
-
-      }
-    );
-
-
-  /*
-   * IMAGE EXTRACTION
-   *
-   * The frontend is ready for the OCR endpoint.
-   * It currently does NOT invent readings.
-   */
-
-  $("extractButton")
-    .addEventListener(
-      "click",
-      async () => {
-
-        const file =
-          $("imageInput")
-            .files[0];
-
-
-        if (!file) {
-
-          message(
-            $("authMessage"),
-            "Please upload an image first.",
-            "error"
-          );
-
-          return;
-
-        }
-
-
-        /*
-         * OCR/image processing endpoint will be
-         * connected here.
-         *
-         * We intentionally do not fake extracted
-         * readings from the image.
-         */
-
-        message(
-          $("authMessage"),
-          "Image selected successfully. The OCR extraction endpoint still needs to be connected before readings can be automatically extracted.",
-          "error"
-        );
-
-      }
-    );
-
-
-  /*
-   * SAVE MANUAL READING
-   */
-
-  $("updateSite")
-    .addEventListener(
-      "click",
-      async () => {
-
-        clearMessage(
-          $("updateMessage")
-        );
-
-
-        const adminKey =
-          $("adminKey")
-            .value
-            .trim();
-
-
-        const siteId =
-          $("siteId")
-            .value
-            .trim();
-
-
-        const model =
-          $("model")
-            .value;
-
-
-        const currentHmr =
-          $("currentHmr")
-            .value;
-
-
-        const currentKwh =
-          $("currentKwh")
-            .value;
-
-
-        const currentBalance =
-          $("currentBalance")
-            .value;
-
-
-        if (!adminKey) {
-
-          message(
-            $("updateMessage"),
-            "Please enter the admin key.",
-            "error"
-          );
-
-          return;
-
-        }
-
-
-        if (!siteId) {
-
-          message(
-            $("updateMessage"),
-            "Site ID is required.",
-            "error"
-          );
-
-          return;
-
-        }
-
-
-        if (
-          currentHmr === "" ||
-          currentKwh === "" ||
-          currentBalance === ""
-        ) {
-
-          message(
-            $("updateMessage"),
-            "Please fill all manual reading fields.",
-            "error"
-          );
-
-          return;
-
-        }
-
-
-        $("updateSite").disabled =
-          true;
-
-        $("updateSite").textContent =
-          "Saving...";
-
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/admin/update-site",
-              {
-                method: "POST",
-
-                headers: {
-                  "Content-Type":
-                    "application/json",
-
-                  "Accept":
-                    "application/json",
-
-                  "X-Admin-Key":
-                    adminKey
-                },
-
-                body:
-                  JSON.stringify({
-                    site_id:
-                      siteId,
-
-                    model:
-                      model,
-
-                    current_hmr:
-                      currentHmr,
-
-                    current_kwh:
-                      currentKwh,
-
-                    current_balance:
-                      currentBalance
-                  })
-              }
-            );
-
-
-          const text =
-            await response.text();
-
-
-          const data =
-            text.trim()
-              ? JSON.parse(text)
-              : {};
-
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-
-            throw new Error(
-              data.error ||
-              "Site update failed."
-            );
-
-          }
-
-
-          message(
-            $("updateMessage"),
-            "Site updated successfully.",
-            "success"
-          );
-
-
-        } catch (error) {
-
-          message(
-            $("updateMessage"),
-            error.message ||
-            "Site update failed.",
-            "error"
-          );
-
-        } finally {
-
-          $("updateSite").disabled =
-            false;
-
-          $("updateSite").textContent =
-            "Save Manual Reading";
-
-        }
-
-      }
-    );
-
-
-  /*
-   * SAVE EXTRACTED READING
-   */
-
-  $("saveExtracted")
-    .addEventListener(
-      "click",
-      async () => {
-
-        clearMessage(
-          $("extractMessage")
-        );
-
-
-        const adminKey =
-          $("adminKey")
-            .value
-            .trim();
-
-
-        const siteId =
-          $("siteId")
-            .value
-            .trim();
-
-
-        const model =
-          $("extractedModel")
-            .value;
-
-
-        const hmr =
-          $("extractedHmr")
-            .value;
-
-
-        const kwh =
-          $("extractedKwh")
-            .value;
-
-
-        const balance =
-          $("extractedBalance")
-            .value;
-
-
-        if (!adminKey) {
-
-          message(
-            $("extractMessage"),
-            "Please enter the admin key.",
-            "error"
-          );
-
-          return;
-
-        }
-
-
-        if (
-          !siteId ||
-          hmr === "" ||
-          kwh === "" ||
-          balance === ""
-        ) {
-
-          message(
-            $("extractMessage"),
-            "The extracted fields must be available before saving.",
-            "error"
-          );
-
-          return;
-
-        }
-
-
-        $("saveExtracted").disabled =
-          true;
-
-        $("saveExtracted").textContent =
-          "Saving...";
-
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/admin/update-site",
-              {
-                method: "POST",
-
-                headers: {
-                  "Content-Type":
-                    "application/json",
-
-                  "Accept":
-                    "application/json",
-                        "X-Admin-Key": adminKey
-    },
-    body: JSON.stringify({
-      site_id: siteId,
-      model: model,
-      current_hmr: hmr,
-      current_kwh: kwh,
-      current_balance: balance
-    })
-  });
-
-  const text = await response.text();
-
-  const data = text.trim() 
-    ? JSON.parse(text) 
-    : {};
-
-  if (!response.ok || !data.success) {
-    throw new Error(
-      data.error || "Save failed."
-    );
+  if (!file) {
+    return;
   }
+
+  clearMessage($("authMessage"));
+
+  if (!file.type.startsWith("image/")) {
+
+    message(
+      $("authMessage"),
+      "Please select an image file.",
+      "error"
+    );
+
+    this.value = "";
+    return;
+  }
+
+  /*
+   * Show preview immediately.
+   */
+
+  const objectUrl = URL.createObjectURL(file);
+
+  $("previewImage").src = objectUrl;
+
+  $("fileName").textContent =
+    file.name;
+
+  $("preview").classList.add("show");
+
+  /*
+   * Make sure extraction section is hidden
+   * until extraction actually happens.
+   */
+
+  $("extractionSection").style.display =
+    "none";
 
   message(
-    $("#extractMessage"),
-    "Extracted reading saved successfully.",
+    $("authMessage"),
+    "Image selected successfully.",
     "success"
   );
+});
 
-} catch (error) {
 
-  message(
-    $("#extractMessage"),
-    error.message || "Save failed.",
-    "error"
-  );
+/* =========================
+   MANUAL ENTRY BUTTON
+========================= */
 
-} finally {
+$("manualButton").addEventListener("click", function () {
 
-  $("#saveExtracted").disabled = false;
-  $("#saveExtracted").textContent = "Confirm & Save";
+  const section = $("manualSection");
 
-}
+  const isHidden =
+    !section.classList.contains("show");
+
+  if (isHidden) {
+
+    section.classList.add("show");
+
+    section.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  } else {
+
+    section.classList.remove("show");
+
+  }
+});
+
+
+/* =========================
+   IMAGE EXTRACTION
+========================= */
+
+$("extractButton").addEventListener(
+  "click",
+  async function () {
+
+    const file =
+      $("imageInput").files &&
+      $("imageInput").files[0];
+
+    const siteId =
+      $("siteId").value.trim();
+
+    const adminKey =
+      $("adminKey").value.trim();
+
+    if (!file) {
+
+      message(
+        $("authMessage"),
+        "Please upload an image first.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (!siteId) {
+
+      message(
+        $("authMessage"),
+        "Please enter the Site ID first.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (!adminKey) {
+
+      message(
+        $("authMessage"),
+        "Please enter the admin key first.",
+        "error"
+      );
+
+      return;
+    }
+
+    $("extractButton").disabled = true;
+
+    $("extractButton").textContent =
+      "Extracting...";
+
+    clearMessage($("authMessage"));
+
+    try {
+
+      const formData = new FormData();
+
+      formData.append(
+        "image",
+        file
+      );
+
+      formData.append(
+        "site_id",
+        siteId
+      );
+
+      const response = await fetch(
+        "/api/admin/extract-image",
+        {
+          method: "POST",
+
+          headers: {
+            "X-Admin-Key":
+              adminKey
+          },
+
+          body: formData
+        }
+      );
+
+      const text =
+        await response.text();
+
+      const data =
+        text.trim()
+          ? JSON.parse(text)
+          : {};
+
+      if (!response.ok || !data.success) {
+
+        throw new Error(
+          data.error ||
+          "Image extraction failed."
+        );
+      }
+
+
+      /*
+       * Populate extracted fields.
+       */
+
+      if (data.model) {
+        $("extractedModel").value =
+          data.model;
+      }
+
+      if (data.current_hmr != null) {
+        $("extractedHmr").value =
+          data.current_hmr;
+      }
+
+      if (data.current_kwh != null) {
+        $("extractedKwh").value =
+          data.current_kwh;
+      }
+
+      if (data.current_balance != null) {
+        $("extractedBalance").value =
+          data.current_balance;
+      }
+
+
+      /*
+       * Show confirmation section.
+       */
+
+      $("extractionSection").style.display =
+        "block";
+
+      $("extractionSection").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+      message(
+        $("authMessage"),
+        "Details extracted. Please review and confirm them.",
+        "success"
+      );
+
+    } catch (error) {
+
+      message(
+        $("authMessage"),
+        error.message ||
+        "Image extraction failed.",
+        "error"
+      );
+
+    } finally {
+
+      $("extractButton").disabled =
+        false;
+
+      $("extractButton").textContent =
+        "Extract Details";
+
+    }
+  }
+);
+
+
+/* =========================
+   SAVE MANUAL READING
+========================= */
+
+$("updateSite").addEventListener(
+  "click",
+  async function () {
+
+    clearMessage(
+      $("updateMessage")
+    );
+
+    const adminKey =
+      $("adminKey").value.trim();
+
+    const siteId =
+      $("siteId").value.trim();
+
+    const model =
+      $("model").value;
+
+    const hmr =
+      $("currentHmr").value;
+
+    const kwh =
+      $("currentKwh").value;
+
+    const balance =
+      $("currentBalance").value;
+
+    if (!adminKey) {
+
+      message(
+        $("updateMessage"),
+        "Please enter the admin key.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (!siteId) {
+
+      message(
+        $("updateMessage"),
+        "Site ID is required.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (
+      hmr === "" ||
+      kwh === "" ||
+      balance === ""
+    ) {
+
+      message(
+        $("updateMessage"),
+        "Please fill all manual reading fields.",
+        "error"
+      );
+
+      return;
+    }
+
+    $("updateSite").disabled = true;
+
+    $("updateSite").textContent =
+      "Saving...";
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/admin/update-site",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Accept":
+                "application/json",
+
+              "X-Admin-Key":
+                adminKey
+            },
+
+            body:
+              JSON.stringify({
+                site_id:
+                  siteId,
+
+                model:
+                  model,
+
+                current_hmr:
+                  hmr,
+
+                current_kwh:
+                  kwh,
+
+                current_balance:
+                  balance
+              })
+          }
+        );
+
+      const text =
+        await response.text();
+
+      const data =
+        text.trim()
+          ? JSON.parse(text)
+          : {};
+
+      if (!response.ok || !data.success) {
+
+        throw new Error(
+          data.error ||
+          "Site update failed."
+        );
+      }
+
+      message(
+        $("updateMessage"),
+        "Site updated successfully.",
+        "success"
+      );
+
+      /*
+       * Refresh displayed site information.
+       */
+
+      $("siteHmr").textContent =
+        hmr;
+
+      $("siteKwh").textContent =
+        kwh;
+
+      $("siteBalance").textContent =
+        balance;
+
+      $("siteModel").textContent =
+        model;
+
+      $("siteInfo").classList.add("show");
+
+    } catch (error) {
+
+      message(
+        $("updateMessage"),
+        error.message ||
+        "Site update failed.",
+        "error"
+      );
+
+    } finally {
+
+      $("updateSite").disabled =
+        false;
+
+      $("updateSite").textContent =
+        "Save Manual Reading";
+
+    }
+  }
+);
+
+
+/* =========================
+   SAVE EXTRACTED READING
+========================= */
+
+$("saveExtracted").addEventListener(
+  "click",
+  async function () {
+
+    clearMessage(
+      $("extractMessage")
+    );
+
+    const adminKey =
+      $("adminKey").value.trim();
+
+    const siteId =
+      $("siteId").value.trim();
+
+    const model =
+      $("extractedModel").value;
+
+    const hmr =
+      $("extractedHmr").value;
+
+    const kwh =
+      $("extractedKwh").value;
+
+    const balance =
+      $("extractedBalance").value;
+
+    if (!adminKey) {
+
+      message(
+        $("extractMessage"),
+        "Please enter the admin key.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (!siteId) {
+
+      message(
+        $("extractMessage"),
+        "Site ID is required.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (
+      hmr === "" ||
+      kwh === "" ||
+      balance === ""
+    ) {
+
+      message(
+        $("extractMessage"),
+        "Please review all extracted fields.",
+        "error"
+      );
+
+      return;
+    }
+
+    $("saveExtracted").disabled =
+      true;
+
+    $("saveExtracted").textContent =
+      "Saving...";
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/admin/update-site",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Accept":
+                "application/json",
+
+              "X-Admin-Key":
+                adminKey
+            },
+
+            body:
+              JSON.stringify({
+                site_id:
+                  siteId,
+
+                model:
+                  model,
+
+                current_hmr:
+                  hmr,
+
+                current_kwh:
+                  kwh,
+
+                current_balance:
+                  balance
+              })
+          }
+        );
+
+      const text =
+        await response.text();
+
+      const data =
+        text.trim()
+          ? JSON.parse(text)
+          : {};
+
+      if (!response.ok || !data.success) {
+
+        throw new Error(
+          data.error ||
+          "Save failed."
+        );
+      }
+
+      message(
+        $("extractMessage"),
+        "Extracted reading saved successfully.",
+        "success"
+      );
+
+
+      /*
+       * Update site display.
+       */
+
+      $("siteModel").textContent =
+        model;
+
+      $("siteHmr").textContent =
+        hmr;
+
+      $("siteKwh").textContent =
+        kwh;
+
+      $("siteBalance").textContent =
+        balance;
+
+      $("siteInfo").classList.add("show");
+
+
+      /*
+       * Image is not uploaded to storage.
+       * We simply clear the local file reference
+       * after successful saving.
+       */
+
+      $("imageInput").value = "";
+
+      $("previewImage").src = "";
+
+      $("fileName").textContent = "";
+
+      $("preview").classList.remove("show");
+
+    } catch (error) {
+
+      message(
+        $("extractMessage"),
+        error.message ||
+        "Save failed.",
+        "error"
+      );
+
+    } finally {
+
+      $("saveExtracted").disabled =
+        false;
+
+      $("saveExtracted").textContent =
+        "Confirm & Save";
+
+    }
+  }
+);
 </script>
-
-</body>
-</html>
-
-
-  
