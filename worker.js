@@ -79,6 +79,10 @@ const CHARTS = {
 };
 
 
+/* -------------------------------------------------------
+   COMMON JSON RESPONSE
+------------------------------------------------------- */
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -90,7 +94,12 @@ function json(data, status = 200) {
 }
 
 
+/* -------------------------------------------------------
+   NUMBER VALIDATION
+------------------------------------------------------- */
+
 function number(value, name) {
+
   if (
     value === undefined ||
     value === null ||
@@ -109,8 +118,14 @@ function number(value, name) {
 }
 
 
+/* -------------------------------------------------------
+   CALCULATOR
+------------------------------------------------------- */
+
 async function calculate(request) {
+
   try {
+
     const body = await request.json();
 
     const A = number(body.A, "Current HMR");
@@ -119,11 +134,16 @@ async function calculate(request) {
     const D = number(body.D, "Previous kWh");
     const E = number(body.E, "Previous balance");
 
-    const model = String(body.model || "").trim();
-    const chart = CHARTS[model];
+    const model =
+      String(body.model || "").trim();
+
+    const chart =
+      CHARTS[model];
 
     if (!chart) {
-      throw new Error("Please select a valid generator model.");
+      throw new Error(
+        "Please select a valid generator model."
+      );
     }
 
     if (A <= C) {
@@ -139,15 +159,22 @@ async function calculate(request) {
     }
 
     const Z = A - C;
+
     const Y = B - D;
+
     const X = Y / Z;
 
-    const row = chart.rows.find(([lo, hi]) => {
-      return X >= lo && X <= hi;
-    });
+    const row =
+      chart.rows.find(([lo, hi]) => {
+        return X >= lo && X <= hi;
+      });
 
     if (!row) {
-      const max = chart.rows[chart.rows.length - 1][1];
+
+      const max =
+        chart.rows[
+          chart.rows.length - 1
+        ][1];
 
       throw new Error(
         `X = ${X.toFixed(4)} is outside the ${chart.name} chart range (0-${max}).`
@@ -157,6 +184,7 @@ async function calculate(request) {
     const [lo, hi, L] = row;
 
     const S = L * Z;
+
     const T = E - S;
 
     return json({
@@ -177,23 +205,37 @@ async function calculate(request) {
     });
 
   } catch (error) {
+
     return json(
       {
         success: false,
-        error: error?.message || "Calculation failed."
+        error:
+          error?.message ||
+          "Calculation failed."
       },
       400
     );
+
   }
 }
 
 
+/* -------------------------------------------------------
+   GET SITE
+------------------------------------------------------- */
+
 async function getSite(request, env) {
+
   try {
-    const url = new URL(request.url);
-    const siteId = url.searchParams.get("site_id");
+
+    const url =
+      new URL(request.url);
+
+    const siteId =
+      url.searchParams.get("site_id");
 
     if (!siteId) {
+
       return json(
         {
           success: false,
@@ -201,38 +243,31 @@ async function getSite(request, env) {
         },
         400
       );
+
     }
 
-    if (!env.DB) {
-      return json(
-        {
-          success: false,
-          error: "D1 database binding DB is not available."
-        },
-        500
-      );
-    }
-
-    const result = await env.DB
-      .prepare(`
-        SELECT
-          site_id,
-          site_name,
-          model,
-          current_hmr,
-          current_kwh,
-          current_balance,
-          last_updated,
-          screenshot_url,
-          data_source
-        FROM sites
-        WHERE site_id = ?
-        LIMIT 1
-      `)
-      .bind(siteId)
-      .first();
+    const result =
+      await env.DB
+        .prepare(`
+          SELECT
+            site_id,
+            site_name,
+            model,
+            current_hmr,
+            current_kwh,
+            current_balance,
+            last_updated,
+            screenshot_url,
+            data_source
+          FROM sites
+          WHERE site_id = ?
+          LIMIT 1
+        `)
+        .bind(siteId)
+        .first();
 
     if (!result) {
+
       return json(
         {
           success: false,
@@ -240,6 +275,7 @@ async function getSite(request, env) {
         },
         404
       );
+
     }
 
     return json({
@@ -248,80 +284,143 @@ async function getSite(request, env) {
     });
 
   } catch (error) {
+
     return json(
       {
         success: false,
-        error: error?.message || "Database error."
+        error:
+          error?.message ||
+          "Database error."
       },
       500
     );
+
   }
 }
 
 
-async function updateSite(request, env) {
-  try {
-    const adminKey = request.headers.get("X-Admin-Key");
+/* -------------------------------------------------------
+   ADMIN AUTHENTICATION
+------------------------------------------------------- */
 
-    if (!env.ADMIN_KEY) {
-      return json(
+function checkAdminKey(request, env) {
+
+  const adminKey =
+    request.headers.get("X-Admin-Key");
+
+  if (!env.ADMIN_KEY) {
+
+    return {
+      ok: false,
+      response: json(
         {
           success: false,
-          error: "ADMIN_KEY is not configured in Cloudflare."
+          error:
+            "ADMIN_KEY is not configured in Cloudflare."
         },
         500
-      );
-    }
+      )
+    };
 
-    if (!adminKey || adminKey !== env.ADMIN_KEY) {
-      return json(
+  }
+
+  if (
+    !adminKey ||
+    adminKey !== env.ADMIN_KEY
+  ) {
+
+    return {
+      ok: false,
+      response: json(
         {
           success: false,
           error: "Unauthorized."
         },
         401
-      );
+      )
+    };
+
+  }
+
+  return {
+    ok: true
+  };
+}
+
+
+/* -------------------------------------------------------
+   UPDATE SITE
+------------------------------------------------------- */
+
+async function updateSite(request, env) {
+
+  try {
+
+    const auth =
+      checkAdminKey(request, env);
+
+    if (!auth.ok) {
+      return auth.response;
     }
 
-    if (!env.DB) {
-      return json(
-        {
-          success: false,
-          error: "D1 database binding DB is not available."
-        },
-        500
-      );
-    }
+    const body =
+      await request.json();
 
-    const body = await request.json();
-
-    const siteId = String(body.site_id || "").trim();
+    const siteId =
+      String(
+        body.site_id || ""
+      ).trim();
 
     if (!siteId) {
-      throw new Error("site_id is required.");
+      throw new Error(
+        "site_id is required."
+      );
     }
 
-    const hmr = number(body.current_hmr, "Current HMR");
-    const kwh = number(body.current_kwh, "Current kWh");
-    const balance = number(body.current_balance, "Current balance");
+    const hmr =
+      number(
+        body.current_hmr,
+        "Current HMR"
+      );
 
-    const model = String(body.model || "").trim();
+    const kwh =
+      number(
+        body.current_kwh,
+        "Current kWh"
+      );
+
+    const balance =
+      number(
+        body.current_balance,
+        "Current balance"
+      );
+
+    const model =
+      String(
+        body.model || ""
+      ).trim();
 
     if (!CHARTS[model]) {
-      throw new Error("Please select a valid generator model.");
+
+      throw new Error(
+        "Please select a valid generator model."
+      );
+
     }
 
-    const existing = await env.DB
-      .prepare(`
-        SELECT site_id
-        FROM sites
-        WHERE site_id = ?
-        LIMIT 1
-      `)
-      .bind(siteId)
-      .first();
+    const existing =
+      await env.DB
+        .prepare(`
+          SELECT site_id
+          FROM sites
+          WHERE site_id = ?
+          LIMIT 1
+        `)
+        .bind(siteId)
+        .first();
 
     if (!existing) {
+
       return json(
         {
           success: false,
@@ -329,9 +428,12 @@ async function updateSite(request, env) {
         },
         404
       );
+
     }
 
-    const now = new Date().toISOString();
+    const now =
+      new Date().toISOString();
+
 
     await env.DB
       .prepare(`
@@ -355,6 +457,7 @@ async function updateSite(request, env) {
       )
       .run();
 
+
     await env.DB
       .prepare(`
         INSERT INTO readings
@@ -377,91 +480,356 @@ async function updateSite(request, env) {
       )
       .run();
 
+
     return json({
+
       success: true,
-      message: "Site updated successfully.",
-      site_id: siteId,
-      current_hmr: hmr,
-      current_kwh: kwh,
-      current_balance: balance,
-      updated_at: now,
-      source: "manual"
+
+      message:
+        "Site updated successfully.",
+
+      site_id:
+        siteId,
+
+      current_hmr:
+        hmr,
+
+      current_kwh:
+        kwh,
+
+      current_balance:
+        balance,
+
+      updated_at:
+        now,
+
+      source:
+        "manual"
+
     });
 
   } catch (error) {
+
     return json(
       {
         success: false,
-        error: error?.message || "Site update failed."
+        error:
+          error?.message ||
+          "Site update failed."
       },
       400
     );
+
   }
 }
 
 
-async function debugConfig(request, env) {
-  return json({
-    success: true,
-    db: !!env.DB,
-    assets: !!env.ASSETS,
-    admin_key: !!env.ADMIN_KEY
-  });
-}
+/* -------------------------------------------------------
+   IMAGE EXTRACTION ENDPOINT
+-------------------------------------------------------
 
+   IMPORTANT:
 
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
+   This endpoint accepts the image temporarily.
 
-    if (
-      url.pathname === "/api/calculate" &&
-      request.method === "POST"
-    ) {
-      return calculate(request);
+   It does NOT save the image into D1.
+
+   It does NOT save the image into Assets.
+
+   The image exists only for this request.
+
+   The actual OCR/vision provider needs to be
+   connected using your provider's API.
+
+------------------------------------------------------- */
+
+async function extractImage(request, env) {
+
+  try {
+
+    const auth =
+      checkAdminKey(request, env);
+
+    if (!auth.ok) {
+      return auth.response;
     }
 
-    if (
-      url.pathname === "/api/calculate" &&
-      request.method === "GET"
-    ) {
-      return json({
-        success: true,
-        message: "Generator Fuel Calculator API is working."
-      });
-    }
+
+    const contentType =
+      request.headers.get(
+        "content-type"
+      ) || "";
+
 
     if (
-      url.pathname === "/api/site" &&
-      request.method === "GET"
+      !contentType.includes(
+        "multipart/form-data"
+      )
     ) {
-      return getSite(request, env);
-    }
 
-    if (
-      url.pathname === "/api/admin/update-site" &&
-      request.method === "POST"
-    ) {
-      return updateSite(request, env);
-    }
-
-    if (
-      url.pathname === "/api/debug-config" &&
-      request.method === "GET"
-    ) {
-      return debugConfig(request, env);
-    }
-
-    if (!env.ASSETS) {
       return json(
         {
           success: false,
-          error: "ASSETS binding is not available."
+          error:
+            "Please upload an image using multipart/form-data."
         },
-        500
+        400
       );
+
     }
 
-    return env.ASSETS.fetch(request);
+
+    const form =
+      await request.formData();
+
+
+    const image =
+      form.get("image");
+
+
+    const siteId =
+      String(
+        form.get("site_id") || ""
+      ).trim();
+
+
+    if (!image) {
+
+      return json(
+        {
+          success: false,
+          error:
+            "Image is required."
+        },
+        400
+      );
+
+    }
+
+
+    if (
+      typeof image === "string" ||
+      !image.type ||
+      !image.type.startsWith("image/")
+    ) {
+
+      return json(
+        {
+          success: false,
+          error:
+            "The uploaded file must be an image."
+        },
+        400
+      );
+
+    }
+
+
+    /*
+     * At this point the image is available
+     * temporarily as a File object.
+     *
+     * It is NOT stored.
+     *
+     * The next step is connecting an OCR /
+     * vision API to read:
+     *
+     * - Generator model
+     * - Current HMR
+     * - Current kWh
+     * - Current balance
+     *
+     * We do not fabricate those values.
+     */
+
+
+    return json({
+
+      success: false,
+
+      extraction_ready: false,
+
+      site_id:
+        siteId || null,
+
+      error:
+        "Image received successfully, but the OCR/vision provider is not connected yet."
+
+    }, 501);
+
+
+  } catch (error) {
+
+    return json(
+      {
+        success: false,
+        error:
+          error?.message ||
+          "Image extraction failed."
+      },
+      400
+    );
+
   }
+}
+
+
+/* -------------------------------------------------------
+   DEBUG CONFIG
+------------------------------------------------------- */
+
+async function debugConfig(request, env) {
+
+  return json({
+
+    success: true,
+
+    db:
+      !!env.DB,
+
+    assets:
+      !!env.ASSETS,
+
+    admin_key:
+      !!env.ADMIN_KEY
+
+  });
+
+}
+
+
+/* -------------------------------------------------------
+   MAIN WORKER
+------------------------------------------------------- */
+
+export default {
+
+  async fetch(request, env) {
+
+    const url =
+      new URL(request.url);
+
+
+    /*
+     * CALCULATOR
+     */
+
+    if (
+      url.pathname ===
+        "/api/calculate" &&
+      request.method === "POST"
+    ) {
+
+      return calculate(request);
+
+    }
+
+
+    /*
+     * CALCULATOR API TEST
+     */
+
+    if (
+      url.pathname ===
+        "/api/calculate" &&
+      request.method === "GET"
+    ) {
+
+      return json({
+
+        success: true,
+
+        message:
+          "Generator Fuel Calculator API is working."
+
+      });
+
+    }
+
+
+    /*
+     * GET SITE
+     */
+
+    if (
+      url.pathname ===
+        "/api/site" &&
+      request.method === "GET"
+    ) {
+
+      return getSite(
+        request,
+        env
+      );
+
+    }
+
+
+    /*
+     * ADMIN UPDATE
+     */
+
+    if (
+      url.pathname ===
+        "/api/admin/update-site" &&
+      request.method === "POST"
+    ) {
+
+      return updateSite(
+        request,
+        env
+      );
+
+    }
+
+
+    /*
+     * IMAGE EXTRACTION
+     */
+
+    if (
+      url.pathname ===
+        "/api/admin/extract-image" &&
+      request.method === "POST"
+    ) {
+
+      return extractImage(
+        request,
+        env
+      );
+
+    }
+
+
+    /*
+     * DEBUG CONFIG
+     */
+
+    if (
+      url.pathname ===
+        "/api/debug-config" &&
+      request.method === "GET"
+    ) {
+
+      return debugConfig(
+        request,
+        env
+      );
+
+    }
+
+
+    /*
+     * EVERYTHING ELSE
+     *
+     * Serve index.html / app.js /
+     * style.css from public/
+     */
+
+    return env.ASSETS.fetch(
+      request
+    );
+
+  }
+
 };
