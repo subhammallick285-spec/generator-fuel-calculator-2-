@@ -203,6 +203,16 @@ async function getSite(request, env) {
       );
     }
 
+    if (!env.DB) {
+      return json(
+        {
+          success: false,
+          error: "D1 database binding DB is not available."
+        },
+        500
+      );
+    }
+
     const result = await env.DB
       .prepare(`
         SELECT
@@ -270,6 +280,16 @@ async function updateSite(request, env) {
           error: "Unauthorized."
         },
         401
+      );
+    }
+
+    if (!env.DB) {
+      return json(
+        {
+          success: false,
+          error: "D1 database binding DB is not available."
+        },
+        500
       );
     }
 
@@ -380,17 +400,7 @@ async function updateSite(request, env) {
 }
 
 
-if (
-  url.pathname === "/api/admin/update-site" &&
-  request.method === "POST"
-) {
-  return updateSite(request, env);
-}
-
-if (
-  url.pathname === "/api/debug-config" &&
-  request.method === "GET"
-) {
+async function debugConfig(request, env) {
   return json({
     success: true,
     db: !!env.DB,
@@ -399,4 +409,59 @@ if (
   });
 }
 
-return env.ASSETS.fetch(request);
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (
+      url.pathname === "/api/calculate" &&
+      request.method === "POST"
+    ) {
+      return calculate(request);
+    }
+
+    if (
+      url.pathname === "/api/calculate" &&
+      request.method === "GET"
+    ) {
+      return json({
+        success: true,
+        message: "Generator Fuel Calculator API is working."
+      });
+    }
+
+    if (
+      url.pathname === "/api/site" &&
+      request.method === "GET"
+    ) {
+      return getSite(request, env);
+    }
+
+    if (
+      url.pathname === "/api/admin/update-site" &&
+      request.method === "POST"
+    ) {
+      return updateSite(request, env);
+    }
+
+    if (
+      url.pathname === "/api/debug-config" &&
+      request.method === "GET"
+    ) {
+      return debugConfig(request, env);
+    }
+
+    if (!env.ASSETS) {
+      return json(
+        {
+          success: false,
+          error: "ASSETS binding is not available."
+        },
+        500
+      );
+    }
+
+    return env.ASSETS.fetch(request);
+  }
+};
