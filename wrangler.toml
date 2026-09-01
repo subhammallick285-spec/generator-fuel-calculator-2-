@@ -10,3 +10,5 @@ database_id = "f1991b43-7083-4d82-b6e0-0c32abb54374"
 [assets]
 directory = "./public"
 binding = "ASSETS"
+[ai]
+binding = "AI"
