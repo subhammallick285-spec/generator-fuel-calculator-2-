@@ -1,625 +1,22 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-
-  <title>Admin Panel - Generator Fuel Calculator</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f5f8;
-      color: #111827;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 620px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    .header {
-      background: #0b1220;
-      color: white;
-      border-radius: 18px;
-      padding: 22px;
-      margin-bottom: 18px;
-    }
-
-    .header small {
-      font-weight: bold;
-      letter-spacing: 1.5px;
-      opacity: .7;
-    }
-
-    .header h1 {
-      margin: 6px 0;
-      font-size: 28px;
-    }
-
-    .header p {
-      margin: 0;
-      opacity: .8;
-    }
-
-    .card {
-      background: white;
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 18px;
-      box-shadow: 0 4px 18px rgba(0,0,0,.06);
-    }
-
-    h2 {
-      margin: 0 0 18px;
-      font-size: 20px;
-    }
-
-    .field {
-      display: block;
-      margin-bottom: 15px;
-    }
-
-    .field span {
-      display: block;
-      margin-bottom: 7px;
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    input,
-    select {
-      width: 100%;
-      padding: 13px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      background: white;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      border: 0;
-      border-radius: 10px;
-      padding: 14px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: .6;
-      cursor: wait;
-    }
-
-    .primary {
-      background: #111827;
-      color: white;
-    }
-
-    .secondary {
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    .upload {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 52px;
-      border-radius: 10px;
-      background: #111827;
-      color: white;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .upload input {
-      display: none;
-    }
-
-    .or {
-      text-align: center;
-      margin: 18px 0;
-      color: #6b7280;
-      font-size: 13px;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-
-    .preview {
-      display: none;
-      margin-top: 18px;
-    }
-
-    .preview.show {
-      display: block;
-    }
-
-    .preview img {
-      width: 100%;
-      max-height: 350px;
-      object-fit: contain;
-      display: block;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      background: #f9fafb;
-    }
-
-    .filename {
-      margin: 8px 0;
-      color: #6b7280;
-      font-size: 13px;
-      word-break: break-all;
-    }
-
-    .manual {
-      display: none;
-    }
-
-    .manual.show {
-      display: block;
-    }
-
-    .result {
-      display: none;
-    }
-
-    .result.show {
-      display: block;
-    }
-
-    .info {
-      background: #f3f4f6;
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 15px;
-      color: #4b5563;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .message {
-      display: none;
-      margin-top: 14px;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .message.show {
-      display: block;
-    }
-
-    .message.success {
-      background: #ecfdf5;
-      color: #065f46;
-    }
-
-    .message.error {
-      background: #fef2f2;
-      color: #991b1b;
-    }
-
-    .site-info {
-      display: none;
-      margin-top: 18px;
-      border-top: 1px solid #e5e7eb;
-      padding-top: 12px;
-    }
-
-    .site-info.show {
-      display: block;
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-      padding: 9px 0;
-      border-bottom: 1px solid #f0f0f0;
-    }
-
-    .row span {
-      color: #6b7280;
-    }
-
-    .row strong {
-      text-align: right;
-    }
-
-    footer {
-      text-align: center;
-      color: #6b7280;
-      font-size: 12px;
-      padding: 10px 0 20px;
-    }
-  </style>
-</head>
-
-<body>
-
-<div class="app">
-
-  <header class="header">
-    <small>GENERATOR TOOL</small>
-    <h1>Admin Panel</h1>
-    <p>Update generator readings.</p>
-  </header>
-
-
-  <!-- ADMIN KEY -->
-
-  <section class="card">
-
-    <h2>Administrator</h2>
-
-    <label class="field">
-      <span>Admin Key</span>
-
-      <input
-        id="adminKey"
-        type="password"
-        autocomplete="off"
-        placeholder="Enter admin key"
-      >
-    </label>
-
-    <div id="authMessage" class="message"></div>
-
-  </section>
-
-
-  <!-- SITE -->
-
-  <section class="card">
-
-    <h2>Site</h2>
-
-    <label class="field">
-      <span>Site ID</span>
-
-      <input
-        id="siteId"
-        type="text"
-        placeholder="e.g. TEST001"
-      >
-    </label>
-
-    <button
-      id="loadSite"
-      class="secondary"
-      type="button"
-    >
-      Load Existing Site
-    </button>
-
-    <div id="siteInfo" class="site-info">
-
-      <div class="row">
-        <span>Site name</span>
-        <strong id="siteName">—</strong>
-      </div>
-
-      <div class="row">
-        <span>Generator model</span>
-        <strong id="siteModel">—</strong>
-      </div>
-
-      <div class="row">
-        <span>Current HMR</span>
-        <strong id="siteHmr">—</strong>
-      </div>
-
-      <div class="row">
-        <span>Current kWh</span>
-        <strong id="siteKwh">—</strong>
-      </div>
-
-      <div class="row">
-        <span>Current balance</span>
-        <strong id="siteBalance">—</strong>
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- UPDATE METHOD -->
-
-  <section class="card">
-
-    <h2>Update Reading</h2>
-
-    <div class="info">
-      Upload the generator screenshot whenever available.
-      The screenshot is the primary method.
-      Manual entry is only a fallback.
-    </div>
-
-
-    <!-- IMAGE UPLOAD -->
-
-    <label class="upload">
-
-      UPLOAD AN IMAGE
-
-      <input
-        id="imageInput"
-        type="file"
-        accept="image/*"
-      >
-
-    </label>
-
-
-    <!-- IMAGE PREVIEW -->
-
-    <div id="preview" class="preview">
-
-      <img
-        id="previewImage"
-        alt="Generator screenshot"
-      >
-
-      <div
-        id="filename"
-        class="filename"
-      ></div>
-
-      <button
-        id="extractButton"
-        class="primary"
-        type="button"
-      >
-        Extract Details
-      </button>
-
-    </div>
-
-
-    <div class="or">
-      OR
-    </div>
-
-
-    <!-- MANUAL BUTTON -->
-
-    <button
-      id="manualButton"
-      class="secondary"
-      type="button"
-    >
-      ENTER MANUALLY
-    </button>
-
-  </section>
-
-
-  <!-- MANUAL ENTRY -->
-
-  <section
-    id="manualSection"
-    class="card manual"
-  >
-
-    <h2>Manual Entry</h2>
-
-    <div class="info">
-      Use this only when a generator screenshot is unavailable.
-    </div>
-
-    <label class="field">
-      <span>Generator model</span>
-
-      <select id="model">
-
-        <option value="eicher10">
-          Eicher 10 KVA
-        </option>
-
-        <option value="mahindra10">
-          Mahindra 10 KVA
-        </option>
-
-        <option value="eicher20">
-          Eicher 20 KVA
-        </option>
-
-        <option value="mahindra20">
-          Mahindra 20 KVA
-        </option>
-
-        <option value="koel20">
-          KOEL 20 KVA
-        </option>
-
-      </select>
-    </label>
-
-
-    <label class="field">
-      <span>Current HMR</span>
-
-      <input
-        id="currentHmr"
-        type="number"
-        step="any"
-        placeholder="e.g. 101"
-      >
-    </label>
-
-
-    <label class="field">
-      <span>Current kWh</span>
-
-      <input
-        id="currentKwh"
-        type="number"
-        step="any"
-        placeholder="e.g. 252"
-      >
-    </label>
-
-
-    <label class="field">
-      <span>Current balance</span>
-
-      <input
-        id="currentBalance"
-        type="number"
-        step="any"
-        placeholder="e.g. 490"
-      >
-    </label>
-
-
-    <button
-      id="updateSite"
-      class="primary"
-      type="button"
-    >
-      Save Manual Reading
-    </button>
-
-    <div
-      id="updateMessage"
-      class="message"
-    ></div>
-
-  </section>
-
-
-  <!-- EXTRACTED DATA -->
-
-  <section
-    id="extractionSection"
-    class="card result"
-  >
-
-    <h2>Review Extracted Details</h2>
-
-    <div class="info">
-      Check every value before saving.
-      You can edit any detected value.
-    </div>
-
-
-    <label class="field">
-      <span>Generator model</span>
-
-      <select id="extractedModel">
-
-        <option value="eicher10">
-          Eicher 10 KVA
-        </option>
-
-        <option value="mahindra10">
-          Mahindra 10 KVA
-        </option>
-
-        <option value="eicher20">
-          Eicher 20 KVA
-        </option>
-
-        <option value="mahindra20">
-          Mahindra 20 KVA
-        </option>
-
-        <option value="koel20">
-          KOEL 20 KVA
-        </option>
-
-      </select>
-    </label>
-
-
-    <label class="field">
-      <span>Current HMR</span>
-
-      <input
-        id="extractedHmr"
-        type="number"
-        step="any"
-      >
-    </label>
-
-
-    <label class="field">
-      <span>Current kWh</span>
-
-      <input
-        id="extractedKwh"
-        type="number"
-        step="any"
-      >
-    </label>
-
-
-    <label class="field">
-      <span>Current balance</span>
-
-      <input
-        id="extractedBalance"
-        type="number"
-        step="any"
-      >
-    </label>
-
-
-    <button
-      id="saveExtracted"
-      class="primary"
-      type="button"
-    >
-      Confirm & Save
-    </button>
-
-    <div
-      id="extractMessage"
-      class="message"
-    ></div>
-
-  </section>
-
-
-  <footer>
-    Screenshot upload is the primary method.
-    Manual entry is a fallback.
-  </footer>
-
-</div>
-
-
-<script>
-
-"use strict";
+const $ = (id) =>
+  document.getElementById(id);
 
 
 /* =====================================================
-   HELPER
-===================================================== */
+   MESSAGE
+   ===================================================== */
 
-function $(id) {
-  return document.getElementById(id);
-}
-
-
-function showMessage(element, text, type) {
+function message(
+  element,
+  text,
+  type
+) {
 
   element.textContent = text;
 
   element.className =
-    "message show " + type;
+    "message " + type;
+
 }
 
 
@@ -627,124 +24,178 @@ function clearMessage(element) {
 
   element.textContent = "";
 
-  element.className = "message";
+  element.className =
+    "message";
+
+}
+
+
+/* =====================================================
+   SHOW SITE
+   ===================================================== */
+
+function showSite(site) {
+
+  $("siteInfo")
+    .classList
+    .add("show");
+
+
+  $("siteName").textContent =
+    site.site_name ?? "—";
+
+
+  $("siteModel").textContent =
+    site.model ?? "—";
+
+
+  $("siteHmr").textContent =
+    site.current_hmr ?? "—";
+
+
+  $("siteKwh").textContent =
+    site.current_kwh ?? "—";
+
+
+  $("siteBalance").textContent =
+    site.current_balance ?? "—";
+
+
+  if (site.model) {
+
+    $("model").value =
+      site.model;
+
+    $("extractedModel").value =
+      site.model;
+
+  }
+
+
+  if (
+    site.current_hmr !== null &&
+    site.current_hmr !== undefined
+  ) {
+
+    $("currentHmr").value =
+      site.current_hmr;
+
+  }
+
+
+  if (
+    site.current_kwh !== null &&
+    site.current_kwh !== undefined
+  ) {
+
+    $("currentKwh").value =
+      site.current_kwh;
+
+  }
+
+
+  if (
+    site.current_balance !== null &&
+    site.current_balance !== undefined
+  ) {
+
+    $("currentBalance").value =
+      site.current_balance;
+
+  }
+
 }
 
 
 /* =====================================================
    LOAD SITE
-===================================================== */
+   ===================================================== */
 
-$("loadSite").addEventListener(
+$("loadSite")
+.addEventListener(
   "click",
-  async function () {
+  async () => {
 
-    clearMessage($("authMessage"));
+    clearMessage(
+      $("authMessage")
+    );
+
 
     const siteId =
-      $("siteId").value.trim();
+      $("siteId")
+        .value
+        .trim();
+
 
     if (!siteId) {
 
-      showMessage(
+      message(
         $("authMessage"),
         "Please enter a Site ID.",
         "error"
       );
 
       return;
+
     }
 
-    $("loadSite").disabled = true;
-    $("loadSite").textContent = "Loading...";
+
+    $("loadSite").disabled =
+      true;
+
+    $("loadSite").textContent =
+      "Loading...";
+
 
     try {
 
       const response =
         await fetch(
           "/api/site?site_id=" +
-          encodeURIComponent(siteId)
+          encodeURIComponent(
+            siteId
+          )
         );
+
 
       const text =
         await response.text();
 
-      let data = {};
 
-      if (text.trim()) {
-        data = JSON.parse(text);
-      }
+      const data =
+        text.trim()
+          ? JSON.parse(text)
+          : {};
 
-      if (!response.ok || !data.success) {
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
 
         throw new Error(
           data.error ||
           "Unable to load site."
         );
-      }
 
-      const site = data.site;
-
-      $("siteInfo")
-        .classList
-        .add("show");
-
-      $("siteName").textContent =
-        site.site_name ?? "—";
-
-      $("siteModel").textContent =
-        site.model ?? "—";
-
-      $("siteHmr").textContent =
-        site.current_hmr ?? "—";
-
-      $("siteKwh").textContent =
-        site.current_kwh ?? "—";
-
-      $("siteBalance").textContent =
-        site.current_balance ?? "—";
-
-
-      if (site.model) {
-
-        $("model").value =
-          site.model;
-
-        $("extractedModel").value =
-          site.model;
       }
 
 
-      if (site.current_hmr != null) {
-
-        $("currentHmr").value =
-          site.current_hmr;
-      }
+      showSite(
+        data.site
+      );
 
 
-      if (site.current_kwh != null) {
-
-        $("currentKwh").value =
-          site.current_kwh;
-      }
-
-
-      if (site.current_balance != null) {
-
-        $("currentBalance").value =
-          site.current_balance;
-      }
-
-
-      showMessage(
+      message(
         $("authMessage"),
         "Site loaded successfully.",
         "success"
       );
 
+
     } catch (error) {
 
-      showMessage(
+      message(
         $("authMessage"),
         error.message ||
         "Unable to load site.",
@@ -753,10 +204,12 @@ $("loadSite").addEventListener(
 
     } finally {
 
-      $("loadSite").disabled = false;
+      $("loadSite").disabled =
+        false;
 
       $("loadSite").textContent =
         "Load Existing Site";
+
     }
 
   }
@@ -765,16 +218,22 @@ $("loadSite").addEventListener(
 
 /* =====================================================
    IMAGE SELECTION
-===================================================== */
+   ===================================================== */
 
-$("imageInput").addEventListener(
+$("imageInput")
+.addEventListener(
   "change",
-  function () {
+  () => {
 
-    clearMessage($("authMessage"));
+    clearMessage(
+      $("authMessage")
+    );
+
 
     const file =
-      $("imageInput").files[0];
+      $("imageInput")
+        .files[0];
+
 
     if (!file) {
 
@@ -783,23 +242,27 @@ $("imageInput").addEventListener(
         .remove("show");
 
       return;
+
     }
 
 
     if (
-      !file.type ||
-      !file.type.startsWith("image/")
+      !file.type.startsWith(
+        "image/"
+      )
     ) {
 
-      showMessage(
+      message(
         $("authMessage"),
-        "Please select a valid image.",
+        "Please select an image file.",
         "error"
       );
 
-      $("imageInput").value = "";
+      $("imageInput").value =
+        "";
 
       return;
+
     }
 
 
@@ -808,13 +271,15 @@ $("imageInput").addEventListener(
 
 
     reader.onload =
-      function (event) {
+      (event) => {
 
         $("previewImage").src =
           event.target.result;
 
-        $("filename").textContent =
+
+        $("fileName").textContent =
           file.name;
+
 
         $("preview")
           .classList
@@ -824,17 +289,20 @@ $("imageInput").addEventListener(
 
 
     reader.onerror =
-      function () {
+      () => {
 
-        showMessage(
+        message(
           $("authMessage"),
-          "Unable to preview the image.",
+          "Unable to read the selected image.",
           "error"
         );
+
       };
 
 
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(
+      file
+    );
 
   }
 );
@@ -842,25 +310,33 @@ $("imageInput").addEventListener(
 
 /* =====================================================
    MANUAL BUTTON
-===================================================== */
+   ===================================================== */
 
-$("manualButton").addEventListener(
+$("manualButton")
+.addEventListener(
   "click",
-  function () {
+  () => {
 
     const section =
       $("manualSection");
 
-    section.classList.toggle("show");
+
+    section.classList.toggle(
+      "show"
+    );
+
 
     if (
-      section.classList.contains("show")
+      section.classList.contains(
+        "show"
+      )
     ) {
 
       section.scrollIntoView({
         behavior: "smooth",
         block: "start"
       });
+
     }
 
   }
@@ -868,79 +344,102 @@ $("manualButton").addEventListener(
 
 
 /* =====================================================
-   IMAGE EXTRACTION
-===================================================== */
+   EXTRACT IMAGE
+   ===================================================== */
 
-$("extractButton").addEventListener(
+$("extractButton")
+.addEventListener(
   "click",
-  async function () {
+  async () => {
 
-    clearMessage($("authMessage"));
+    clearMessage(
+      $("authMessage")
+    );
+
 
     const file =
-      $("imageInput").files[0];
+      $("imageInput")
+        .files[0];
 
-    const siteId =
-      $("siteId").value.trim();
 
     const adminKey =
-      $("adminKey").value.trim();
+      $("adminKey")
+        .value
+        .trim();
 
 
-    if (!adminKey) {
-
-      showMessage(
-        $("authMessage"),
-        "Please enter the admin key first.",
-        "error"
-      );
-
-      return;
-    }
-
-
-    if (!siteId) {
-
-      showMessage(
-        $("authMessage"),
-        "Please enter the Site ID first.",
-        "error"
-      );
-
-      return;
-    }
+    const siteId =
+      $("siteId")
+        .value
+        .trim();
 
 
     if (!file) {
 
-      showMessage(
+      message(
         $("authMessage"),
         "Please upload an image first.",
         "error"
       );
 
       return;
+
     }
 
 
-    const formData =
+    if (!adminKey) {
+
+      message(
+        $("authMessage"),
+        "Please enter the admin key.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (!siteId) {
+
+      message(
+        $("authMessage"),
+        "Please enter the Site ID first.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    const form =
       new FormData();
 
-    formData.append(
+
+    form.append(
       "image",
       file
     );
 
-    formData.append(
+
+    form.append(
       "site_id",
       siteId
     );
 
 
-    $("extractButton").disabled = true;
+    $("extractButton").disabled =
+      true;
+
 
     $("extractButton").textContent =
-      "Extracting...";
+      "EXTRACTING...";
+
+
+    $("extractLoading")
+      .classList
+      .add("show");
 
 
     try {
@@ -953,11 +452,13 @@ $("extractButton").addEventListener(
 
             headers: {
               "X-Admin-Key":
-                adminKey
+                adminKey,
+
+              "Accept":
+                "application/json"
             },
 
-            body:
-              formData
+            body: form
           }
         );
 
@@ -965,10 +466,22 @@ $("extractButton").addEventListener(
       const text =
         await response.text();
 
+
       let data = {};
 
-      if (text.trim()) {
-        data = JSON.parse(text);
+      try {
+
+        data =
+          text.trim()
+            ? JSON.parse(text)
+            : {};
+
+      } catch {
+
+        throw new Error(
+          "Server returned an invalid response."
+        );
+
       }
 
 
@@ -981,42 +494,81 @@ $("extractButton").addEventListener(
           data.error ||
           "Image extraction failed."
         );
+
       }
 
 
       /*
-       * Expected response:
-       *
-       * data.model
-       * data.current_hmr
-       * data.current_kwh
-       * data.current_balance
+       * Put extracted values into
+       * editable confirmation fields.
        */
 
+      if (data.model) {
 
-      $("extractedModel").value =
-        data.model || "eicher10";
+        $("extractedModel").value =
+          data.model;
 
-      $("extractedHmr").value =
-        data.current_hmr ?? "";
+      }
 
-      $("extractedKwh").value =
-        data.current_kwh ?? "";
 
-      $("extractedBalance").value =
-        data.current_balance ?? "";
+      if (
+        data.current_hmr !== undefined &&
+        data.current_hmr !== null
+      ) {
+
+        $("extractedHmr").value =
+          data.current_hmr;
+
+      }
+
+
+      if (
+        data.current_kwh !== undefined &&
+        data.current_kwh !== null
+      ) {
+
+        $("extractedKwh").value =
+          data.current_kwh;
+
+      }
+
+
+      if (
+        data.previous_balance !== undefined &&
+        data.previous_balance !== null
+      ) {
+
+        $("extractedPreviousBalance").value =
+          data.previous_balance;
+
+      }
+
+
+      if (
+        data.fuel_filled !== undefined &&
+        data.fuel_filled !== null
+      ) {
+
+        $("extractedFuelFilled").value =
+          data.fuel_filled;
+
+      }
+
+
+      if (
+        data.current_balance !== undefined &&
+        data.current_balance !== null
+      ) {
+
+        $("extractedBalance").value =
+          data.current_balance;
+
+      }
 
 
       $("extractionSection")
         .classList
         .add("show");
-
-
-      showMessage(
-        $("authMessage"),
-        "Details extracted. Please review them before saving.",
-        "success"
-      );
 
 
       $("extractionSection")
@@ -1026,9 +578,16 @@ $("extractButton").addEventListener(
         });
 
 
+      message(
+        $("authMessage"),
+        "Details extracted. Please review and confirm every field.",
+        "success"
+      );
+
+
     } catch (error) {
 
-      showMessage(
+      message(
         $("authMessage"),
         error.message ||
         "Image extraction failed.",
@@ -1041,7 +600,13 @@ $("extractButton").addEventListener(
         false;
 
       $("extractButton").textContent =
-        "Extract Details";
+        "EXTRACT DETAILS";
+
+
+      $("extractLoading")
+        .classList
+        .remove("show");
+
     }
 
   }
@@ -1050,11 +615,12 @@ $("extractButton").addEventListener(
 
 /* =====================================================
    MANUAL SAVE
-===================================================== */
+   ===================================================== */
 
-$("updateSite").addEventListener(
+$("updateSite")
+.addEventListener(
   "click",
-  async function () {
+  async () => {
 
     clearMessage(
       $("updateMessage")
@@ -1062,45 +628,60 @@ $("updateSite").addEventListener(
 
 
     const adminKey =
-      $("adminKey").value.trim();
+      $("adminKey")
+        .value
+        .trim();
+
 
     const siteId =
-      $("siteId").value.trim();
+      $("siteId")
+        .value
+        .trim();
+
 
     const model =
-      $("model").value;
+      $("model")
+        .value;
+
 
     const hmr =
-      $("currentHmr").value;
+      $("currentHmr")
+        .value;
+
 
     const kwh =
-      $("currentKwh").value;
+      $("currentKwh")
+        .value;
+
 
     const balance =
-      $("currentBalance").value;
+      $("currentBalance")
+        .value;
 
 
     if (!adminKey) {
 
-      showMessage(
+      message(
         $("updateMessage"),
         "Please enter the admin key.",
         "error"
       );
 
       return;
+
     }
 
 
     if (!siteId) {
 
-      showMessage(
+      message(
         $("updateMessage"),
         "Site ID is required.",
         "error"
       );
 
       return;
+
     }
 
 
@@ -1110,20 +691,22 @@ $("updateSite").addEventListener(
       balance === ""
     ) {
 
-      showMessage(
+      message(
         $("updateMessage"),
-        "Please fill all fields.",
+        "Please fill all manual reading fields.",
         "error"
       );
 
       return;
+
     }
 
 
-    $("updateSite").disabled = true;
+    $("updateSite").disabled =
+      true;
 
     $("updateSite").textContent =
-      "Saving...";
+      "SAVING...";
 
 
     try {
@@ -1138,12 +721,16 @@ $("updateSite").addEventListener(
               "Content-Type":
                 "application/json",
 
+              "Accept":
+                "application/json",
+
               "X-Admin-Key":
                 adminKey
             },
 
             body:
               JSON.stringify({
+
                 site_id:
                   siteId,
 
@@ -1158,6 +745,7 @@ $("updateSite").addEventListener(
 
                 current_balance:
                   balance
+
               })
           }
         );
@@ -1166,11 +754,215 @@ $("updateSite").addEventListener(
       const text =
         await response.text();
 
-      let data = {};
 
-      if (text.trim()) {
-        data = JSON.parse(text);
+      const data =
+        text.trim()
+          ? JSON.parse(text)
+          : {};
+
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+
+        throw new Error(
+          data.error ||
+          "Site update failed."
+        );
+
       }
+
+
+      message(
+        $("updateMessage"),
+        "Site updated successfully.",
+        "success"
+      );
+
+
+      $("siteHmr").textContent =
+        hmr;
+
+      $("siteKwh").textContent =
+        kwh;
+
+      $("siteBalance").textContent =
+        balance;
+
+      $("siteModel").textContent =
+        model;
+
+
+    } catch (error) {
+
+      message(
+        $("updateMessage"),
+        error.message ||
+        "Site update failed.",
+        "error"
+      );
+
+    } finally {
+
+      $("updateSite").disabled =
+        false;
+
+      $("updateSite").textContent =
+        "SAVE MANUAL READING";
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   SAVE OCR RESULT
+   ===================================================== */
+
+$("saveExtracted")
+.addEventListener(
+  "click",
+  async () => {
+
+    clearMessage(
+      $("extractMessage")
+    );
+
+
+    const adminKey =
+      $("adminKey")
+        .value
+        .trim();
+
+
+    const siteId =
+      $("siteId")
+        .value
+        .trim();
+
+
+    const model =
+      $("extractedModel")
+        .value;
+
+
+    const hmr =
+      $("extractedHmr")
+        .value;
+
+
+    const kwh =
+      $("extractedKwh")
+        .value;
+
+
+    const balance =
+      $("extractedBalance")
+        .value;
+
+
+    if (!adminKey) {
+
+      message(
+        $("extractMessage"),
+        "Please enter the admin key.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (!siteId) {
+
+      message(
+        $("extractMessage"),
+        "Site ID is required.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      hmr === "" ||
+      kwh === "" ||
+      balance === ""
+    ) {
+
+      message(
+        $("extractMessage"),
+        "Please review all required extracted fields.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    $("saveExtracted").disabled =
+      true;
+
+    $("saveExtracted").textContent =
+      "SAVING...";
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/admin/update-site",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Accept":
+                "application/json",
+
+              "X-Admin-Key":
+                adminKey
+            },
+
+            body:
+              JSON.stringify({
+
+                site_id:
+                  siteId,
+
+                model:
+                  model,
+
+                current_hmr:
+                  hmr,
+
+                current_kwh:
+                  kwh,
+
+                current_balance:
+                  balance
+
+              })
+          }
+        );
+
+
+      const text =
+        await response.text();
+
+
+      const data =
+        text.trim()
+          ? JSON.parse(text)
+          : {};
 
 
       if (
@@ -1182,20 +974,68 @@ $("updateSite").addEventListener(
           data.error ||
           "Save failed."
         );
+
       }
 
 
-      showMessage(
-        $("updateMessage"),
-        "Site updated successfully.",
+      message(
+        $("extractMessage"),
+        "Extracted reading saved successfully.",
         "success"
       );
 
 
+      $("siteInfo")
+        .classList
+        .add("show");
+
+
+      $("siteModel").textContent =
+        model;
+
+
+      $("siteHmr").textContent =
+        hmr;
+
+
+      $("siteKwh").textContent =
+        kwh;
+
+
+      $("siteBalance").textContent =
+        balance;
+
+
+      /*
+       * Clear the temporary image from
+       * the browser after successful save.
+       *
+       * The server never stores the image.
+       */
+
+      $("imageInput").value =
+        "";
+
+      $("previewImage").src =
+        "";
+
+      $("fileName").textContent =
+        "";
+
+      $("preview")
+        .classList
+        .remove("show");
+
+
+      $("extractionSection")
+        .classList
+        .remove("show");
+
+
     } catch (error) {
 
-      showMessage(
-        $("updateMessage"),
+      message(
+        $("extractMessage"),
         error.message ||
         "Save failed.",
         "error"
@@ -1203,172 +1043,17 @@ $("updateSite").addEventListener(
 
     } finally {
 
-      $("updateSite").disabled =
+      $("saveExtracted").disabled =
         false;
 
-      $("updateSite").textContent =
-        "Save Manual Reading";
+      $("saveExtracted").textContent =
+        "CONFIRM & SAVE";
+
     }
 
   }
 );
-
-
-/* =====================================================
-   SAVE EXTRACTED DATA
-===================================================== */
-
-$("saveExtracted").addEventListener(
-  "click",
-  async function () {
-
-    clearMessage(
-      $("extractMessage")
-    );
-
-
-    const adminKey =
-      $("adminKey").value.trim();
-
-    const siteId =
-      $("siteId").value.trim();
-
-    const model =
-      $("extractedModel").value;
-
-    const hmr =
-      $("extractedHmr").value;
-
-    const kwh =
-      $("extractedKwh").value;
-
-    const balance =
-      $("extractedBalance").value;
-
-
-    if (!adminKey) {
-
-      showMessage(
-        $("extractMessage"),
-        "Please enter the admin key.",
-        "error"
-      );
-
-      return;
-    }
-
-
-    if (!siteId) {
-
-      showMessage(    $("#extractMessage"),
-    "Site ID is required.",
-    "error"
-  );
-
-  return;
-}
-
-if (
-  hmr === "" ||
-  kwh === "" ||
-  balance === ""
-) {
-  showMessage(
-    $("#extractMessage"),
-    "Please review all extracted fields.",
-    "error"
-  );
-
-  return;
-}
-
-$("#saveExtracted").disabled = true;
-
-$("#saveExtracted").textContent = "Saving...";
-
-try {
-  const response = await fetch(
-    "/api/admin/update-site",
-    {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json",
-        "X-Admin-Key": adminKey
-      },
-
-      body: JSON.stringify({
-        site_id: siteId,
-        model: model,
-        current_hmr: hmr,
-        current_kwh: kwh,
-        current_balance: balance
-      })
-    }
-  );
-
-  const text = await response.text();
-
-  let data = {};
-
-  if (text.trim()) {
-    data = JSON.parse(text);
-  }
-
-  if (
-    !response.ok ||
-    !data.success
-  ) {
-    throw new Error(
-      data.error ||
-      "Save failed."
-    );
-  }
-
-  showMessage(
-    $("#extractMessage"),
-    "Reading saved successfully.",
-    "success"
-  );
-
-  /*
-   * Image is not uploaded to storage.
-   * It remains only in the browser memory
-   * and can be cleared after successful save.
-   */
-
-  $("#imageInput").value = "";
-
-  $("#previewImage").src = "";
-
-  $("#filename").textContent = "";
-
-  $("#preview")
-    .classList
-    .remove("show");
-
-} catch (error) {
-
-  showMessage(
-    $("#extractMessage"),
-    error.message ||
-    "Save failed.",
-    "error"
-  );
-
-} finally {
-
-  $("#saveExtracted").disabled = false;
-
-  $("#saveExtracted").textContent = "Confirm & Save";
-
-}
-
-});
-
 </script>
 
 </body>
 </html>
-
-        
