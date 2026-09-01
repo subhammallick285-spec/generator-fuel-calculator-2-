@@ -79,141 +79,176 @@ const CHARTS = {
 };
 
 
-/* ======================================================
+/* =======================================================
    COMMON JSON RESPONSE
-====================================================== */
+======================================================= */
 
 function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=UTF-8",
-      "Cache-Control": "no-store"
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
+      headers: {
+        "Content-Type":
+          "application/json; charset=UTF-8",
+
+        "Cache-Control":
+          "no-store"
+      }
     }
-  });
+  );
 }
 
 
-/* ======================================================
+/* =======================================================
    NUMBER VALIDATION
-====================================================== */
+======================================================= */
 
 function number(value, name) {
+
   if (
     value === undefined ||
     value === null ||
     String(value).trim() === ""
   ) {
-    throw new Error(`${name} is required.`);
+    throw new Error(
+      `${name} is required.`
+    );
   }
 
   const n = Number(value);
 
   if (!Number.isFinite(n)) {
-    throw new Error(`${name} must be a valid number.`);
+    throw new Error(
+      `${name} must be a valid number.`
+    );
   }
 
   return n;
 }
 
 
-/* ======================================================
-   ADMIN AUTH
-====================================================== */
-
-function checkAdminKey(request, env) {
-  const adminKey = request.headers.get("X-Admin-Key");
-
-  if (!env.ADMIN_KEY) {
-    return {
-      ok: false,
-      response: json(
-        {
-          success: false,
-          error: "ADMIN_KEY is not configured in Cloudflare."
-        },
-        500
-      )
-    };
-  }
-
-  if (!adminKey || adminKey !== env.ADMIN_KEY) {
-    return {
-      ok: false,
-      response: json(
-        {
-          success: false,
-          error: "Unauthorized."
-        },
-        401
-      )
-    };
-  }
-
-  return {
-    ok: true
-  };
-}
-
-
-/* ======================================================
+/* =======================================================
    CALCULATOR
-====================================================== */
+======================================================= */
 
 async function calculate(request) {
+
   try {
-    const body = await request.json();
 
-    const A = number(body.A, "Current HMR");
-    const B = number(body.B, "Current kWh");
-    const C = number(body.C, "Previous HMR");
-    const D = number(body.D, "Previous kWh");
-    const E = number(body.E, "Previous balance");
+    const body =
+      await request.json();
 
-    const model = String(body.model || "").trim();
-    const chart = CHARTS[model];
+    const A =
+      number(
+        body.A,
+        "Current HMR"
+      );
+
+    const B =
+      number(
+        body.B,
+        "Current kWh"
+      );
+
+    const C =
+      number(
+        body.C,
+        "Previous HMR"
+      );
+
+    const D =
+      number(
+        body.D,
+        "Previous kWh"
+      );
+
+    const E =
+      number(
+        body.E,
+        "Previous balance"
+      );
+
+    const model =
+      String(
+        body.model || ""
+      ).trim();
+
+    const chart =
+      CHARTS[model];
 
     if (!chart) {
-      throw new Error("Please select a valid generator model.");
+
+      throw new Error(
+        "Please select a valid generator model."
+      );
+
     }
 
     if (A <= C) {
+
       throw new Error(
         "Current HMR must be greater than previous HMR."
       );
+
     }
 
     if (B < D) {
+
       throw new Error(
         "Current kWh cannot be less than previous kWh."
       );
+
     }
 
-    const Z = A - C;
-    const Y = B - D;
-    const X = Y / Z;
+    const Z =
+      A - C;
 
-    const row = chart.rows.find(([lo, hi]) => {
-      return X >= lo && X <= hi;
-    });
+    const Y =
+      B - D;
+
+    const X =
+      Y / Z;
+
+    const row =
+      chart.rows.find(
+        ([lo, hi]) =>
+          X >= lo &&
+          X <= hi
+      );
 
     if (!row) {
-      const max = chart.rows[chart.rows.length - 1][1];
+
+      const max =
+        chart.rows[
+          chart.rows.length - 1
+        ][1];
 
       throw new Error(
         `X = ${X.toFixed(4)} is outside the ${chart.name} chart range (0-${max}).`
       );
+
     }
 
-    const [lo, hi, L] = row;
+    const [lo, hi, L] =
+      row;
 
-    const S = L * Z;
-    const T = E - S;
+    const S =
+      L * Z;
+
+    const T =
+      E - S;
 
     return json({
+
       success: true,
-      modelName: chart.name,
-      band: `${lo}-${hi} kW/hr`,
+
+      modelName:
+        chart.name,
+
+      band:
+        `${lo}-${hi} kW/hr`,
+
       A,
       B,
       C,
@@ -225,148 +260,280 @@ async function calculate(request) {
       L,
       S,
       T
+
     });
 
   } catch (error) {
+
     return json(
       {
         success: false,
-        error: error?.message || "Calculation failed."
+
+        error:
+          error?.message ||
+          "Calculation failed."
       },
       400
     );
+
   }
+
 }
 
 
-/* ======================================================
+/* =======================================================
    GET SITE
-====================================================== */
+======================================================= */
 
-async function getSite(request, env) {
+async function getSite(
+  request,
+  env
+) {
+
   try {
-    const url = new URL(request.url);
+
+    const url =
+      new URL(request.url);
 
     const siteId =
-      url.searchParams.get("site_id");
+      url.searchParams.get(
+        "site_id"
+      );
 
     if (!siteId) {
+
       return json(
         {
           success: false,
-          error: "site_id is required."
+          error:
+            "site_id is required."
         },
         400
       );
+
     }
 
-    const result = await env.DB
-      .prepare(`
-        SELECT
-          site_id,
-          site_name,
-          model,
-          current_hmr,
-          current_kwh,
-          current_balance,
-          last_updated,
-          screenshot_url,
-          data_source
-        FROM sites
-        WHERE site_id = ?
-        LIMIT 1
-      `)
-      .bind(siteId)
-      .first();
+    const result =
+      await env.DB
+        .prepare(`
+          SELECT
+            site_id,
+            site_name,
+            model,
+            current_hmr,
+            current_kwh,
+            current_balance,
+            last_updated,
+            screenshot_url,
+            data_source
+          FROM sites
+          WHERE site_id = ?
+          LIMIT 1
+        `)
+        .bind(siteId)
+        .first();
 
     if (!result) {
+
       return json(
         {
           success: false,
-          error: "Site ID not found."
+          error:
+            "Site ID not found."
         },
         404
       );
+
     }
 
     return json({
+
       success: true,
-      site: result
+
+      site:
+        result
+
     });
 
   } catch (error) {
+
     return json(
       {
         success: false,
-        error: error?.message || "Database error."
+
+        error:
+          error?.message ||
+          "Database error."
       },
       500
     );
+
   }
+
 }
 
 
-/* ======================================================
-   UPDATE SITE
-====================================================== */
+/* =======================================================
+   ADMIN AUTHENTICATION
+======================================================= */
 
-async function updateSite(request, env) {
+function checkAdminKey(
+  request,
+  env
+) {
+
+  const adminKey =
+    request.headers.get(
+      "X-Admin-Key"
+    );
+
+  if (!env.ADMIN_KEY) {
+
+    return {
+
+      ok: false,
+
+      response:
+        json(
+          {
+            success: false,
+
+            error:
+              "ADMIN_KEY is not configured in Cloudflare."
+          },
+          500
+        )
+
+    };
+
+  }
+
+  if (
+    !adminKey ||
+    adminKey !== env.ADMIN_KEY
+  ) {
+
+    return {
+
+      ok: false,
+
+      response:
+        json(
+          {
+            success: false,
+            error:
+              "Unauthorized."
+          },
+          401
+        )
+
+    };
+
+  }
+
+  return {
+    ok: true
+  };
+
+}
+
+
+/* =======================================================
+   UPDATE EXISTING SITE
+======================================================= */
+
+async function updateSite(
+  request,
+  env
+) {
+
   try {
-    const auth = checkAdminKey(request, env);
+
+    const auth =
+      checkAdminKey(
+        request,
+        env
+      );
 
     if (!auth.ok) {
       return auth.response;
     }
 
-    const body = await request.json();
+    const body =
+      await request.json();
 
     const siteId =
-      String(body.site_id || "").trim();
+      String(
+        body.site_id || ""
+      ).trim();
 
     if (!siteId) {
-      throw new Error("site_id is required.");
+
+      throw new Error(
+        "site_id is required."
+      );
+
     }
 
     const hmr =
-      number(body.current_hmr, "Current HMR");
+      number(
+        body.current_hmr,
+        "Current HMR"
+      );
 
     const kwh =
-      number(body.current_kwh, "Current kWh");
+      number(
+        body.current_kwh,
+        "Current kWh"
+      );
 
     const balance =
-      number(body.current_balance, "Current balance");
+      number(
+        body.current_balance,
+        "Current balance"
+      );
 
     const model =
-      String(body.model || "").trim();
+      String(
+        body.model || ""
+      ).trim();
 
     if (!CHARTS[model]) {
+
       throw new Error(
         "Please select a valid generator model."
       );
+
     }
 
-    const existing = await env.DB
-      .prepare(`
-        SELECT site_id
-        FROM sites
-        WHERE site_id = ?
-        LIMIT 1
-      `)
-      .bind(siteId)
-      .first();
+    const existing =
+      await env.DB
+        .prepare(`
+          SELECT
+            site_id
+          FROM sites
+          WHERE site_id = ?
+          LIMIT 1
+        `)
+        .bind(siteId)
+        .first();
 
     if (!existing) {
+
       return json(
         {
           success: false,
-          error: "Site ID not found."
+          error:
+            "Site ID not found."
         },
         404
       );
+
     }
 
     const now =
       new Date().toISOString();
+
 
     await env.DB
       .prepare(`
@@ -377,7 +544,7 @@ async function updateSite(request, env) {
           current_kwh = ?,
           current_balance = ?,
           last_updated = ?,
-          data_source = ?
+          data_source = 'manual'
         WHERE site_id = ?
       `)
       .bind(
@@ -386,10 +553,10 @@ async function updateSite(request, env) {
         kwh,
         balance,
         now,
-        "manual",
         siteId
       )
       .run();
+
 
     await env.DB
       .prepare(`
@@ -402,66 +569,149 @@ async function updateSite(request, env) {
           reading_date,
           source
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, 'manual')
       `)
       .bind(
         siteId,
         hmr,
         kwh,
         balance,
-        now,
-        "manual"
+        now
       )
       .run();
 
+
     return json({
+
       success: true,
-      message: "Site updated successfully.",
-      site_id: siteId,
-      current_hmr: hmr,
-      current_kwh: kwh,
-      current_balance: balance,
-      updated_at: now,
-      source: "manual"
+
+      message:
+        "Site updated successfully.",
+
+      site_id:
+        siteId,
+
+      current_hmr:
+        hmr,
+
+      current_kwh:
+        kwh,
+
+      current_balance:
+        balance,
+
+      updated_at:
+        now,
+
+      source:
+        "manual"
+
     });
 
   } catch (error) {
+
     return json(
       {
         success: false,
-        error: error?.message || "Site update failed."
+
+        error:
+          error?.message ||
+          "Site update failed."
       },
       400
     );
+
   }
+
 }
 
 
-/* ======================================================
-   IMAGE EXTRACTION
-====================================================== */
+/* =======================================================
+   IMAGE OCR EXTRACTION
+=======================================================
 
-async function extractImage(request, env) {
+   The image is received temporarily.
+
+   It is NOT saved in D1.
+
+   It is NOT saved in Cloudflare Assets.
+
+   OCR.space receives the image and returns text.
+
+======================================================= */
+
+async function extractImage(
+  request,
+  env
+) {
+
   try {
-    const auth = checkAdminKey(request, env);
+
+    /* ---------------------------------------------------
+       ADMIN AUTH
+    --------------------------------------------------- */
+
+    const auth =
+      checkAdminKey(
+        request,
+        env
+      );
 
     if (!auth.ok) {
       return auth.response;
     }
 
-    const contentType =
-      request.headers.get("content-type") || "";
 
-    if (!contentType.includes("multipart/form-data")) {
+    /* ---------------------------------------------------
+       OCR KEY CHECK
+    --------------------------------------------------- */
+
+    if (!env.OCR_SPACE_API_KEY) {
+
       return json(
         {
           success: false,
+
+          error:
+            "OCR_SPACE_API_KEY is not configured in Cloudflare."
+        },
+        500
+      );
+
+    }
+
+
+    /* ---------------------------------------------------
+       CONTENT TYPE
+    --------------------------------------------------- */
+
+    const contentType =
+      request.headers.get(
+        "content-type"
+      ) || "";
+
+    if (
+      !contentType.includes(
+        "multipart/form-data"
+      )
+    ) {
+
+      return json(
+        {
+          success: false,
+
           error:
             "Please upload an image using multipart/form-data."
         },
         400
       );
+
     }
+
+
+    /* ---------------------------------------------------
+       READ UPLOADED IMAGE
+    --------------------------------------------------- */
 
     const form =
       await request.formData();
@@ -470,175 +720,410 @@ async function extractImage(request, env) {
       form.get("image");
 
     const siteId =
-      String(form.get("site_id") || "").trim();
+      String(
+        form.get("site_id") || ""
+      ).trim();
+
 
     if (!image) {
+
       return json(
         {
           success: false,
-          error: "Image is required."
+
+          error:
+            "Image is required."
         },
         400
       );
+
     }
+
 
     if (
       typeof image === "string" ||
       !image.type ||
-      !image.type.startsWith("image/")
+      !image.type.startsWith(
+        "image/"
+      )
     ) {
+
       return json(
         {
           success: false,
-          error: "The uploaded file must be an image."
+
+          error:
+            "The uploaded file must be an image."
         },
         400
       );
+
     }
 
-    /*
-     * IMPORTANT:
-     *
-     * The image is NOT stored.
-     *
-     * It exists only during this request.
-     *
-     * OCR/vision processing will be connected
-     * in the next step.
-     */
 
-    return json(
-      {
-        success: false,
-        extraction_ready: false,
-        site_id: siteId || null,
-        error:
-          "Image received. OCR/vision processing is not connected yet."
-      },
-      501
+    /* ---------------------------------------------------
+       SEND IMAGE TO OCR.SPACE
+    --------------------------------------------------- */
+
+    const ocrForm =
+      new FormData();
+
+
+    ocrForm.append(
+      "apikey",
+      env.OCR_SPACE_API_KEY
     );
 
+
+    ocrForm.append(
+      "language",
+      "eng"
+    );
+
+
+    ocrForm.append(
+      "isOverlayRequired",
+      "false"
+    );
+
+
+    ocrForm.append(
+      "OCREngine",
+      "2"
+    );
+
+
+    ocrForm.append(
+      "file",
+      image,
+      image.name ||
+        "generator.jpg"
+    );
+
+
+    const ocrResponse =
+      await fetch(
+        "https://api.ocr.space/parse/image",
+        {
+          method: "POST",
+
+          body:
+            ocrForm
+        }
+      );
+
+
+    const ocrText =
+      await ocrResponse.text();
+
+
+    /* ---------------------------------------------------
+       PARSE OCR RESPONSE
+    --------------------------------------------------- */
+
+    let ocrData = {};
+
+    try {
+
+      ocrData =
+        ocrText.trim()
+          ? JSON.parse(ocrText)
+          : {};
+
+    } catch {
+
+      return json(
+        {
+          success: false,
+
+          error:
+            "OCR service returned an invalid response."
+        },
+        502
+      );
+
+    }
+
+
+    /* ---------------------------------------------------
+       OCR ERROR
+    --------------------------------------------------- */
+
+    if (
+      !ocrResponse.ok ||
+      ocrData.IsErroredOnProcessing
+    ) {
+
+      const errorMessage =
+        Array.isArray(
+          ocrData.ErrorMessage
+        )
+          ? ocrData.ErrorMessage.join(
+              " "
+            )
+          : (
+              ocrData.ErrorMessage ||
+              "OCR processing failed."
+            );
+
+
+      return json(
+        {
+          success: false,
+
+          error:
+            errorMessage
+        },
+        502
+      );
+
+    }
+
+
+    /* ---------------------------------------------------
+       COLLECT OCR TEXT
+    --------------------------------------------------- */
+
+    const parsedResults =
+      ocrData.ParsedResults ||
+      [];
+
+
+    const extractedText =
+      parsedResults
+        .map(
+          item =>
+            item.ParsedText ||
+            ""
+        )
+        .join("\n")
+        .trim();
+
+
+    if (!extractedText) {
+
+      return json(
+        {
+          success: false,
+
+          error:
+            "No readable text was found in the image."
+        },
+        422
+      );
+
+    }
+
+
+    /* ---------------------------------------------------
+       RETURN OCR TEXT
+    ---------------------------------------------------
+
+       We return the raw OCR text for now.
+
+       The admin page will use this response
+       to populate the editable fields.
+
+    --------------------------------------------------- */
+
+    return json({
+
+      success: true,
+
+      extraction_ready:
+        true,
+
+      site_id:
+        siteId || null,
+
+      text:
+        extractedText
+
+    });
+
+
   } catch (error) {
+
     return json(
       {
         success: false,
+
         error:
           error?.message ||
           "Image extraction failed."
       },
-      400
+      500
     );
+
   }
+
 }
 
 
-/* ======================================================
-   DEBUG CONFIG
-====================================================== */
+/* =======================================================
+   DEBUG CONFIGURATION
+======================================================= */
 
-async function debugConfig(request, env) {
+async function debugConfig(
+  request,
+  env
+) {
+
   return json({
+
     success: true,
-    db: !!env.DB,
-    assets: !!env.ASSETS,
-    admin_key: !!env.ADMIN_KEY
+
+    db:
+      !!env.DB,
+
+    assets:
+      !!env.ASSETS,
+
+    admin_key:
+      !!env.ADMIN_KEY,
+
+    ocr_key:
+      !!env.OCR_SPACE_API_KEY
+
   });
+
 }
 
 
-/* ======================================================
+/* =======================================================
    MAIN WORKER
-====================================================== */
+======================================================= */
 
 export default {
 
-  async fetch(request, env) {
+  async fetch(
+    request,
+    env
+  ) {
 
     const url =
       new URL(request.url);
 
 
-    /* -----------------------------------------------
+    /* ---------------------------------------------------
        CALCULATOR POST
-    ----------------------------------------------- */
+    --------------------------------------------------- */
 
     if (
-      url.pathname === "/api/calculate" &&
+      url.pathname ===
+        "/api/calculate" &&
       request.method === "POST"
     ) {
-      return calculate(request);
+
+      return calculate(
+        request
+      );
+
     }
 
 
-    /* -----------------------------------------------
+    /* ---------------------------------------------------
        CALCULATOR GET TEST
-    ----------------------------------------------- */
+    --------------------------------------------------- */
 
     if (
-      url.pathname === "/api/calculate" &&
+      url.pathname ===
+        "/api/calculate" &&
       request.method === "GET"
     ) {
+
       return json({
+
         success: true,
+
         message:
           "Generator Fuel Calculator API is working."
+
       });
+
     }
 
 
-    /* -----------------------------------------------
+    /* ---------------------------------------------------
        GET SITE
-    ----------------------------------------------- */
+    --------------------------------------------------- */
 
     if (
-      url.pathname === "/api/site" &&
+      url.pathname ===
+        "/api/site" &&
       request.method === "GET"
     ) {
-      return getSite(request, env);
+
+      return getSite(
+        request,
+        env
+      );
+
     }
 
 
-    /* -----------------------------------------------
-       ADMIN UPDATE
-    ----------------------------------------------- */
+    /* ---------------------------------------------------
+       ADMIN UPDATE SITE
+    --------------------------------------------------- */
 
     if (
-      url.pathname === "/api/admin/update-site" &&
+      url.pathname ===
+        "/api/admin/update-site" &&
       request.method === "POST"
     ) {
-      return updateSite(request, env);
+
+      return updateSite(
+        request,
+        env
+      );
+
     }
 
 
-    /* -----------------------------------------------
-       IMAGE EXTRACTION
-    ----------------------------------------------- */
+    /* ---------------------------------------------------
+       ADMIN IMAGE OCR
+    --------------------------------------------------- */
 
     if (
-      url.pathname === "/api/admin/extract-image" &&
+      url.pathname ===
+        "/api/admin/extract-image" &&
       request.method === "POST"
     ) {
-      return extractImage(request, env);
+
+      return extractImage(
+        request,
+        env
+      );
+
     }
 
 
-    /* -----------------------------------------------
-       DEBUG
-    ----------------------------------------------- */
+    /* ---------------------------------------------------
+       DEBUG CONFIG
+    --------------------------------------------------- */
 
     if (
-      url.pathname === "/api/debug-config" &&
+      url.pathname ===
+        "/api/debug-config" &&
       request.method === "GET"
     ) {
-      return debugConfig(request, env);
+
+      return debugConfig(
+        request,
+        env
+      );
+
     }
 
 
-    /* -----------------------------------------------
+    /* ---------------------------------------------------
        STATIC WEBSITE
-    ----------------------------------------------- */
+    --------------------------------------------------- */
 
-    return env.ASSETS.fetch(request);
+    return env.ASSETS.fetch(
+      request
+    );
+
   }
 
 };
