@@ -1263,5 +1263,53 @@
 
                   "Accept":
                     "application/json",
+                        "X-Admin-Key": adminKey
+    },
+    body: JSON.stringify({
+      site_id: siteId,
+      model: model,
+      current_hmr: hmr,
+      current_kwh: kwh,
+      current_balance: balance
+    })
+  });
+
+  const text = await response.text();
+
+  const data = text.trim() 
+    ? JSON.parse(text) 
+    : {};
+
+  if (!response.ok || !data.success) {
+    throw new Error(
+      data.error || "Save failed."
+    );
+  }
+
+  message(
+    $("#extractMessage"),
+    "Extracted reading saved successfully.",
+    "success"
+  );
+
+} catch (error) {
+
+  message(
+    $("#extractMessage"),
+    error.message || "Save failed.",
+    "error"
+  );
+
+} finally {
+
+  $("#saveExtracted").disabled = false;
+  $("#saveExtracted").textContent = "Confirm & Save";
+
+}
+</script>
+
+</body>
+</html>
+
 
   
