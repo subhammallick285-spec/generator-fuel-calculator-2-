@@ -1,15 +1,4 @@
-/* =========================================================
-   GENERATOR FUEL CALCULATOR
-   CLOUDFLARE WORKER
-   ========================================================= */
-
-
-/* =========================================================
-   GENERATOR CHARTS
-   ========================================================= */
-
 const CHARTS = {
-
   eicher10: {
     name: "Eicher 10 KVA",
     rows: [
@@ -87,16 +76,14 @@ const CHARTS = {
       [9.6, 11.2, 3.02]
     ]
   }
-
 };
 
 
-/* =========================================================
-   JSON RESPONSE
-   ========================================================= */
+/* =====================================================
+   COMMON JSON RESPONSE
+   ===================================================== */
 
 function json(data, status = 200) {
-
   return new Response(
     JSON.stringify(data),
     {
@@ -104,19 +91,17 @@ function json(data, status = 200) {
       headers: {
         "Content-Type":
           "application/json; charset=UTF-8",
-
         "Cache-Control":
           "no-store"
       }
     }
   );
-
 }
 
 
-/* =========================================================
+/* =====================================================
    NUMBER VALIDATION
-   ========================================================= */
+   ===================================================== */
 
 function number(value, name) {
 
@@ -125,31 +110,26 @@ function number(value, name) {
     value === null ||
     String(value).trim() === ""
   ) {
-
     throw new Error(
       `${name} is required.`
     );
-
   }
 
   const n = Number(value);
 
   if (!Number.isFinite(n)) {
-
     throw new Error(
       `${name} must be a valid number.`
     );
-
   }
 
   return n;
-
 }
 
 
-/* =========================================================
+/* =====================================================
    ADMIN AUTHENTICATION
-   ========================================================= */
+   ===================================================== */
 
 function checkAdminKey(request, env) {
 
@@ -167,9 +147,8 @@ function checkAdminKey(request, env) {
       response: json(
         {
           success: false,
-
           error:
-            "ADMIN_KEY is not configured."
+            "ADMIN_KEY is not configured in Cloudflare."
         },
         500
       )
@@ -189,7 +168,6 @@ function checkAdminKey(request, env) {
       response: json(
         {
           success: false,
-
           error:
             "Unauthorized."
         },
@@ -207,9 +185,9 @@ function checkAdminKey(request, env) {
 }
 
 
-/* =========================================================
+/* =====================================================
    CALCULATOR
-   ========================================================= */
+   ===================================================== */
 
 async function calculate(request) {
 
@@ -360,11 +338,13 @@ async function calculate(request) {
       Z,
       Y,
       X,
+
       L,
       S,
       T
 
     });
+
 
   } catch (error) {
 
@@ -376,7 +356,6 @@ async function calculate(request) {
           error?.message ||
           "Calculation failed."
       },
-
       400
     );
 
@@ -385,9 +364,9 @@ async function calculate(request) {
 }
 
 
-/* =========================================================
+/* =====================================================
    GET SITE
-   ========================================================= */
+   ===================================================== */
 
 async function getSite(
   request,
@@ -397,7 +376,9 @@ async function getSite(
   try {
 
     const url =
-      new URL(request.url);
+      new URL(
+        request.url
+      );
 
 
     const siteId =
@@ -411,11 +392,9 @@ async function getSite(
       return json(
         {
           success: false,
-
           error:
             "site_id is required."
         },
-
         400
       );
 
@@ -448,11 +427,9 @@ async function getSite(
       return json(
         {
           success: false,
-
           error:
             "Site ID not found."
         },
-
         404
       );
 
@@ -467,6 +444,7 @@ async function getSite(
 
     });
 
+
   } catch (error) {
 
     return json(
@@ -477,7 +455,6 @@ async function getSite(
           error?.message ||
           "Database error."
       },
-
       500
     );
 
@@ -486,14 +463,13 @@ async function getSite(
 }
 
 
-/* =========================================================
-   UPDATE / CREATE SITE
-   ========================================================= */
+/* =====================================================
+   UPDATE SITE
+   ===================================================== */
 
-async function saveSite(
+async function updateSite(
   request,
-  env,
-  source = "manual"
+  env
 ) {
 
   try {
@@ -506,9 +482,7 @@ async function saveSite(
 
 
     if (!auth.ok) {
-
       return auth.response;
-
     }
 
 
@@ -526,21 +500,6 @@ async function saveSite(
 
       throw new Error(
         "site_id is required."
-      );
-
-    }
-
-
-    const model =
-      String(
-        body.model || ""
-      ).trim();
-
-
-    if (!CHARTS[model]) {
-
-      throw new Error(
-        "Please select a valid generator model."
       );
 
     }
@@ -567,17 +526,26 @@ async function saveSite(
       );
 
 
-    const siteName =
+    const model =
       String(
-        body.site_name ||
-        siteId
+        body.model || ""
       ).trim();
+
+
+    if (!CHARTS[model]) {
+
+      throw new Error(
+        "Please select a valid generator model."
+      );
+
+    }
 
 
     const existing =
       await env.DB
         .prepare(`
-          SELECT site_id
+          SELECT
+            site_id
           FROM sites
           WHERE site_id = ?
           LIMIT 1
@@ -586,84 +554,47 @@ async function saveSite(
         .first();
 
 
+    if (!existing) {
+
+      return json(
+        {
+          success: false,
+          error:
+            "Site ID not found."
+        },
+        404
+      );
+
+    }
+
+
     const now =
-      new Date().toISOString();
+      new Date()
+        .toISOString();
 
 
-    /*
-     * EXISTING SITE
-     */
+    await env.DB
+      .prepare(`
+        UPDATE sites
+        SET
+          model = ?,
+          current_hmr = ?,
+          current_kwh = ?,
+          current_balance = ?,
+          last_updated = ?,
+          data_source = 'manual'
+        WHERE site_id = ?
+      `)
+      .bind(
+        model,
+        hmr,
+        kwh,
+        balance,
+        now,
+        siteId
+      )
+      .run();
 
-    if (existing) {
-
-      await env.DB
-        .prepare(`
-          UPDATE sites
-          SET
-            site_name = ?,
-            model = ?,
-            current_hmr = ?,
-            current_kwh = ?,
-            current_balance = ?,
-            last_updated = ?,
-            data_source = ?
-          WHERE site_id = ?
-        `)
-        .bind(
-          siteName,
-          model,
-          hmr,
-          kwh,
-          balance,
-          now,
-          source,
-          siteId
-        )
-        .run();
-
-
-    }
-
-    /*
-     * NEW SITE
-     */
-
-    else {
-
-      await env.DB
-        .prepare(`
-          INSERT INTO sites
-          (
-            site_id,
-            site_name,
-            model,
-            current_hmr,
-            current_kwh,
-            current_balance,
-            last_updated,
-            screenshot_url,
-            data_source
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?)
-        `)
-        .bind(
-          siteId,
-          siteName,
-          model,
-          hmr,
-          kwh,
-          balance,
-          now,
-          source
-        )
-        .run();
-
-    }
-
-
-    /*
-     * SAVE READING HISTORY
-     */
 
     await env.DB
       .prepare(`
@@ -676,15 +607,15 @@ async function saveSite(
           reading_date,
           source
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES
+        (?, ?, ?, ?, ?, 'manual')
       `)
       .bind(
         siteId,
         hmr,
         kwh,
         balance,
-        now,
-        source
+        now
       )
       .run();
 
@@ -693,23 +624,11 @@ async function saveSite(
 
       success: true,
 
-      action:
-        existing
-          ? "updated"
-          : "created",
-
       message:
-        existing
-          ? "Site updated successfully."
-          : "New site created successfully.",
+        "Site updated successfully.",
 
       site_id:
         siteId,
-
-      site_name:
-        siteName,
-
-      model,
 
       current_hmr:
         hmr,
@@ -723,7 +642,8 @@ async function saveSite(
       updated_at:
         now,
 
-      source
+      source:
+        "manual"
 
     });
 
@@ -736,20 +656,18 @@ async function saveSite(
 
         error:
           error?.message ||
-          "Site save failed."
+          "Site update failed."
       },
-
       400
     );
 
   }
+   
 
 }
-
-
-/* =========================================================
-   IMAGE → AI VISION EXTRACTION
-   ========================================================= */
+/* =====================================================
+   IMAGE EXTRACTION
+   ===================================================== */
 
 async function extractImage(
   request,
@@ -764,31 +682,8 @@ async function extractImage(
         env
       );
 
-
     if (!auth.ok) {
-
       return auth.response;
-
-    }
-
-
-    /*
-     * AI BINDING CHECK
-     */
-
-    if (!env.AI) {
-
-      return json(
-        {
-          success: false,
-
-          error:
-            "Workers AI binding is missing. Add an AI binding named AI to this Worker."
-        },
-
-        500
-      );
-
     }
 
 
@@ -807,11 +702,9 @@ async function extractImage(
       return json(
         {
           success: false,
-
           error:
-            "Image must be uploaded as multipart/form-data."
+            "Please upload an image using multipart/form-data."
         },
-
         400
       );
 
@@ -837,11 +730,9 @@ async function extractImage(
       return json(
         {
           success: false,
-
           error:
             "Image is required."
         },
-
         400
       );
 
@@ -859,11 +750,9 @@ async function extractImage(
       return json(
         {
           success: false,
-
           error:
             "The uploaded file must be an image."
         },
-
         400
       );
 
@@ -871,420 +760,29 @@ async function extractImage(
 
 
     /*
-     * Convert image to base64 data URL.
+     * The image is intentionally NOT stored.
      *
-     * It is held only during this request.
-     * We do NOT save it.
-     */
-
-    const arrayBuffer =
-      await image.arrayBuffer();
-
-
-    const bytes =
-      new Uint8Array(
-        arrayBuffer
-      );
-
-
-    let binary = "";
-
-
-    const chunkSize =
-      0x8000;
-
-
-    for (
-      let i = 0;
-      i < bytes.length;
-      i += chunkSize
-    ) {
-
-      binary += String.fromCharCode(
-        ...bytes.subarray(
-          i,
-          Math.min(
-            i + chunkSize,
-            bytes.length
-          )
-        )
-      );
-
-    }
-
-
-    const base64 =
-      btoa(binary);
-
-
-    const imageData =
-      `data:${image.type};base64,${base64}`;
-
-
-    /*
-     * IMPORTANT:
+     * It only exists during this request.
      *
-     * We deliberately do NOT ask AI
-     * to decide the generator model.
-     *
-     * The admin will choose:
-     *
-     * Eicher 10
-     * Eicher 20
-     * Mahindra 10
-     * Mahindra 20
-     * KOEL 20
-     *
-     * after extraction.
+     * OCR/vision processing will be connected
+     * to this endpoint in the next step.
      */
 
-    const systemPrompt = `
-You extract readings from generator meter screenshots.
-
-The screenshot format is consistent between sites,
-but the numerical values can differ.
-
-Extract ONLY information that is visibly present.
-
-Do NOT guess.
-Do NOT calculate missing values.
-Do NOT invent values.
-
-Return valid JSON only.
-
-Fields:
-
-{
-  "current_hmr": number or null,
-  "current_kwh": number or null,
-  "balance_before_filling": number or null,
-  "filling_quantity": number or null,
-  "current_balance": number or null,
-  "site_id": string or null,
-  "confidence": number,
-  "notes": string
-}
-
-Definitions:
-
-current_hmr:
-The current hour-meter reading.
-
-current_kwh:
-The current kWh reading.
-
-balance_before_filling:
-The fuel balance immediately before the latest filling.
-
-filling_quantity:
-The quantity added during the latest filling.
-
-current_balance:
-The resulting fuel balance after filling.
-If the screenshot explicitly shows the final balance, extract it.
-If it is NOT explicitly shown, return null.
-Do not calculate it.
-
-site_id:
-Only extract it if visibly printed in the screenshot.
-Otherwise return null.
-
-confidence:
-A number from 0 to 1 describing how clearly the values
-were readable.
-
-notes:
-Briefly mention any field that was unclear or not visible.
-`;
-
-
-    /*
-     * Call Cloudflare Workers AI Vision.
-     */
-
-    const aiResponse =
-      await env.AI.run(
-        "@cf/meta/llama-3.2-11b-vision-instruct",
-        {
-          messages: [
-
-            {
-              role: "system",
-
-              content:
-                systemPrompt
-            },
-
-            {
-              role: "user",
-
-              content:
-                "Read the generator screenshot and extract the requested fields."
-            }
-
-          ],
-
-          image:
-            imageData,
-
-          max_tokens:
-            700,
-
-          temperature:
-            0
-
-        }
-      );
-
-
-    /*
-     * Extract model output.
-     */
-
-    let rawText = "";
-
-
-    if (
-      aiResponse &&
-      typeof aiResponse === "object"
-    ) {
-
-      if (
-        typeof aiResponse.response ===
-        "string"
-      ) {
-
-        rawText =
-          aiResponse.response;
-
-      }
-
-      else if (
-        typeof aiResponse.result ===
-        "string"
-      ) {
-
-        rawText =
-          aiResponse.result;
-
-      }
-
-    }
-
-
-    if (!rawText) {
-
-      rawText =
-        String(
-          aiResponse || ""
-        );
-
-    }
-
-
-    /*
-     * Remove accidental markdown fences.
-     */
-
-    rawText =
-      rawText
-        .replace(
-          /^```json\s*/i,
-          ""
-        )
-        .replace(
-          /^```\s*/i,
-          ""
-        )
-        .replace(
-          /\s*```$/i,
-          ""
-        )
-        .trim();
-
-
-    /*
-     * Find JSON if model added extra text.
-     */
-
-    const firstBrace =
-      rawText.indexOf("{");
-
-
-    const lastBrace =
-      rawText.lastIndexOf("}");
-
-
-    if (
-      firstBrace === -1 ||
-      lastBrace === -1 ||
-      lastBrace <= firstBrace
-    ) {
-
-      return json(
-        {
-          success: false,
-
-          error:
-            "The AI could not return readable structured data.",
-
-          raw:
-            rawText
-
-        },
-
-        502
-      );
-
-    }
-
-
-    const jsonText =
-      rawText.slice(
-        firstBrace,
-        lastBrace + 1
-      );
-
-
-    let extracted;
-
-
-    try {
-
-      extracted =
-        JSON.parse(
-          jsonText
-        );
-
-    } catch {
-
-      return json(
-        {
-          success: false,
-
-          error:
-            "The AI returned invalid extraction data.",
-
-          raw:
-            rawText
-
-        },
-
-        502
-      );
-
-    }
-
-
-    /*
-     * Normalize values.
-     */
-
-    function cleanNumber(value) {
-
-      if (
-        value === null ||
-        value === undefined ||
-        value === ""
-      ) {
-
-        return null;
-
-      }
-
-      const n =
-        Number(value);
-
-      return Number.isFinite(n)
-        ? n
-        : null;
-
-    }
-
-
-    const result = {
-
-      current_hmr:
-        cleanNumber(
-          extracted.current_hmr
-        ),
-
-      current_kwh:
-        cleanNumber(
-          extracted.current_kwh
-        ),
-
-      balance_before_filling:
-        cleanNumber(
-          extracted.balance_before_filling
-        ),
-
-      filling_quantity:
-        cleanNumber(
-          extracted.filling_quantity
-        ),
-
-      current_balance:
-        cleanNumber(
-          extracted.current_balance
-        ),
-
-      site_id:
-        extracted.site_id
-          ? String(
-              extracted.site_id
-            ).trim()
-          : null,
-
-      confidence:
-        cleanNumber(
-          extracted.confidence
-        ),
-
-      notes:
-        String(
-          extracted.notes || ""
-        ).trim()
-
-    };
-
-
-    /*
-     * Site ID supplied by admin has priority.
-     */
-
-    if (siteId) {
-
-      result.site_id =
-        siteId;
-
-    }
-
-
-    /*
-     * IMPORTANT:
-     *
-     * The image is NOT stored anywhere.
-     *
-     * We return extracted values only.
-     */
 
     return json({
 
-      success: true,
+      success: false,
 
-      extraction_ready: true,
+      extraction_ready:
+        false,
 
       site_id:
-        result.site_id,
+        siteId || null,
 
-      extracted:
-        result,
+      error:
+        "Image received successfully, but OCR is not connected yet."
 
-      message:
-        "Image processed successfully. Review the extracted values before saving."
-
-    });
+    }, 501);
 
 
   } catch (error) {
@@ -1297,8 +795,7 @@ Briefly mention any field that was unclear or not visible.
           error?.message ||
           "Image extraction failed."
       },
-
-      500
+      400
     );
 
   }
@@ -1306,9 +803,9 @@ Briefly mention any field that was unclear or not visible.
 }
 
 
-/* =========================================================
+/* =====================================================
    DEBUG CONFIG
-   ========================================================= */
+   ===================================================== */
 
 async function debugConfig(
   request,
@@ -1326,19 +823,16 @@ async function debugConfig(
       !!env.ASSETS,
 
     admin_key:
-      !!env.ADMIN_KEY,
-
-    ai:
-      !!env.AI
+      !!env.ADMIN_KEY
 
   });
 
 }
 
 
-/* =========================================================
+/* =====================================================
    MAIN WORKER
-   ========================================================= */
+   ===================================================== */
 
 export default {
 
@@ -1348,18 +842,19 @@ export default {
   ) {
 
     const url =
-      new URL(request.url);
+      new URL(
+        request.url
+      );
 
 
-    /*
-     * CALCULATOR POST
-     */
+    /* -----------------------------------------------
+       CALCULATOR - POST
+    ------------------------------------------------ */
 
     if (
       url.pathname ===
         "/api/calculate" &&
-      request.method ===
-        "POST"
+      request.method === "POST"
     ) {
 
       return calculate(
@@ -1369,15 +864,14 @@ export default {
     }
 
 
-    /*
-     * CALCULATOR TEST
-     */
+    /* -----------------------------------------------
+       CALCULATOR - GET TEST
+    ------------------------------------------------ */
 
     if (
       url.pathname ===
         "/api/calculate" &&
-      request.method ===
-        "GET"
+      request.method === "GET"
     ) {
 
       return json({
@@ -1392,15 +886,14 @@ export default {
     }
 
 
-    /*
-     * GET SITE
-     */
+    /* -----------------------------------------------
+       GET SITE
+    ------------------------------------------------ */
 
     if (
       url.pathname ===
         "/api/site" &&
-      request.method ===
-        "GET"
+      request.method === "GET"
     ) {
 
       return getSite(
@@ -1411,1185 +904,68 @@ export default {
     }
 
 
-    /*
-     * MANUAL / CONFIRMED SAVE
-     */
+    /* -----------------------------------------------
+       ADMIN UPDATE SITE
+    ------------------------------------------------ */
 
     if (
       url.pathname ===
         "/api/admin/update-site" &&
-      request.method ===
-        "POST"
+      request.method === "POST"
     ) {
 
-      return saveSite(
+      return updateSite(
         request,
-        env,
-        "manual"
+        env
       );
 
-}
-    <!-- =====================================================
-     PART 2 — ADMIN.HTML JAVASCRIPT
-     ===================================================== -->
-
-<script>
-
-const $ = (id) => document.getElementById(id);
+    }
 
 
-/* =====================================================
-   MESSAGE HELPER
-   ===================================================== */
+    /* -----------------------------------------------
+       ADMIN IMAGE EXTRACTION
+    ------------------------------------------------ */
 
-function showMessage(element, text, type) {
+    if (
+      url.pathname ===
+        "/api/admin/extract-image" &&
+      request.method === "POST"
+    ) {
 
-  if (!element) return;
-
-  element.textContent = text;
-
-  element.className =
-    "message " + type;
-
-}
-
-
-function clearMessage(element) {
-
-  if (!element) return;
-
-  element.textContent = "";
-
-  element.className = "message";
-
-}
-
-
-/* =====================================================
-   SITE DISPLAY
-   ===================================================== */
-
-function showSite(site) {
-
-  const siteInfo =
-    $("siteInfo");
-
-  if (siteInfo) {
-    siteInfo.classList.add("show");
-  }
-
-
-  if ($("siteName")) {
-    $("siteName").textContent =
-      site.site_name ?? "—";
-  }
-
-
-  if ($("siteModel")) {
-    $("siteModel").textContent =
-      site.model ?? "—";
-  }
-
-
-  if ($("siteHmr")) {
-    $("siteHmr").textContent =
-      site.current_hmr ?? "—";
-  }
-
-
-  if ($("siteKwh")) {
-    $("siteKwh").textContent =
-      site.current_kwh ?? "—";
-  }
-
-
-  if ($("siteBalance")) {
-    $("siteBalance").textContent =
-      site.current_balance ?? "—";
-  }
-
-
-  if (
-    site.model &&
-    $("model")
-  ) {
-
-    $("model").value =
-      site.model;
-
-  }
-
-
-  if (
-    site.current_hmr !== null &&
-    site.current_hmr !== undefined &&
-    $("currentHmr")
-  ) {
-
-    $("currentHmr").value =
-      site.current_hmr;
-
-  }
-
-
-  if (
-    site.current_kwh !== null &&
-    site.current_kwh !== undefined &&
-    $("currentKwh")
-  ) {
-
-    $("currentKwh").value =
-      site.current_kwh;
-
-  }
-
-
-  if (
-    site.current_balance !== null &&
-    site.current_balance !== undefined &&
-    $("currentBalance")
-  ) {
-
-    $("currentBalance").value =
-      site.current_balance;
-
-  }
-
-}
-
-
-/* =====================================================
-   LOAD EXISTING SITE
-   ===================================================== */
-
-if ($("loadSite")) {
-
-  $("loadSite").addEventListener(
-    "click",
-    async () => {
-
-      const siteId =
-        $("siteId")
-          .value
-          .trim();
-
-
-      clearMessage(
-        $("authMessage")
+      return extractImage(
+        request,
+        env
       );
 
-
-      if (!siteId) {
-
-        showMessage(
-          $("authMessage"),
-          "Please enter a Site ID.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      $("loadSite").disabled =
-        true;
-
-      $("loadSite").textContent =
-        "Loading...";
-
-
-      try {
-
-        const response =
-          await fetch(
-            "/api/site?site_id=" +
-            encodeURIComponent(siteId)
-          );
-
-
-        const text =
-          await response.text();
-
-
-        const data =
-          text.trim()
-            ? JSON.parse(text)
-            : {};
-
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          throw new Error(
-            data.error ||
-            "Unable to load site."
-          );
-
-        }
-
-
-        showSite(
-          data.site
-        );
-
-
-        showMessage(
-          $("authMessage"),
-          "Site loaded successfully.",
-          "success"
-        );
-
-
-      } catch (error) {
-
-        showMessage(
-          $("authMessage"),
-          error.message ||
-          "Unable to load site.",
-          "error"
-        );
-
-      } finally {
-
-        $("loadSite").disabled =
-          false;
-
-        $("loadSite").textContent =
-          "Load Existing Site";
-
-      }
-
     }
-  );
-
-}
 
 
-/* =====================================================
-   IMAGE SELECTION
-   ===================================================== */
+    /* -----------------------------------------------
+       DEBUG CONFIG
+    ------------------------------------------------ */
 
-if ($("imageInput")) {
+    if (
+      url.pathname ===
+        "/api/debug-config" &&
+      request.method === "GET"
+    ) {
 
-  $("imageInput").addEventListener(
-    "change",
-    () => {
-
-      const file =
-        $("imageInput").files[0];
-
-
-      if (!file) {
-
-        if ($("preview")) {
-          $("preview")
-            .classList
-            .remove("show");
-        }
-
-        return;
-
-      }
-
-
-      if (
-        !file.type.startsWith("image/")
-      ) {
-
-        showMessage(
-          $("authMessage"),
-          "Please select a valid image.",
-          "error"
-        );
-
-        $("imageInput").value =
-          "";
-
-        return;
-
-      }
-
-
-      if ($("fileName")) {
-
-        $("fileName").textContent =
-          file.name;
-
-      }
-
-
-      const reader =
-        new FileReader();
-
-
-      reader.onload =
-        (event) => {
-
-          if ($("previewImage")) {
-
-            $("previewImage").src =
-              event.target.result;
-
-          }
-
-
-          if ($("preview")) {
-
-            $("preview")
-              .classList
-              .add("show");
-
-          }
-
-        };
-
-
-      reader.onerror =
-        () => {
-
-          showMessage(
-            $("authMessage"),
-            "Unable to preview this image.",
-            "error"
-          );
-
-        };
-
-
-      reader.readAsDataURL(file);
-
-    }
-  );
-
-}
-
-
-/* =====================================================
-   MANUAL ENTRY BUTTON
-   ===================================================== */
-
-if ($("manualButton")) {
-
-  $("manualButton").addEventListener(
-    "click",
-    () => {
-
-      const section =
-        $("manualSection");
-
-
-      if (!section) return;
-
-
-      section.classList.toggle(
-        "show"
+      return debugConfig(
+        request,
+        env
       );
 
-
-      if (
-        section.classList.contains("show")
-      ) {
-
-        section.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-
-      }
-
     }
-  );
 
-}
 
+    /* -----------------------------------------------
+       STATIC WEBSITE
+    ------------------------------------------------ */
 
-/* =====================================================
-   IMAGE EXTRACTION
-   ===================================================== */
-
-if ($("extractButton")) {
-
-  $("extractButton").addEventListener(
-    "click",
-    async () => {
-
-      const file =
-        $("imageInput").files[0];
-
-
-      const adminKey =
-        $("adminKey")
-          .value
-          .trim();
-
-
-      const siteId =
-        $("siteId")
-          .value
-          .trim();
-
-
-      if (!file) {
-
-        showMessage(
-          $("authMessage"),
-          "Please upload an image first.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      if (!adminKey) {
-
-        showMessage(
-          $("authMessage"),
-          "Please enter the admin key first.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      if (!siteId) {
-
-        showMessage(
-          $("authMessage"),
-          "Please enter the Site ID first.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      $("extractButton").disabled =
-        true;
-
-      $("extractButton").textContent =
-        "Extracting...";
-
-
-      clearMessage(
-        $("authMessage")
-      );
-
-
-      try {
-
-        const form =
-          new FormData();
-
-
-        form.append(
-          "image",
-          file
-        );
-
-
-        form.append(
-          "site_id",
-          siteId
-        );
-
-
-        const response =
-          await fetch(
-            "/api/admin/extract-image",
-            {
-              method: "POST",
-
-              headers: {
-                "X-Admin-Key":
-                  adminKey,
-
-                "Accept":
-                  "application/json"
-              },
-
-              body:
-                form
-            }
-          );
-
-
-        const text =
-          await response.text();
-
-
-        let data = {};
-
-
-        try {
-
-          data =
-            text.trim()
-              ? JSON.parse(text)
-              : {};
-
-        } catch {
-
-          throw new Error(
-            "Server returned an invalid response."
-          );
-
-        }
-
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          throw new Error(
-            data.error ||
-            "Image extraction failed."
-          );
-
-        }
-
-
-        const extracted =
-          data.extracted || {};
-
-
-        /*
-         * FILL EXTRACTION RESULT
-         */
-
-        if ($("extractedHmr")) {
-
-          $("extractedHmr").value =
-            extracted.current_hmr ?? "";
-
-        }
-
-
-        if ($("extractedKwh")) {
-
-          $("extractedKwh").value =
-            extracted.current_kwh ?? "";
-
-        }
-
-
-        if ($("extractedBalance")) {
-
-          $("extractedBalance").value =
-            extracted.current_balance ?? "";
-
-        }
-
-
-        /*
-         * GENERATOR MODEL IS NOT DECIDED
-         * BY OCR.
-         *
-         * Admin chooses it manually.
-         */
-
-        if (
-          $("extractedModel") &&
-          $("model") &&
-          $("model").value
-        ) {
-
-          $("extractedModel").value =
-            $("model").value;
-
-        }
-
-
-        /*
-         * EXTRA INFORMATION
-         *
-         * These fields may not exist in
-         * the current HTML, so we don't
-         * crash if they aren't present.
-         */
-
-        if ($("balanceBeforeFilling")) {
-
-          $("balanceBeforeFilling").value =
-            extracted.balance_before_filling ?? "";
-
-        }
-
-
-        if ($("fillingQuantity")) {
-
-          $("fillingQuantity").value =
-            extracted.filling_quantity ?? "";
-
-        }
-
-
-        if ($("extractedSiteId")) {
-
-          $("extractedSiteId").value =
-            extracted.site_id ||
-            siteId;
-
-        }
-
-
-        /*
-         * SHOW EXTRACTION SECTION
-         */
-
-        if ($("extractionSection")) {
-
-          $("extractionSection").style.display =
-            "block";
-
-
-          $("extractionSection")
-            .scrollIntoView({
-              behavior: "smooth",
-              block: "start"
-            });
-
-        }
-
-
-        showMessage(
-          $("authMessage"),
-          "Details extracted successfully. Please review and confirm every value before saving.",
-          "success"
-        );
-
-
-      } catch (error) {
-
-        showMessage(
-          $("authMessage"),
-          error.message ||
-          "Image extraction failed.",
-          "error"
-        );
-
-      } finally {
-
-        $("extractButton").disabled =
-          false;
-
-        $("extractButton").textContent =
-          "Extract Details";
-
-      }
-
-    }
-  );
-
-}
-
-
-/* =====================================================
-   SAVE MANUAL READING
-   ===================================================== */
-
-if ($("updateSite")) {
-
-  $("updateSite").addEventListener(
-    "click",
-    async () => {
-
-      clearMessage(
-        $("updateMessage")
-      );
-
-
-      const adminKey =
-        $("adminKey")
-          .value
-          .trim();
-
-
-      const siteId =
-        $("siteId")
-          .value
-          .trim();
-
-
-      const model =
-        $("model")
-          .value;
-
-
-      const hmr =
-        $("currentHmr")
-          .value;
-
-
-      const kwh =
-        $("currentKwh")
-          .value;
-
-
-      const balance =
-        $("currentBalance")
-          .value;
-
-
-      if (!adminKey) {
-
-        showMessage(
-          $("updateMessage"),
-          "Please enter the admin key.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      if (!siteId) {
-
-        showMessage(
-          $("updateMessage"),
-          "Site ID is required.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      if (
-        hmr === "" ||
-        kwh === "" ||
-        balance === ""
-      ) {
-
-        showMessage(
-          $("updateMessage"),
-          "Please fill all manual reading fields.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      $("updateSite").disabled =
-        true;
-
-      $("updateSite").textContent =
-        "Saving...";
-
-
-      try {
-
-        const response =
-          await fetch(
-            "/api/admin/update-site",
-            {
-              method: "POST",
-
-              headers: {
-
-                "Content-Type":
-                  "application/json",
-
-                "Accept":
-                  "application/json",
-
-                "X-Admin-Key":
-                  adminKey
-
-              },
-
-              body:
-                JSON.stringify({
-
-                  site_id:
-                    siteId,
-
-                  model:
-                    model,
-
-                  current_hmr:
-                    hmr,
-
-                  current_kwh:
-                    kwh,
-
-                  current_balance:
-                    balance
-
-                })
-
-            }
-          );
-
-
-        const text =
-          await response.text();
-
-
-        const data =
-          text.trim()
-            ? JSON.parse(text)
-            : {};
-
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          throw new Error(
-            data.error ||
-            "Site update failed."
-          );
-
-        }
-
-
-        showMessage(
-          $("updateMessage"),
-          data.message ||
-          "Site updated successfully.",
-          "success"
-        );
-
-
-        /*
-         * Reload site information
-         */
-
-        if ($("loadSite")) {
-
-          $("loadSite").click();
-
-        }
-
-
-      } catch (error) {
-
-        showMessage(
-          $("updateMessage"),
-          error.message ||
-          "Site update failed.",
-          "error"
-        );
-
-      } finally {
-
-        $("updateSite").disabled =
-          false;
-
-        $("updateSite").textContent =
-          "Save Manual Reading";
-
-      }
-
-    }
-  );
-
-}
-
-
-/* =====================================================
-   SAVE EXTRACTED READING
-   ===================================================== */
-
-if ($("saveExtracted")) {
-
-  $("saveExtracted").addEventListener(
-    "click",
-    async () => {
-
-      clearMessage(
-        $("extractMessage")
-      );
-
-
-      const adminKey =
-        $("adminKey")
-          .value
-          .trim();
-
-
-      const siteId =
-        $("siteId")
-          .value
-          .trim();
-
-
-      const model =
-        $("extractedModel")
-          .value;
-
-
-      const hmr =
-        $("extractedHmr")
-          .value;
-
-
-      const kwh =
-        $("extractedKwh")
-          .value;
-
-
-      const balance =
-        $("extractedBalance")
-          .value;
-
-
-      if (!adminKey) {
-
-        showMessage(
-          $("extractMessage"),
-          "Please enter the admin key.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      if (!siteId) {
-
-        showMessage(
-          $("extractMessage"),
-          "Site ID is required.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      if (!model) {
-
-        showMessage(
-          $("extractMessage"),
-          "Please select the generator model.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      if (
-        hmr === "" ||
-        kwh === "" ||
-        balance === ""
-      ) {
-
-        showMessage(
-          $("extractMessage"),
-          "Please review and fill all extracted values before saving.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      $("saveExtracted").disabled =
-        true;
-
-      $("saveExtracted").textContent =
-        "Saving...";
-
-
-      try {
-
-        const response =
-          await fetch(
-            "/api/admin/update-site",
-            {
-              method: "POST",
-
-              headers: {
-
-                "Content-Type":
-                  "application/json",
-
-                "Accept":
-                  "application/json",
-
-                "X-Admin-Key":
-                  adminKey
-
-              },
-
-              body:
-                JSON.stringify({
-
-                  site_id:
-                    siteId,
-
-                  model:
-                    model,
-
-                  current_hmr:
-                    hmr,
-
-                  current_kwh:
-                    kwh,
-
-                  current_balance:
-                    balance
-
-                })
-
-            }
-          );
-
-
-        const text =
-          await response.text();
-
-
-        const data =
-          text.trim()
-            ? JSON.parse(text)
-            : {};
-
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          throw new Error(
-            data.error ||
-            "Save failed."
-          );
-
-        }
-
-
-        showMessage(
-          $("extractMessage"),
-          data.message ||
-          "Extracted reading saved successfully.",
-          "success"
-        );
-
-
-        /*
-         * Clear image from browser memory/UI
-         *
-         * The image was never stored by the Worker.
-         */
-
-        if ($("imageInput")) {
-
-          $("imageInput").value =
-            "";
-
-        }
-
-
-        if ($("preview")) {
-
-          $("preview")
-            .classList
-            .remove("show");
-
-        }
-
-
-        if ($("previewImage")) {
-
-          $("previewImage").removeAttribute(
-            "src"
-          );
-
-        }
-
-
-        if ($("fileName")) {
-
-          $("fileName").textContent =
-            "";
-
-        }
-
-
-        /*
-         * Keep the extraction result visible
-         * so admin can see what was saved.
-         */
-
-
-        /*
-         * Reload site information
-         */
-
-        if ($("loadSite")) {
-
-          $("loadSite").click();
-
-        }
-
-
-      } catch (error) {
-
-        showMessage(
-          $("extractMessage"),
-          error.message ||
-          "Save failed.",
-          "error"
-        );
-
-      } finally {
-
-        $("saveExtracted").disabled =
-          false;
-
-        $("saveExtracted").textContent =
-          "Confirm & Save";
-
-      }
-
-    }
-  );
-
-}
-
-
-/* =====================================================
-   PAGE INITIALIZATION
-   ===================================================== */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-
-    /*
-     * Nothing needs to be loaded automatically.
-     *
-     * Admin enters Site ID,
-     * uploads screenshot,
-     * extracts,
-     * reviews,
-     * selects generator model,
-     * confirms and saves.
-     */
+    return env.ASSETS.fetch(
+      request
+    );
 
   }
-);
 
-</script>
-    
+};
