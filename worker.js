@@ -665,8 +665,10 @@ async function updateSite(
    
 
 }
+
+
 /* =====================================================
-   IMAGE EXTRACTION
+   IMAGE EXTRACTION - WORKERS AI
    ===================================================== */
 
 async function extractImage(
@@ -675,6 +677,10 @@ async function extractImage(
 ) {
 
   try {
+
+    /* -----------------------------------------------
+       ADMIN AUTHENTICATION
+    ------------------------------------------------ */
 
     const auth =
       checkAdminKey(
@@ -686,6 +692,28 @@ async function extractImage(
       return auth.response;
     }
 
+
+    /* -----------------------------------------------
+       CHECK AI BINDING
+    ------------------------------------------------ */
+
+    if (!env.AI) {
+
+      return json(
+        {
+          success: false,
+          error:
+            "Workers AI binding (AI) is not configured."
+        },
+        500
+      );
+
+    }
+
+
+    /* -----------------------------------------------
+       CHECK CONTENT TYPE
+    ------------------------------------------------ */
 
     const contentType =
       request.headers.get(
@@ -711,6 +739,10 @@ async function extractImage(
     }
 
 
+    /* -----------------------------------------------
+       READ FORM
+    ------------------------------------------------ */
+
     const form =
       await request.formData();
 
@@ -723,6 +755,20 @@ async function extractImage(
       String(
         form.get("site_id") || ""
       ).trim();
+
+
+    if (!siteId) {
+
+      return json(
+        {
+          success: false,
+          error:
+            "site_id is required."
+        },
+        400
+      );
+
+    }
 
 
     if (!image) {
@@ -738,6 +784,10 @@ async function extractImage(
 
     }
 
+
+    /* -----------------------------------------------
+       VALIDATE IMAGE
+    ------------------------------------------------ */
 
     if (
       typeof image === "string" ||
@@ -759,30 +809,384 @@ async function extractImage(
     }
 
 
-    /*
-     * The image is intentionally NOT stored.
-     *
-     * It only exists during this request.
-     *
-     * OCR/vision processing will be connected
-     * to this endpoint in the next step.
-     */
+    /* -----------------------------------------------
+       READ IMAGE
+    ------------------------------------------------ */
 
+    const imageBuffer =
+      await image.arrayBuffer();
+
+
+    if (!imageBuffer.byteLength) {
+
+      return json(
+        {
+          success: false,
+          error:
+            "The uploaded image is empty."
+        },
+        400
+      );
+
+    }
+
+
+    /* -----------------------------------------------
+       LIMIT IMAGE SIZE
+    ------------------------------------------------ */
+
+    const maxImageSize =
+      10 * 1024 * 1024;
+
+
+    if (
+      imageBuffer.byteLength >
+      maxImageSize
+    ) {
+
+      return json(
+        {
+          success: false,
+          error:
+            "Image is too large. Maximum size is 10 MB."
+        },
+        400
+      );
+
+    }
+
+
+    /* -----------------------------------------------
+       OCR / VISION PROMPT
+    ------------------------------------------------ */
+
+    const prompt = `
+You are extracting data from a generator/DG monitoring screenshot.
+
+Read the screenshot carefully and return ONLY valid JSON.
+
+The screenshot belongs to one of these generator models:
+
+- Eicher 10 KVA
+- Mahindra 10 KVA
+- Eicher 20 KVA
+- Mahindra 20 KVA
+- KOEL 20 KVA
+
+Extract these fields when visible:
+
+model
+current_hmr
+current_kwh
+previous_balance
+fuel_filled
+current_balance
+
+Important:
+
+1. Do not invent values.
+2. If a value cannot be read confidently, return null.
+3. Keep decimal values as numbers.
+4. Do not add units such as "L", "Lt", "KWh" or "hrs" to numeric fields.
+5. current_balance means the balance after the latest filling.
+6. previous_balance means the balance before the latest filling.
+7. fuel_filled means the quantity added in the latest filling.
+8. If previous_balance and fuel_filled are both available, current_balance should normally equal:
+   previous_balance + fuel_filled
+9. Return JSON only.
+10. Do not include markdown fences.
+11. Do not include explanations.
+
+Required JSON structure:
+
+{
+  "model": null,
+  "current_hmr": null,
+  "current_kwh": null,
+  "previous_balance": null,
+  "fuel_filled": null,
+  "current_balance": null
+}
+`;
+
+
+    /* -----------------------------------------------
+       CONVERT IMAGE TO BASE64
+    ------------------------------------------------ */
+
+    const bytes =
+      new Uint8Array(
+        imageBuffer
+      );
+
+
+    let binary = "";
+
+    const chunkSize =
+      0x8000;
+
+
+    for (
+      let i = 0;
+      i < bytes.length;
+      i += chunkSize
+    ) {
+
+      binary += String.fromCharCode(
+        ...bytes.subarray(
+          i,
+          Math.min(
+            i + chunkSize,
+            bytes.length
+          )
+        )
+      );
+
+    }
+
+
+    const base64 =
+      btoa(binary);
+
+
+    /* -----------------------------------------------
+       WORKERS AI VISION MODEL
+    ------------------------------------------------ */
+
+    const model =
+      "@cf/meta/llama-3.2-11b-vision-instruct";
+
+
+    const aiResult =
+      await env.AI.run(
+        model,
+        {
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: prompt
+                },
+                {
+                  type: "image",
+                  image: base64
+                }
+              ]
+            }
+          ]
+        }
+      );
+
+
+    /* -----------------------------------------------
+       GET AI TEXT
+    ------------------------------------------------ */
+
+    let output = "";
+
+
+    if (
+      aiResult &&
+      typeof aiResult.response === "string"
+    ) {
+
+      output =
+        aiResult.response.trim();
+
+    }
+
+
+    if (!output) {
+
+      return json(
+        {
+          success: false,
+          error:
+            "Workers AI returned an empty response."
+        },
+        502
+      );
+
+    }
+
+
+    /* -----------------------------------------------
+       REMOVE MARKDOWN JSON FENCES
+    ------------------------------------------------ */
+
+    output =
+      output
+        .replace(
+          /^```json\s*/i,
+          ""
+        )
+        .replace(
+          /^```\s*/i,
+          ""
+        )
+        .replace(
+          /\s*```$/i,
+          ""
+        )
+        .trim();
+
+
+    /* -----------------------------------------------
+       PARSE JSON
+    ------------------------------------------------ */
+
+    let extracted;
+
+
+    try {
+
+      extracted =
+        JSON.parse(
+          output
+        );
+
+    } catch {
+
+      return json(
+        {
+          success: false,
+          error:
+            "OCR model returned invalid JSON.",
+          raw_response:
+            output.slice(
+              0,
+              2000
+            )
+        },
+        502
+      );
+
+    }
+
+
+    /* -----------------------------------------------
+       NORMALIZE VALUES
+    ------------------------------------------------ */
+
+    const cleanNumber =
+      (value) => {
+
+        if (
+          value === null ||
+          value === undefined ||
+          String(value).trim() === ""
+        ) {
+          return null;
+        }
+
+        const n =
+          Number(
+            String(value)
+              .replace(
+                /[^0-9.+-]/g,
+                ""
+              )
+          );
+
+        return Number.isFinite(n)
+          ? n
+          : null;
+
+      };
+
+
+    const extractedModel =
+      extracted.model
+        ? String(
+            extracted.model
+          ).trim()
+        : null;
+
+
+    const currentHmr =
+      cleanNumber(
+        extracted.current_hmr
+      );
+
+
+    const currentKwh =
+      cleanNumber(
+        extracted.current_kwh
+      );
+
+
+    const previousBalance =
+      cleanNumber(
+        extracted.previous_balance
+      );
+
+
+    const fuelFilled =
+      cleanNumber(
+        extracted.fuel_filled
+      );
+
+
+    let currentBalance =
+      cleanNumber(
+        extracted.current_balance
+      );
+
+
+    /* -----------------------------------------------
+       CALCULATE BALANCE WHEN BOTH
+       PREVIOUS BALANCE AND FILLING
+       ARE AVAILABLE
+    ------------------------------------------------ */
+
+    if (
+      currentBalance === null &&
+      previousBalance !== null &&
+      fuelFilled !== null
+    ) {
+
+      currentBalance =
+        previousBalance +
+        fuelFilled;
+
+    }
+
+
+    /* -----------------------------------------------
+       RETURN OCR RESULT
+    ------------------------------------------------ */
 
     return json({
 
-      success: false,
+      success: true,
 
       extraction_ready:
-        false,
+        true,
 
       site_id:
-        siteId || null,
+        siteId,
 
-      error:
-        "Image received successfully, but OCR is not connected yet."
+      model:
+        extractedModel,
 
-    }, 501);
+      current_hmr:
+        currentHmr,
+
+      current_kwh:
+        currentKwh,
+
+      previous_balance:
+        previousBalance,
+
+      fuel_filled:
+        fuelFilled,
+
+      current_balance:
+        currentBalance
+
+    });
 
 
   } catch (error) {
@@ -795,13 +1199,12 @@ async function extractImage(
           error?.message ||
           "Image extraction failed."
       },
-      400
+      500
     );
 
   }
 
 }
-
 
 /* =====================================================
    DEBUG CONFIG
