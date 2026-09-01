@@ -1,1059 +1,1302 @@
-const $ = (id) =>
-  document.getElementById(id);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Generator Admin</title>
 
-/* =====================================================
-   MESSAGE
-   ===================================================== */
-
-function message(
-  element,
-  text,
-  type
-) {
-
-  element.textContent = text;
-
-  element.className =
-    "message " + type;
-
-}
-
-
-function clearMessage(element) {
-
-  element.textContent = "";
-
-  element.className =
-    "message";
-
-}
-
-
-/* =====================================================
-   SHOW SITE
-   ===================================================== */
-
-function showSite(site) {
-
-  $("siteInfo")
-    .classList
-    .add("show");
-
-
-  $("siteName").textContent =
-    site.site_name ?? "—";
-
-
-  $("siteModel").textContent =
-    site.model ?? "—";
-
-
-  $("siteHmr").textContent =
-    site.current_hmr ?? "—";
-
-
-  $("siteKwh").textContent =
-    site.current_kwh ?? "—";
-
-
-  $("siteBalance").textContent =
-    site.current_balance ?? "—";
-
-
-  if (site.model) {
-
-    $("model").value =
-      site.model;
-
-    $("extractedModel").value =
-      site.model;
-
-  }
-
-
-  if (
-    site.current_hmr !== null &&
-    site.current_hmr !== undefined
-  ) {
-
-    $("currentHmr").value =
-      site.current_hmr;
-
-  }
-
-
-  if (
-    site.current_kwh !== null &&
-    site.current_kwh !== undefined
-  ) {
-
-    $("currentKwh").value =
-      site.current_kwh;
-
-  }
-
-
-  if (
-    site.current_balance !== null &&
-    site.current_balance !== undefined
-  ) {
-
-    $("currentBalance").value =
-      site.current_balance;
-
-  }
-
-}
-
-
-/* =====================================================
-   LOAD SITE
-   ===================================================== */
-
-$("loadSite")
-.addEventListener(
-  "click",
-  async () => {
-
-    clearMessage(
-      $("authMessage")
-    );
-
-
-    const siteId =
-      $("siteId")
-        .value
-        .trim();
-
-
-    if (!siteId) {
-
-      message(
-        $("authMessage"),
-        "Please enter a Site ID.",
-        "error"
-      );
-
-      return;
-
+  <style>
+    * {
+      box-sizing: border-box;
     }
 
+    :root {
+      --bg: #050817;
+      --card: rgba(13, 20, 48, 0.72);
+      --border: rgba(91, 126, 255, 0.28);
+      --text: #f7f9ff;
+      --muted: #9ca8c7;
+      --cyan: #00d9ff;
+      --blue: #4d7cff;
+      --purple: #9b35ff;
+      --pink: #ff3fc7;
+      --green: #00e6a8;
+      --yellow: #ffc857;
+    }
 
-    $("loadSite").disabled =
-      true;
+    html {
+      scroll-behavior: smooth;
+    }
 
-    $("loadSite").textContent =
-      "Loading...";
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 
+      color: var(--text);
 
-    try {
-
-      const response =
-        await fetch(
-          "/api/site?site_id=" +
-          encodeURIComponent(
-            siteId
-          )
+      background:
+        radial-gradient(
+          circle at 10% 10%,
+          rgba(0, 217, 255, 0.16),
+          transparent 25%
+        ),
+        radial-gradient(
+          circle at 90% 10%,
+          rgba(155, 53, 255, 0.22),
+          transparent 28%
+        ),
+        radial-gradient(
+          circle at 50% 100%,
+          rgba(255, 63, 199, 0.14),
+          transparent 30%
+        ),
+        linear-gradient(
+          135deg,
+          #030512,
+          #080d25,
+          #050817
         );
 
+      overflow-x: hidden;
+    }
 
-      const text =
-        await response.text();
+    /* =========================
+       ANIMATED BACKGROUND
+    ========================== */
 
+    body::before {
+      content: "";
+      position: fixed;
+      width: 420px;
+      height: 420px;
+      left: -180px;
+      top: 80px;
 
-      const data =
-        text.trim()
-          ? JSON.parse(text)
-          : {};
-
-
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-
-        throw new Error(
-          data.error ||
-          "Unable to load site."
+      background:
+        radial-gradient(
+          circle,
+          rgba(0, 217, 255, 0.25),
+          transparent 65%
         );
 
-      }
-
-
-      showSite(
-        data.site
-      );
-
-
-      message(
-        $("authMessage"),
-        "Site loaded successfully.",
-        "success"
-      );
-
-
-    } catch (error) {
-
-      message(
-        $("authMessage"),
-        error.message ||
-        "Unable to load site.",
-        "error"
-      );
-
-    } finally {
-
-      $("loadSite").disabled =
-        false;
-
-      $("loadSite").textContent =
-        "Load Existing Site";
-
+      filter: blur(20px);
+      animation: floatOne 9s ease-in-out infinite;
+      pointer-events: none;
+      z-index: -2;
     }
 
-  }
-);
+    body::after {
+      content: "";
+      position: fixed;
+      width: 480px;
+      height: 480px;
+      right: -220px;
+      bottom: 20px;
 
-
-/* =====================================================
-   IMAGE SELECTION
-   ===================================================== */
-
-$("imageInput")
-.addEventListener(
-  "change",
-  () => {
-
-    clearMessage(
-      $("authMessage")
-    );
-
-
-    const file =
-      $("imageInput")
-        .files[0];
-
-
-    if (!file) {
-
-      $("preview")
-        .classList
-        .remove("show");
-
-      return;
-
-    }
-
-
-    if (
-      !file.type.startsWith(
-        "image/"
-      )
-    ) {
-
-      message(
-        $("authMessage"),
-        "Please select an image file.",
-        "error"
-      );
-
-      $("imageInput").value =
-        "";
-
-      return;
-
-    }
-
-
-    const reader =
-      new FileReader();
-
-
-    reader.onload =
-      (event) => {
-
-        $("previewImage").src =
-          event.target.result;
-
-
-        $("fileName").textContent =
-          file.name;
-
-
-        $("preview")
-          .classList
-          .add("show");
-
-      };
-
-
-    reader.onerror =
-      () => {
-
-        message(
-          $("authMessage"),
-          "Unable to read the selected image.",
-          "error"
+      background:
+        radial-gradient(
+          circle,
+          rgba(155, 53, 255, 0.25),
+          transparent 65%
         );
 
-      };
-
-
-    reader.readAsDataURL(
-      file
-    );
-
-  }
-);
-
-
-/* =====================================================
-   MANUAL BUTTON
-   ===================================================== */
-
-$("manualButton")
-.addEventListener(
-  "click",
-  () => {
-
-    const section =
-      $("manualSection");
-
-
-    section.classList.toggle(
-      "show"
-    );
-
-
-    if (
-      section.classList.contains(
-        "show"
-      )
-    ) {
-
-      section.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-
+      filter: blur(25px);
+      animation: floatTwo 11s ease-in-out infinite;
+      pointer-events: none;
+      z-index: -2;
     }
 
-  }
-);
+    @keyframes floatOne {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
 
-
-/* =====================================================
-   EXTRACT IMAGE
-   ===================================================== */
-
-$("extractButton")
-.addEventListener(
-  "click",
-  async () => {
-
-    clearMessage(
-      $("authMessage")
-    );
-
-
-    const file =
-      $("imageInput")
-        .files[0];
-
-
-    const adminKey =
-      $("adminKey")
-        .value
-        .trim();
-
-
-    const siteId =
-      $("siteId")
-        .value
-        .trim();
-
-
-    if (!file) {
-
-      message(
-        $("authMessage"),
-        "Please upload an image first.",
-        "error"
-      );
-
-      return;
-
+      50% {
+        transform: translate(100px, 70px) scale(1.15);
+      }
     }
 
+    @keyframes floatTwo {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
 
-    if (!adminKey) {
-
-      message(
-        $("authMessage"),
-        "Please enter the admin key.",
-        "error"
-      );
-
-      return;
-
+      50% {
+        transform: translate(-80px, -70px) scale(1.15);
+      }
     }
 
+    /* Small glowing dots */
 
-    if (!siteId) {
-
-      message(
-        $("authMessage"),
-        "Please enter the Site ID first.",
-        "error"
-      );
-
-      return;
-
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
     }
 
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow:
+        0 0 8px #00d9ff,
+        0 0 18px #4d7cff;
 
-    const form =
-      new FormData();
+      animation: particleMove linear infinite;
+      opacity: 0.75;
+    }
 
+    .particle:nth-child(1) {
+      left: 8%;
+      top: 18%;
+      animation-duration: 8s;
+    }
 
-    form.append(
-      "image",
-      file
-    );
+    .particle:nth-child(2) {
+      left: 22%;
+      top: 70%;
+      animation-duration: 11s;
+    }
 
+    .particle:nth-child(3) {
+      left: 75%;
+      top: 20%;
+      animation-duration: 9s;
+    }
 
-    form.append(
-      "site_id",
-      siteId
-    );
+    .particle:nth-child(4) {
+      left: 90%;
+      top: 65%;
+      animation-duration: 12s;
+    }
 
+    .particle:nth-child(5) {
+      left: 55%;
+      top: 85%;
+      animation-duration: 10s;
+    }
 
-    $("extractButton").disabled =
-      true;
+    .particle:nth-child(6) {
+      left: 42%;
+      top: 12%;
+      animation-duration: 13s;
+    }
 
+    @keyframes particleMove {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 0.3;
+      }
 
-    $("extractButton").textContent =
-      "EXTRACTING...";
+      50% {
+        transform: translateY(-80px) scale(1.5);
+        opacity: 1;
+      }
 
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.3;
+      }
+    }
 
-    $("extractLoading")
-      .classList
-      .add("show");
+    /* =========================
+       MAIN
+    ========================== */
 
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: auto;
+      padding: 28px 18px 50px;
+    }
 
-    try {
+    /* =========================
+       HEADER
+    ========================== */
 
-      const response =
-        await fetch(
-          "/api/admin/extract-image",
-          {
-            method: "POST",
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
 
-            headers: {
-              "X-Admin-Key":
-                adminKey,
+    .logo {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 12px;
 
-              "Accept":
-                "application/json"
-            },
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-            body: form
-          }
+      border-radius: 20px;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(0, 217, 255, 0.2),
+          rgba(155, 53, 255, 0.3)
         );
 
+      border: 1px solid rgba(255,255,255,0.12);
 
-      const text =
-        await response.text();
+      box-shadow:
+        0 0 25px rgba(0,217,255,0.25),
+        0 0 45px rgba(155,53,255,0.18);
 
+      font-size: 30px;
 
-      let data = {};
+      animation: logoGlow 3s ease-in-out infinite;
+    }
 
-      try {
+    @keyframes logoGlow {
+      0%, 100% {
+        box-shadow:
+          0 0 20px rgba(0,217,255,0.25),
+          0 0 40px rgba(155,53,255,0.15);
+      }
 
-        data =
-          text.trim()
-            ? JSON.parse(text)
-            : {};
+      50% {
+        box-shadow:
+          0 0 35px rgba(0,217,255,0.5),
+          0 0 65px rgba(155,53,255,0.3);
+      }
+    }
 
-      } catch {
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 6vw, 48px);
+      font-weight: 800;
 
-        throw new Error(
-          "Server returned an invalid response."
+      background:
+        linear-gradient(
+          90deg,
+          #ffffff,
+          #56dfff,
+          #a95cff,
+          #ffffff
         );
 
+      background-size: 250% auto;
+
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+
+      animation: gradientText 5s linear infinite;
+    }
+
+    @keyframes gradientText {
+      to {
+        background-position: 250% center;
       }
+    }
 
+    .subtitle {
+      color: var(--muted);
+      margin-top: 8px;
+      font-size: 14px;
+    }
 
-      if (
-        !response.ok ||
-        !data.success
-      ) {
+    /* =========================
+       GRID
+    ========================== */
 
-        throw new Error(
-          data.error ||
-          "Image extraction failed."
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    /* =========================
+       GLASS CARDS
+    ========================== */
+
+    .card {
+      position: relative;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(20, 29, 68, 0.82),
+          rgba(8, 13, 34, 0.76)
         );
 
-      }
+      border: 1px solid var(--border);
 
+      border-radius: 20px;
 
-      /*
-       * Put extracted values into
-       * editable confirmation fields.
-       */
+      padding: 20px;
 
-      if (data.model) {
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
 
-        $("extractedModel").value =
-          data.model;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        0 15px 50px rgba(0,0,0,0.25);
 
-      }
+      overflow: hidden;
 
-
-      if (
-        data.current_hmr !== undefined &&
-        data.current_hmr !== null
-      ) {
-
-        $("extractedHmr").value =
-          data.current_hmr;
-
-      }
-
-
-      if (
-        data.current_kwh !== undefined &&
-        data.current_kwh !== null
-      ) {
-
-        $("extractedKwh").value =
-          data.current_kwh;
-
-      }
-
-
-      if (
-        data.previous_balance !== undefined &&
-        data.previous_balance !== null
-      ) {
-
-        $("extractedPreviousBalance").value =
-          data.previous_balance;
-
-      }
-
-
-      if (
-        data.fuel_filled !== undefined &&
-        data.fuel_filled !== null
-      ) {
-
-        $("extractedFuelFilled").value =
-          data.fuel_filled;
-
-      }
-
-
-      if (
-        data.current_balance !== undefined &&
-        data.current_balance !== null
-      ) {
-
-        $("extractedBalance").value =
-          data.current_balance;
-
-      }
-
-
-      $("extractionSection")
-        .classList
-        .add("show");
-
-
-      $("extractionSection")
-        .scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-
-
-      message(
-        $("authMessage"),
-        "Details extracted. Please review and confirm every field.",
-        "success"
-      );
-
-
-    } catch (error) {
-
-      message(
-        $("authMessage"),
-        error.message ||
-        "Image extraction failed.",
-        "error"
-      );
-
-    } finally {
-
-      $("extractButton").disabled =
-        false;
-
-      $("extractButton").textContent =
-        "EXTRACT DETAILS";
-
-
-      $("extractLoading")
-        .classList
-        .remove("show");
-
+      transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
     }
 
-  }
-);
+    .card::before {
+      content: "";
+      position: absolute;
 
+      width: 180px;
+      height: 180px;
 
-/* =====================================================
-   MANUAL SAVE
-   ===================================================== */
+      top: -100px;
+      right: -80px;
 
-$("updateSite")
-.addEventListener(
-  "click",
-  async () => {
-
-    clearMessage(
-      $("updateMessage")
-    );
-
-
-    const adminKey =
-      $("adminKey")
-        .value
-        .trim();
-
-
-    const siteId =
-      $("siteId")
-        .value
-        .trim();
-
-
-    const model =
-      $("model")
-        .value;
-
-
-    const hmr =
-      $("currentHmr")
-        .value;
-
-
-    const kwh =
-      $("currentKwh")
-        .value;
-
-
-    const balance =
-      $("currentBalance")
-        .value;
-
-
-    if (!adminKey) {
-
-      message(
-        $("updateMessage"),
-        "Please enter the admin key.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    if (!siteId) {
-
-      message(
-        $("updateMessage"),
-        "Site ID is required.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    if (
-      hmr === "" ||
-      kwh === "" ||
-      balance === ""
-    ) {
-
-      message(
-        $("updateMessage"),
-        "Please fill all manual reading fields.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    $("updateSite").disabled =
-      true;
-
-    $("updateSite").textContent =
-      "SAVING...";
-
-
-    try {
-
-      const response =
-        await fetch(
-          "/api/admin/update-site",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              "Accept":
-                "application/json",
-
-              "X-Admin-Key":
-                adminKey
-            },
-
-            body:
-              JSON.stringify({
-
-                site_id:
-                  siteId,
-
-                model:
-                  model,
-
-                current_hmr:
-                  hmr,
-
-                current_kwh:
-                  kwh,
-
-                current_balance:
-                  balance
-
-              })
-          }
+      background:
+        radial-gradient(
+          circle,
+          rgba(0,217,255,0.13),
+          transparent 70%
         );
 
+      pointer-events: none;
+    }
 
-      const text =
-        await response.text();
+    .card:hover {
+      transform: translateY(-2px);
 
+      border-color:
+        rgba(91, 145, 255, 0.5);
 
-      const data =
-        text.trim()
-          ? JSON.parse(text)
-          : {};
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.07),
+        0 20px 55px rgba(0,0,0,0.32),
+        0 0 25px rgba(55,100,255,0.08);
+    }
 
+    .card h2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
 
-      if (
-        !response.ok ||
-        !data.success
-      ) {
+      margin: 0 0 18px;
 
-        throw new Error(
-          data.error ||
-          "Site update failed."
+      font-size: 19px;
+    }
+
+    .icon {
+      width: 38px;
+      height: 38px;
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 12px;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(0,217,255,0.25),
+          rgba(155,53,255,0.35)
         );
 
+      box-shadow:
+        0 0 18px rgba(0,217,255,0.2);
+
+      font-size: 19px;
+    }
+
+    /* =========================
+       LABELS
+    ========================== */
+
+    label {
+      display: block;
+
+      margin: 14px 0 7px;
+
+      color: #cbd4ef;
+
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* =========================
+       INPUTS
+    ========================== */
+
+    input,
+    select {
+      width: 100%;
+
+      padding: 13px 14px;
+
+      border-radius: 11px;
+
+      border: 1px solid rgba(110,130,190,0.25);
+
+      background:
+        rgba(3, 7, 20, 0.72);
+
+      color: white;
+
+      font-size: 15px;
+
+      outline: none;
+
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+    }
+
+    input::placeholder {
+      color: #697592;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--cyan);
+
+      background:
+        rgba(4, 12, 31, 0.9);
+
+      box-shadow:
+        0 0 0 3px rgba(0,217,255,0.08),
+        0 0 18px rgba(0,217,255,0.12);
+    }
+
+    select option {
+      background: #0b1025;
+      color: white;
+    }
+
+    /* =========================
+       BUTTONS
+    ========================== */
+
+    button {
+      position: relative;
+
+      width: 100%;
+
+      margin-top: 14px;
+
+      padding: 14px 16px;
+
+      border: 0;
+      border-radius: 11px;
+
+      color: white;
+
+      font-size: 14px;
+      font-weight: 800;
+
+      cursor: pointer;
+
+      background:
+        linear-gradient(
+          90deg,
+          #00bff5,
+          #536cff,
+          #9b35ff
+        );
+
+      background-size: 200% auto;
+
+      box-shadow:
+        0 8px 25px rgba(72,90,255,0.25);
+
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background-position 0.4s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+
+      background-position: right center;
+
+      box-shadow:
+        0 12px 32px rgba(72,90,255,0.4);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .secondary {
+      background:
+        linear-gradient(
+          90deg,
+          rgba(34,47,86,0.95),
+          rgba(67,40,102,0.95)
+        );
+
+      box-shadow: none;
+    }
+
+    /* =========================
+       SITE INFO
+    ========================== */
+
+    .site-info {
+      display: none;
+    }
+
+    .site-info.show {
+      display: block;
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
       }
 
-
-      message(
-        $("updateMessage"),
-        "Site updated successfully.",
-        "success"
-      );
-
-
-      $("siteHmr").textContent =
-        hmr;
-
-      $("siteKwh").textContent =
-        kwh;
-
-      $("siteBalance").textContent =
-        balance;
-
-      $("siteModel").textContent =
-        model;
-
-
-    } catch (error) {
-
-      message(
-        $("updateMessage"),
-        error.message ||
-        "Site update failed.",
-        "error"
-      );
-
-    } finally {
-
-      $("updateSite").disabled =
-        false;
-
-      $("updateSite").textContent =
-        "SAVE MANUAL READING";
-
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-  }
-);
+    .info-grid {
+      display: grid;
 
+      grid-template-columns:
+        repeat(5, 1fr);
 
-/* =====================================================
-   SAVE OCR RESULT
-   ===================================================== */
-
-$("saveExtracted")
-.addEventListener(
-  "click",
-  async () => {
-
-    clearMessage(
-      $("extractMessage")
-    );
-
-
-    const adminKey =
-      $("adminKey")
-        .value
-        .trim();
-
-
-    const siteId =
-      $("siteId")
-        .value
-        .trim();
-
-
-    const model =
-      $("extractedModel")
-        .value;
-
-
-    const hmr =
-      $("extractedHmr")
-        .value;
-
-
-    const kwh =
-      $("extractedKwh")
-        .value;
-
-
-    const balance =
-      $("extractedBalance")
-        .value;
-
-
-    if (!adminKey) {
-
-      message(
-        $("extractMessage"),
-        "Please enter the admin key.",
-        "error"
-      );
-
-      return;
-
+      gap: 10px;
     }
 
+    .info-box {
+      min-width: 0;
 
-    if (!siteId) {
+      padding: 14px;
 
-      message(
-        $("extractMessage"),
-        "Site ID is required.",
-        "error"
-      );
+      border-radius: 13px;
 
-      return;
+      background:
+        rgba(4, 10, 27, 0.7);
 
+      border: 1px solid rgba(90,115,190,0.2);
     }
 
-
-    if (
-      hmr === "" ||
-      kwh === "" ||
-      balance === ""
-    ) {
-
-      message(
-        $("extractMessage"),
-        "Please review all required extracted fields.",
-        "error"
-      );
-
-      return;
-
+    .info-label {
+      color: #8491b3;
+      font-size: 11px;
+      margin-bottom: 7px;
     }
 
+    .info-value {
+      color: white;
+      font-weight: 800;
+      font-size: 15px;
+      overflow-wrap: anywhere;
+    }
 
-    $("saveExtracted").disabled =
-      true;
+    /* =========================
+       IMAGE PREVIEW
+    ========================== */
 
-    $("saveExtracted").textContent =
-      "SAVING...";
+    .preview {
+      display: none;
+      margin-top: 15px;
+    }
 
+    .preview.show {
+      display: block;
+      animation: slideUp 0.35s ease;
+    }
 
-    try {
+    .preview img {
+      width: 100%;
+      max-height: 360px;
 
-      const response =
-        await fetch(
-          "/api/admin/update-site",
-          {
-            method: "POST",
+      object-fit: contain;
 
-            headers: {
-              "Content-Type":
-                "application/json",
+      display: block;
 
-              "Accept":
-                "application/json",
+      border-radius: 13px;
 
-              "X-Admin-Key":
-                adminKey
-            },
+      border: 1px solid rgba(73,130,255,0.3);
 
-            body:
-              JSON.stringify({
+      background: #02040d;
+    }
 
-                site_id:
-                  siteId,
+    .file-name {
+      margin-top: 8px;
 
-                model:
-                  model,
+      color: var(--muted);
 
-                current_hmr:
-                  hmr,
+      font-size: 12px;
 
-                current_kwh:
-                  kwh,
+      overflow-wrap: anywhere;
+    }
 
-                current_balance:
-                  balance
+    /* =========================
+       LOADING
+    ========================== */
 
-              })
-          }
-        );
+    .loading {
+      display: none;
 
+      margin-top: 12px;
+      padding: 12px;
 
-      const text =
-        await response.text();
+      text-align: center;
 
+      color: var(--cyan);
 
-      const data =
-        text.trim()
-          ? JSON.parse(text)
-          : {};
+      border-radius: 11px;
 
+      background:
+        rgba(0,217,255,0.06);
 
-      if (
-        !response.ok ||
-        !data.success
-      ) {
+      border: 1px solid rgba(0,217,255,0.15);
 
-        throw new Error(
-          data.error ||
-          "Save failed."
-        );
+      animation: pulse 1.3s infinite;
+    }
 
+    .loading.show {
+      display: block;
+    }
+
+    @keyframes pulse {
+      50% {
+        opacity: 0.45;
+      }
+    }
+
+    /* =========================
+       WARNING / MESSAGES
+    ========================== */
+
+    .warning {
+      margin-top: 13px;
+
+      padding: 12px 14px;
+
+      border-radius: 11px;
+
+      color: #ffe18a;
+
+      background:
+        rgba(255,200,87,0.06);
+
+      border: 1px solid rgba(255,200,87,0.2);
+
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .message {
+      min-height: 20px;
+
+      margin-top: 10px;
+
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .message.success {
+      color: var(--green);
+    }
+
+    .message.error {
+      color: #ff6b7a;
+    }
+
+    /* =========================
+       HIDDEN SECTIONS
+    ========================== */
+
+    .manual-section,
+    .extraction-section {
+      display: none;
+    }
+
+    .manual-section.show,
+    .extraction-section.show {
+      display: block;
+
+      animation: slideUp 0.4s ease;
+    }
+
+    /* =========================
+       FOOTER
+    ========================== */
+
+    footer {
+      text-align: center;
+
+      color: #66718f;
+
+      font-size: 11px;
+
+      margin-top: 28px;
+    }
+
+    /* =========================
+       MOBILE
+    ========================== */
+
+    @media (max-width: 800px) {
+
+      .grid {
+        grid-template-columns: 1fr;
       }
 
+      .full {
+        grid-column: auto;
+      }
 
-      message(
-        $("extractMessage"),
-        "Extracted reading saved successfully.",
-        "success"
-      );
-
-
-      $("siteInfo")
-        .classList
-        .add("show");
-
-
-      $("siteModel").textContent =
-        model;
-
-
-      $("siteHmr").textContent =
-        hmr;
-
-
-      $("siteKwh").textContent =
-        kwh;
-
-
-      $("siteBalance").textContent =
-        balance;
-
-
-      /*
-       * Clear the temporary image from
-       * the browser after successful save.
-       *
-       * The server never stores the image.
-       */
-
-      $("imageInput").value =
-        "";
-
-      $("previewImage").src =
-        "";
-
-      $("fileName").textContent =
-        "";
-
-      $("preview")
-        .classList
-        .remove("show");
-
-
-      $("extractionSection")
-        .classList
-        .remove("show");
-
-
-    } catch (error) {
-
-      message(
-        $("extractMessage"),
-        error.message ||
-        "Save failed.",
-        "error"
-      );
-
-    } finally {
-
-      $("saveExtracted").disabled =
-        false;
-
-      $("saveExtracted").textContent =
-        "CONFIRM & SAVE";
+      .info-grid {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
 
     }
 
-  }
-);
-</script>
+    @media (max-width: 480px) {
+
+      .container {
+        padding: 18px 12px 35px;
+      }
+
+      .card {
+        padding: 16px;
+        border-radius: 17px;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Animated background particles -->
+  <div class="particles">
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+  </div>
+
+
+  <main class="container">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="header">
+
+      <div class="logo">
+        ⚡
+      </div>
+
+      <h1>
+        Generator Admin
+      </h1>
+
+      <div class="subtitle">
+        Manage generator readings and extract readings from screenshots
+      </div>
+
+    </header>
+
+
+    <div class="grid">
+
+      <!-- =========================
+           ADMIN ACCESS
+      ========================== -->
+
+      <section class="card">
+
+        <h2>
+          <span class="icon">🔐</span>
+          Admin Access
+        </h2>
+
+        <label for="adminKey">
+          Admin Key
+        </label>
+
+        <input
+          type="password"
+          id="adminKey"
+          placeholder="Enter admin key"
+          autocomplete="off"
+        >
+
+        <div
+          id="authMessage"
+          class="message"
+        ></div>
+
+      </section>
+
+
+      <!-- =========================
+           SITE
+      ========================== -->
+
+      <section class="card">
+
+        <h2>
+          <span class="icon">🏢</span>
+          Site
+        </h2>
+
+        <label for="siteId">
+          Site ID
+        </label>
+
+        <input
+          type="text"
+          id="siteId"
+          placeholder="Enter Site ID"
+          autocomplete="off"
+        >
+
+        <label for="model">
+          Generator Model
+        </label>
+
+        <select id="model">
+
+          <option value="">
+            Select generator model
+          </option>
+
+          <option value="eicher10">
+            Eicher 10 KVA
+          </option>
+
+          <option value="eicher20">
+            Eicher 20 KVA
+          </option>
+
+          <option value="koel20">
+            KOEL 20 KVA
+          </option>
+
+          <option value="mahindra20">
+            Mahindra 20 KVA
+          </option>
+
+          <option value="mahindra10">
+            Mahindra 10 KVA
+          </option>
+
+        </select>
+
+        <button
+          type="button"
+          id="loadSite"
+        >
+          🔄 LOAD EXISTING SITE
+        </button>
+
+      </section>
+
+
+      <!-- =========================
+           CURRENT SITE
+      ========================== -->
+
+      <section
+        class="card site-info full"
+        id="siteInfo"
+      >
+
+        <h2>
+          <span class="icon">📊</span>
+          Current Site Information
+        </h2>
+
+        <div class="info-grid">
+
+          <div class="info-box">
+            <div class="info-label">
+              SITE
+            </div>
+
+            <div
+              class="info-value"
+              id="siteName"
+            >
+              —
+            </div>
+          </div>
+
+
+          <div class="info-box">
+            <div class="info-label">
+              MODEL
+            </div>
+
+            <div
+              class="info-value"
+              id="siteModel"
+            >
+              —
+            </div>
+          </div>
+
+
+          <div class="info-box">
+            <div class="info-label">
+              HMR
+            </div>
+
+            <div
+              class="info-value"
+              id="siteHmr"
+            >
+              —
+            </div>
+          </div>
+
+
+          <div class="info-box">
+            <div class="info-label">
+              kWh
+            </div>
+
+            <div
+              class="info-value"
+              id="siteKwh"
+            >
+              —
+            </div>
+          </div>
+
+
+          <div class="info-box">
+            <div class="info-label">
+              BALANCE
+            </div>
+
+            <div
+              class="info-value"
+              id="siteBalance"
+            >
+              —
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           IMAGE EXTRACTION
+      ========================== -->
+
+      <section class="card">
+
+        <h2>
+          <span class="icon">📷</span>
+          Extract From Screenshot
+        </h2>
+
+        <label for="imageInput">
+          Generator Screenshot
+        </label>
+
+        <input
+          type="file"
+          id="imageInput"
+          accept="image/*"
+        >
+
+
+        <div
+          id="preview"
+          class="preview"
+        >
+
+          <img
+            id="previewImage"
+            alt="Generator screenshot preview"
+          >
+
+          <div
+            id="fileName"
+            class="file-name"
+          ></div>
+
+        </div>
+
+
+        <button
+          type="button"
+          id="extractButton"
+        >
+          ✨ EXTRACT DETAILS
+        </button>
+
+
+        <div
+          id="extractLoading"
+          class="loading"
+        >
+          ⏳ AI is reading the screenshot...
+        </div>
+
+
+        <div class="warning">
+          ⚠️ Extracted values will be shown for your review.
+          Nothing is saved until you press CONFIRM &amp; SAVE.
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           OCR CONFIRMATION
+      ========================== -->
+
+      <section
+        class="card extraction-section"
+        id="extractionSection"
+      >
+
+        <h2>
+          <span class="icon">🧾</span>
+          Review Extracted Details
+        </h2>
+
+
+        <label for="extractedModel">
+          Generator Model
+        </label>
+
+        <select id="extractedModel">
+
+          <option value="">
+            Select generator model
+          </option>
+
+          <option value="eicher10">
+            Eicher 10 KVA
+          </option>
+
+          <option value="eicher20">
+            Eicher 20 KVA
+          </option>
+
+          <option value="koel20">
+            KOEL 20 KVA
+          </option>
+
+          <option value="mahindra20">
+            Mahindra 20 KVA
+          </option>
+
+          <option value="mahindra10">
+            Mahindra 10 KVA
+          </option>
+
+        </select>
+
+
+        <label for="extractedHmr">
+          Current HMR
+        </label>
+
+        <input
+          type="number"
+          id="extractedHmr"
+          step="any"
+          placeholder="Current HMR"
+        >
+
+        <label for="extractedKwh">
+          Current kWh
+        </label>
+
+        <input
+          type="number"
+          id="extractedKwh"
+          step="any"
+          placeholder="Current kWh"
+        >
+
+        <label for="extractedPreviousBalance">
+          Previous Balance
+        </label>
+
+        <input
+          type="number"
+          id="extractedPreviousBalance"
+          step="any"
+          placeholder="Previous balance"
+        >
+
+        <label for="extractedFuelFilled">
+          Fuel Filled
+        </label>
+
+        <input
+          type="number"
+          id="extractedFuelFilled"
+          step="any"
+          placeholder="Fuel filled"
+        >
+
+        <label for="extractedBalance">
+          Current Balance
+        </label>
+
+        <input
+          type="number"
+          id="extractedBalance"
+          step="any"
+          placeholder="Current balance"
+        >
+
+        <div
+          id="extractMessage"
+          class="message"
+        ></div>
+
+        <button
+          type="button"
+          id="saveExtracted"
+        >
+          ✅ CONFIRM &amp; SAVE
+        </button>
+
+      </section>
+
+      <!-- ===================================
+           MANUAL READING
+      =================================== -->
+
+      <section class="card full">
+
+        <button
+          type="button"
+          id="manualButton"
+          class="secondary"
+        >
+          ⚙️ MANUAL READING
+        </button>
+
+        <div
+          id="manualSection"
+          class="manual-section"
+        >
+
+          <h2 style="margin-top:22px;">
+            <span class="icon">⚙️</span>
+            Manual Reading
+          </h2>
+
+          <label for="currentHmr">
+            Current HMR
+          </label>
+
+          <input
+            type="number"
+            id="currentHmr"
+            step="any"
+            placeholder="Enter HMR"
+          >
+
+          <label for="currentKwh">
+            Current kWh
+          </label>
+
+          <input
+            type="number"
+            id="currentKwh"
+            step="any"
+            placeholder="Enter kWh"
+          >
+
+          <label for="currentBalance">
+            Current Balance
+          </label>
+
+          <input
+            type="number"
+            id="currentBalance"
+            step="any"
+            placeholder="Enter balance"
+          >
+
+          <div
+            id="updateMessage"
+            class="message"
+          ></div>
+
+          <button
+            type="button"
+            id="updateSite"
+          >
+            💾 SAVE MANUAL READING
+          </button>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <footer>
+      Generator Fuel Calculator · Admin Panel
+    </footer>
+
+  </main>
+
+  <!-- IMPORTANT:
+       JavaScript remains in a separate file.
+  -->
+
+  <script src="/admin.js"></script>
 
 </body>
 </html>
+
+      
