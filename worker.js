@@ -1,4 +1,15 @@
+/* =========================================================
+   GENERATOR FUEL CALCULATOR
+   CLOUDFLARE WORKER
+   ========================================================= */
+
+
+/* =========================================================
+   GENERATOR CHARTS
+   ========================================================= */
+
 const CHARTS = {
+
   eicher10: {
     name: "Eicher 10 KVA",
     rows: [
@@ -76,14 +87,16 @@ const CHARTS = {
       [9.6, 11.2, 3.02]
     ]
   }
+
 };
 
 
-/* =======================================================
-   COMMON JSON RESPONSE
-======================================================= */
+/* =========================================================
+   JSON RESPONSE
+   ========================================================= */
 
 function json(data, status = 200) {
+
   return new Response(
     JSON.stringify(data),
     {
@@ -97,12 +110,13 @@ function json(data, status = 200) {
       }
     }
   );
+
 }
 
 
-/* =======================================================
+/* =========================================================
    NUMBER VALIDATION
-======================================================= */
+   ========================================================= */
 
 function number(value, name) {
 
@@ -111,26 +125,91 @@ function number(value, name) {
     value === null ||
     String(value).trim() === ""
   ) {
+
     throw new Error(
       `${name} is required.`
     );
+
   }
 
   const n = Number(value);
 
   if (!Number.isFinite(n)) {
+
     throw new Error(
       `${name} must be a valid number.`
     );
+
   }
 
   return n;
+
 }
 
 
-/* =======================================================
+/* =========================================================
+   ADMIN AUTHENTICATION
+   ========================================================= */
+
+function checkAdminKey(request, env) {
+
+  const adminKey =
+    request.headers.get(
+      "X-Admin-Key"
+    );
+
+
+  if (!env.ADMIN_KEY) {
+
+    return {
+      ok: false,
+
+      response: json(
+        {
+          success: false,
+
+          error:
+            "ADMIN_KEY is not configured."
+        },
+        500
+      )
+    };
+
+  }
+
+
+  if (
+    !adminKey ||
+    adminKey !== env.ADMIN_KEY
+  ) {
+
+    return {
+      ok: false,
+
+      response: json(
+        {
+          success: false,
+
+          error:
+            "Unauthorized."
+        },
+        401
+      )
+    };
+
+  }
+
+
+  return {
+    ok: true
+  };
+
+}
+
+
+/* =========================================================
    CALCULATOR
-======================================================= */
+   ========================================================= */
 
 async function calculate(request) {
 
@@ -139,11 +218,13 @@ async function calculate(request) {
     const body =
       await request.json();
 
+
     const A =
       number(
         body.A,
         "Current HMR"
       );
+
 
     const B =
       number(
@@ -151,11 +232,13 @@ async function calculate(request) {
         "Current kWh"
       );
 
+
     const C =
       number(
         body.C,
         "Previous HMR"
       );
+
 
     const D =
       number(
@@ -163,19 +246,23 @@ async function calculate(request) {
         "Previous kWh"
       );
 
+
     const E =
       number(
         body.E,
         "Previous balance"
       );
 
+
     const model =
       String(
         body.model || ""
       ).trim();
 
+
     const chart =
       CHARTS[model];
+
 
     if (!chart) {
 
@@ -185,6 +272,7 @@ async function calculate(request) {
 
     }
 
+
     if (A <= C) {
 
       throw new Error(
@@ -192,6 +280,7 @@ async function calculate(request) {
       );
 
     }
+
 
     if (B < D) {
 
@@ -201,14 +290,18 @@ async function calculate(request) {
 
     }
 
+
     const Z =
       A - C;
+
 
     const Y =
       B - D;
 
+
     const X =
       Y / Z;
+
 
     const row =
       chart.rows.find(
@@ -217,6 +310,7 @@ async function calculate(request) {
           X <= hi
       );
 
+
     if (!row) {
 
       const max =
@@ -224,20 +318,28 @@ async function calculate(request) {
           chart.rows.length - 1
         ][1];
 
+
       throw new Error(
         `X = ${X.toFixed(4)} is outside the ${chart.name} chart range (0-${max}).`
       );
 
     }
 
-    const [lo, hi, L] =
-      row;
+
+    const [
+      lo,
+      hi,
+      L
+    ] = row;
+
 
     const S =
       L * Z;
 
+
     const T =
       E - S;
+
 
     return json({
 
@@ -254,6 +356,7 @@ async function calculate(request) {
       C,
       D,
       E,
+
       Z,
       Y,
       X,
@@ -273,6 +376,7 @@ async function calculate(request) {
           error?.message ||
           "Calculation failed."
       },
+
       400
     );
 
@@ -281,9 +385,9 @@ async function calculate(request) {
 }
 
 
-/* =======================================================
+/* =========================================================
    GET SITE
-======================================================= */
+   ========================================================= */
 
 async function getSite(
   request,
@@ -295,23 +399,28 @@ async function getSite(
     const url =
       new URL(request.url);
 
+
     const siteId =
       url.searchParams.get(
         "site_id"
       );
+
 
     if (!siteId) {
 
       return json(
         {
           success: false,
+
           error:
             "site_id is required."
         },
+
         400
       );
 
     }
+
 
     const result =
       await env.DB
@@ -333,25 +442,28 @@ async function getSite(
         .bind(siteId)
         .first();
 
+
     if (!result) {
 
       return json(
         {
           success: false,
+
           error:
             "Site ID not found."
         },
+
         404
       );
 
     }
 
+
     return json({
 
       success: true,
 
-      site:
-        result
+      site: result
 
     });
 
@@ -365,6 +477,7 @@ async function getSite(
           error?.message ||
           "Database error."
       },
+
       500
     );
 
@@ -373,78 +486,14 @@ async function getSite(
 }
 
 
-/* =======================================================
-   ADMIN AUTHENTICATION
-======================================================= */
+/* =========================================================
+   UPDATE / CREATE SITE
+   ========================================================= */
 
-function checkAdminKey(
+async function saveSite(
   request,
-  env
-) {
-
-  const adminKey =
-    request.headers.get(
-      "X-Admin-Key"
-    );
-
-  if (!env.ADMIN_KEY) {
-
-    return {
-
-      ok: false,
-
-      response:
-        json(
-          {
-            success: false,
-
-            error:
-              "ADMIN_KEY is not configured in Cloudflare."
-          },
-          500
-        )
-
-    };
-
-  }
-
-  if (
-    !adminKey ||
-    adminKey !== env.ADMIN_KEY
-  ) {
-
-    return {
-
-      ok: false,
-
-      response:
-        json(
-          {
-            success: false,
-            error:
-              "Unauthorized."
-          },
-          401
-        )
-
-    };
-
-  }
-
-  return {
-    ok: true
-  };
-
-}
-
-
-/* =======================================================
-   UPDATE EXISTING SITE
-======================================================= */
-
-async function updateSite(
-  request,
-  env
+  env,
+  source = "manual"
 ) {
 
   try {
@@ -455,17 +504,23 @@ async function updateSite(
         env
       );
 
+
     if (!auth.ok) {
+
       return auth.response;
+
     }
+
 
     const body =
       await request.json();
+
 
     const siteId =
       String(
         body.site_id || ""
       ).trim();
+
 
     if (!siteId) {
 
@@ -475,28 +530,12 @@ async function updateSite(
 
     }
 
-    const hmr =
-      number(
-        body.current_hmr,
-        "Current HMR"
-      );
-
-    const kwh =
-      number(
-        body.current_kwh,
-        "Current kWh"
-      );
-
-    const balance =
-      number(
-        body.current_balance,
-        "Current balance"
-      );
 
     const model =
       String(
         body.model || ""
       ).trim();
+
 
     if (!CHARTS[model]) {
 
@@ -506,11 +545,39 @@ async function updateSite(
 
     }
 
+
+    const hmr =
+      number(
+        body.current_hmr,
+        "Current HMR"
+      );
+
+
+    const kwh =
+      number(
+        body.current_kwh,
+        "Current kWh"
+      );
+
+
+    const balance =
+      number(
+        body.current_balance,
+        "Current balance"
+      );
+
+
+    const siteName =
+      String(
+        body.site_name ||
+        siteId
+      ).trim();
+
+
     const existing =
       await env.DB
         .prepare(`
-          SELECT
-            site_id
+          SELECT site_id
           FROM sites
           WHERE site_id = ?
           LIMIT 1
@@ -518,45 +585,85 @@ async function updateSite(
         .bind(siteId)
         .first();
 
-    if (!existing) {
-
-      return json(
-        {
-          success: false,
-          error:
-            "Site ID not found."
-        },
-        404
-      );
-
-    }
 
     const now =
       new Date().toISOString();
 
 
-    await env.DB
-      .prepare(`
-        UPDATE sites
-        SET
-          model = ?,
-          current_hmr = ?,
-          current_kwh = ?,
-          current_balance = ?,
-          last_updated = ?,
-          data_source = 'manual'
-        WHERE site_id = ?
-      `)
-      .bind(
-        model,
-        hmr,
-        kwh,
-        balance,
-        now,
-        siteId
-      )
-      .run();
+    /*
+     * EXISTING SITE
+     */
 
+    if (existing) {
+
+      await env.DB
+        .prepare(`
+          UPDATE sites
+          SET
+            site_name = ?,
+            model = ?,
+            current_hmr = ?,
+            current_kwh = ?,
+            current_balance = ?,
+            last_updated = ?,
+            data_source = ?
+          WHERE site_id = ?
+        `)
+        .bind(
+          siteName,
+          model,
+          hmr,
+          kwh,
+          balance,
+          now,
+          source,
+          siteId
+        )
+        .run();
+
+
+    }
+
+    /*
+     * NEW SITE
+     */
+
+    else {
+
+      await env.DB
+        .prepare(`
+          INSERT INTO sites
+          (
+            site_id,
+            site_name,
+            model,
+            current_hmr,
+            current_kwh,
+            current_balance,
+            last_updated,
+            screenshot_url,
+            data_source
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?)
+        `)
+        .bind(
+          siteId,
+          siteName,
+          model,
+          hmr,
+          kwh,
+          balance,
+          now,
+          source
+        )
+        .run();
+
+    }
+
+
+    /*
+     * SAVE READING HISTORY
+     */
 
     await env.DB
       .prepare(`
@@ -569,14 +676,15 @@ async function updateSite(
           reading_date,
           source
         )
-        VALUES (?, ?, ?, ?, ?, 'manual')
+        VALUES (?, ?, ?, ?, ?, ?)
       `)
       .bind(
         siteId,
         hmr,
         kwh,
         balance,
-        now
+        now,
+        source
       )
       .run();
 
@@ -585,11 +693,23 @@ async function updateSite(
 
       success: true,
 
+      action:
+        existing
+          ? "updated"
+          : "created",
+
       message:
-        "Site updated successfully.",
+        existing
+          ? "Site updated successfully."
+          : "New site created successfully.",
 
       site_id:
         siteId,
+
+      site_name:
+        siteName,
+
+      model,
 
       current_hmr:
         hmr,
@@ -603,10 +723,10 @@ async function updateSite(
       updated_at:
         now,
 
-      source:
-        "manual"
+      source
 
     });
+
 
   } catch (error) {
 
@@ -616,8 +736,9 @@ async function updateSite(
 
         error:
           error?.message ||
-          "Site update failed."
+          "Site save failed."
       },
+
       400
     );
 
@@ -626,19 +747,9 @@ async function updateSite(
 }
 
 
-/* =======================================================
-   IMAGE OCR EXTRACTION
-=======================================================
-
-   The image is received temporarily.
-
-   It is NOT saved in D1.
-
-   It is NOT saved in Cloudflare Assets.
-
-   OCR.space receives the image and returns text.
-
-======================================================= */
+/* =========================================================
+   IMAGE → AI VISION EXTRACTION
+   ========================================================= */
 
 async function extractImage(
   request,
@@ -647,48 +758,45 @@ async function extractImage(
 
   try {
 
-    /* ---------------------------------------------------
-       ADMIN AUTH
-    --------------------------------------------------- */
-
     const auth =
       checkAdminKey(
         request,
         env
       );
 
+
     if (!auth.ok) {
+
       return auth.response;
+
     }
 
 
-    /* ---------------------------------------------------
-       OCR KEY CHECK
-    --------------------------------------------------- */
+    /*
+     * AI BINDING CHECK
+     */
 
-    if (!env.OCR_SPACE_API_KEY) {
+    if (!env.AI) {
 
       return json(
         {
           success: false,
 
           error:
-            "OCR_SPACE_API_KEY is not configured in Cloudflare."
+            "Workers AI binding is missing. Add an AI binding named AI to this Worker."
         },
+
         500
       );
 
     }
 
 
-    /* ---------------------------------------------------
-       CONTENT TYPE
-    --------------------------------------------------- */
-
     const contentType =
       request.headers.get(
         "content-type"
       ) || "";
+
 
     if (
       !contentType.includes(
@@ -701,23 +809,22 @@ async function extractImage(
           success: false,
 
           error:
-            "Please upload an image using multipart/form-data."
+            "Image must be uploaded as multipart/form-data."
         },
+
         400
       );
 
     }
 
 
-    /* ---------------------------------------------------
-       READ UPLOADED IMAGE
-    --------------------------------------------------- */
-
     const form =
       await request.formData();
 
+
     const image =
       form.get("image");
+
 
     const siteId =
       String(
@@ -734,6 +841,7 @@ async function extractImage(
           error:
             "Image is required."
         },
+
         400
       );
 
@@ -755,80 +863,298 @@ async function extractImage(
           error:
             "The uploaded file must be an image."
         },
+
         400
       );
 
     }
 
 
-    /* ---------------------------------------------------
-       SEND IMAGE TO OCR.SPACE
-    --------------------------------------------------- */
+    /*
+     * Convert image to base64 data URL.
+     *
+     * It is held only during this request.
+     * We do NOT save it.
+     */
 
-    const ocrForm =
-      new FormData();
-
-
-    ocrForm.append(
-      "apikey",
-      env.OCR_SPACE_API_KEY
-    );
+    const arrayBuffer =
+      await image.arrayBuffer();
 
 
-    ocrForm.append(
-      "language",
-      "eng"
-    );
+    const bytes =
+      new Uint8Array(
+        arrayBuffer
+      );
 
 
-    ocrForm.append(
-      "isOverlayRequired",
-      "false"
-    );
+    let binary = "";
 
 
-    ocrForm.append(
-      "OCREngine",
-      "2"
-    );
+    const chunkSize =
+      0x8000;
 
 
-    ocrForm.append(
-      "file",
-      image,
-      image.name ||
-        "generator.jpg"
-    );
+    for (
+      let i = 0;
+      i < bytes.length;
+      i += chunkSize
+    ) {
+
+      binary += String.fromCharCode(
+        ...bytes.subarray(
+          i,
+          Math.min(
+            i + chunkSize,
+            bytes.length
+          )
+        )
+      );
+
+    }
 
 
-    const ocrResponse =
-      await fetch(
-        "https://api.ocr.space/parse/image",
+    const base64 =
+      btoa(binary);
+
+
+    const imageData =
+      `data:${image.type};base64,${base64}`;
+
+
+    /*
+     * IMPORTANT:
+     *
+     * We deliberately do NOT ask AI
+     * to decide the generator model.
+     *
+     * The admin will choose:
+     *
+     * Eicher 10
+     * Eicher 20
+     * Mahindra 10
+     * Mahindra 20
+     * KOEL 20
+     *
+     * after extraction.
+     */
+
+    const systemPrompt = `
+You extract readings from generator meter screenshots.
+
+The screenshot format is consistent between sites,
+but the numerical values can differ.
+
+Extract ONLY information that is visibly present.
+
+Do NOT guess.
+Do NOT calculate missing values.
+Do NOT invent values.
+
+Return valid JSON only.
+
+Fields:
+
+{
+  "current_hmr": number or null,
+  "current_kwh": number or null,
+  "balance_before_filling": number or null,
+  "filling_quantity": number or null,
+  "current_balance": number or null,
+  "site_id": string or null,
+  "confidence": number,
+  "notes": string
+}
+
+Definitions:
+
+current_hmr:
+The current hour-meter reading.
+
+current_kwh:
+The current kWh reading.
+
+balance_before_filling:
+The fuel balance immediately before the latest filling.
+
+filling_quantity:
+The quantity added during the latest filling.
+
+current_balance:
+The resulting fuel balance after filling.
+If the screenshot explicitly shows the final balance, extract it.
+If it is NOT explicitly shown, return null.
+Do not calculate it.
+
+site_id:
+Only extract it if visibly printed in the screenshot.
+Otherwise return null.
+
+confidence:
+A number from 0 to 1 describing how clearly the values
+were readable.
+
+notes:
+Briefly mention any field that was unclear or not visible.
+`;
+
+
+    /*
+     * Call Cloudflare Workers AI Vision.
+     */
+
+    const aiResponse =
+      await env.AI.run(
+        "@cf/meta/llama-3.2-11b-vision-instruct",
         {
-          method: "POST",
+          messages: [
 
-          body:
-            ocrForm
+            {
+              role: "system",
+
+              content:
+                systemPrompt
+            },
+
+            {
+              role: "user",
+
+              content:
+                "Read the generator screenshot and extract the requested fields."
+            }
+
+          ],
+
+          image:
+            imageData,
+
+          max_tokens:
+            700,
+
+          temperature:
+            0
+
         }
       );
 
 
-    const ocrText =
-      await ocrResponse.text();
+    /*
+     * Extract model output.
+     */
+
+    let rawText = "";
 
 
-    /* ---------------------------------------------------
-       PARSE OCR RESPONSE
-    --------------------------------------------------- */
+    if (
+      aiResponse &&
+      typeof aiResponse === "object"
+    ) {
 
-    let ocrData = {};
+      if (
+        typeof aiResponse.response ===
+        "string"
+      ) {
+
+        rawText =
+          aiResponse.response;
+
+      }
+
+      else if (
+        typeof aiResponse.result ===
+        "string"
+      ) {
+
+        rawText =
+          aiResponse.result;
+
+      }
+
+    }
+
+
+    if (!rawText) {
+
+      rawText =
+        String(
+          aiResponse || ""
+        );
+
+    }
+
+
+    /*
+     * Remove accidental markdown fences.
+     */
+
+    rawText =
+      rawText
+        .replace(
+          /^```json\s*/i,
+          ""
+        )
+        .replace(
+          /^```\s*/i,
+          ""
+        )
+        .replace(
+          /\s*```$/i,
+          ""
+        )
+        .trim();
+
+
+    /*
+     * Find JSON if model added extra text.
+     */
+
+    const firstBrace =
+      rawText.indexOf("{");
+
+
+    const lastBrace =
+      rawText.lastIndexOf("}");
+
+
+    if (
+      firstBrace === -1 ||
+      lastBrace === -1 ||
+      lastBrace <= firstBrace
+    ) {
+
+      return json(
+        {
+          success: false,
+
+          error:
+            "The AI could not return readable structured data.",
+
+          raw:
+            rawText
+
+        },
+
+        502
+      );
+
+    }
+
+
+    const jsonText =
+      rawText.slice(
+        firstBrace,
+        lastBrace + 1
+      );
+
+
+    let extracted;
+
 
     try {
 
-      ocrData =
-        ocrText.trim()
-          ? JSON.parse(ocrText)
-          : {};
+      extracted =
+        JSON.parse(
+          jsonText
+        );
 
     } catch {
 
@@ -837,107 +1163,126 @@ async function extractImage(
           success: false,
 
           error:
-            "OCR service returned an invalid response."
+            "The AI returned invalid extraction data.",
+
+          raw:
+            rawText
+
         },
+
         502
       );
 
     }
 
 
-    /* ---------------------------------------------------
-       OCR ERROR
-    --------------------------------------------------- */
+    /*
+     * Normalize values.
+     */
 
-    if (
-      !ocrResponse.ok ||
-      ocrData.IsErroredOnProcessing
-    ) {
+    function cleanNumber(value) {
 
-      const errorMessage =
-        Array.isArray(
-          ocrData.ErrorMessage
-        )
-          ? ocrData.ErrorMessage.join(
-              " "
-            )
-          : (
-              ocrData.ErrorMessage ||
-              "OCR processing failed."
-            );
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
 
+        return null;
 
-      return json(
-        {
-          success: false,
+      }
 
-          error:
-            errorMessage
-        },
-        502
-      );
+      const n =
+        Number(value);
+
+      return Number.isFinite(n)
+        ? n
+        : null;
 
     }
 
 
-    /* ---------------------------------------------------
-       COLLECT OCR TEXT
-    --------------------------------------------------- */
+    const result = {
 
-    const parsedResults =
-      ocrData.ParsedResults ||
-      [];
+      current_hmr:
+        cleanNumber(
+          extracted.current_hmr
+        ),
+
+      current_kwh:
+        cleanNumber(
+          extracted.current_kwh
+        ),
+
+      balance_before_filling:
+        cleanNumber(
+          extracted.balance_before_filling
+        ),
+
+      filling_quantity:
+        cleanNumber(
+          extracted.filling_quantity
+        ),
+
+      current_balance:
+        cleanNumber(
+          extracted.current_balance
+        ),
+
+      site_id:
+        extracted.site_id
+          ? String(
+              extracted.site_id
+            ).trim()
+          : null,
+
+      confidence:
+        cleanNumber(
+          extracted.confidence
+        ),
+
+      notes:
+        String(
+          extracted.notes || ""
+        ).trim()
+
+    };
 
 
-    const extractedText =
-      parsedResults
-        .map(
-          item =>
-            item.ParsedText ||
-            ""
-        )
-        .join("\n")
-        .trim();
+    /*
+     * Site ID supplied by admin has priority.
+     */
 
+    if (siteId) {
 
-    if (!extractedText) {
-
-      return json(
-        {
-          success: false,
-
-          error:
-            "No readable text was found in the image."
-        },
-        422
-      );
+      result.site_id =
+        siteId;
 
     }
 
 
-    /* ---------------------------------------------------
-       RETURN OCR TEXT
-    ---------------------------------------------------
-
-       We return the raw OCR text for now.
-
-       The admin page will use this response
-       to populate the editable fields.
-
-    --------------------------------------------------- */
+    /*
+     * IMPORTANT:
+     *
+     * The image is NOT stored anywhere.
+     *
+     * We return extracted values only.
+     */
 
     return json({
 
       success: true,
 
-      extraction_ready:
-        true,
+      extraction_ready: true,
 
       site_id:
-        siteId || null,
+        result.site_id,
 
-      text:
-        extractedText
+      extracted:
+        result,
+
+      message:
+        "Image processed successfully. Review the extracted values before saving."
 
     });
 
@@ -952,6 +1297,7 @@ async function extractImage(
           error?.message ||
           "Image extraction failed."
       },
+
       500
     );
 
@@ -960,9 +1306,9 @@ async function extractImage(
 }
 
 
-/* =======================================================
-   DEBUG CONFIGURATION
-======================================================= */
+/* =========================================================
+   DEBUG CONFIG
+   ========================================================= */
 
 async function debugConfig(
   request,
@@ -982,17 +1328,17 @@ async function debugConfig(
     admin_key:
       !!env.ADMIN_KEY,
 
-    ocr_key:
-      !!env.OCR_SPACE_API_KEY
+    ai:
+      !!env.AI
 
   });
 
 }
 
 
-/* =======================================================
+/* =========================================================
    MAIN WORKER
-======================================================= */
+   ========================================================= */
 
 export default {
 
@@ -1005,14 +1351,15 @@ export default {
       new URL(request.url);
 
 
-    /* ---------------------------------------------------
-       CALCULATOR POST
-    --------------------------------------------------- */
+    /*
+     * CALCULATOR POST
+     */
 
     if (
       url.pathname ===
         "/api/calculate" &&
-      request.method === "POST"
+      request.method ===
+        "POST"
     ) {
 
       return calculate(
@@ -1022,14 +1369,15 @@ export default {
     }
 
 
-    /* ---------------------------------------------------
-       CALCULATOR GET TEST
-    --------------------------------------------------- */
+    /*
+     * CALCULATOR TEST
+     */
 
     if (
       url.pathname ===
         "/api/calculate" &&
-      request.method === "GET"
+      request.method ===
+        "GET"
     ) {
 
       return json({
@@ -1044,14 +1392,15 @@ export default {
     }
 
 
-    /* ---------------------------------------------------
-       GET SITE
-    --------------------------------------------------- */
+    /*
+     * GET SITE
+     */
 
     if (
       url.pathname ===
         "/api/site" &&
-      request.method === "GET"
+      request.method ===
+        "GET"
     ) {
 
       return getSite(
@@ -1062,68 +1411,1185 @@ export default {
     }
 
 
-    /* ---------------------------------------------------
-       ADMIN UPDATE SITE
-    --------------------------------------------------- */
+    /*
+     * MANUAL / CONFIRMED SAVE
+     */
 
     if (
       url.pathname ===
         "/api/admin/update-site" &&
-      request.method === "POST"
+      request.method ===
+        "POST"
     ) {
 
-      return updateSite(
+      return saveSite(
         request,
-        env
+        env,
+        "manual"
       );
 
-    }
+}
+    <!-- =====================================================
+     PART 2 — ADMIN.HTML JAVASCRIPT
+     ===================================================== -->
+
+<script>
+
+const $ = (id) => document.getElementById(id);
 
 
-    /* ---------------------------------------------------
-       ADMIN IMAGE OCR
-    --------------------------------------------------- */
+/* =====================================================
+   MESSAGE HELPER
+   ===================================================== */
 
-    if (
-      url.pathname ===
-        "/api/admin/extract-image" &&
-      request.method === "POST"
-    ) {
+function showMessage(element, text, type) {
 
-      return extractImage(
-        request,
-        env
-      );
+  if (!element) return;
 
-    }
+  element.textContent = text;
+
+  element.className =
+    "message " + type;
+
+}
 
 
-    /* ---------------------------------------------------
-       DEBUG CONFIG
-    --------------------------------------------------- */
+function clearMessage(element) {
 
-    if (
-      url.pathname ===
-        "/api/debug-config" &&
-      request.method === "GET"
-    ) {
+  if (!element) return;
 
-      return debugConfig(
-        request,
-        env
-      );
+  element.textContent = "";
 
-    }
+  element.className = "message";
+
+}
 
 
-    /* ---------------------------------------------------
-       STATIC WEBSITE
-    --------------------------------------------------- */
+/* =====================================================
+   SITE DISPLAY
+   ===================================================== */
 
-    return env.ASSETS.fetch(
-      request
-    );
+function showSite(site) {
+
+  const siteInfo =
+    $("siteInfo");
+
+  if (siteInfo) {
+    siteInfo.classList.add("show");
+  }
+
+
+  if ($("siteName")) {
+    $("siteName").textContent =
+      site.site_name ?? "—";
+  }
+
+
+  if ($("siteModel")) {
+    $("siteModel").textContent =
+      site.model ?? "—";
+  }
+
+
+  if ($("siteHmr")) {
+    $("siteHmr").textContent =
+      site.current_hmr ?? "—";
+  }
+
+
+  if ($("siteKwh")) {
+    $("siteKwh").textContent =
+      site.current_kwh ?? "—";
+  }
+
+
+  if ($("siteBalance")) {
+    $("siteBalance").textContent =
+      site.current_balance ?? "—";
+  }
+
+
+  if (
+    site.model &&
+    $("model")
+  ) {
+
+    $("model").value =
+      site.model;
 
   }
 
-};
+
+  if (
+    site.current_hmr !== null &&
+    site.current_hmr !== undefined &&
+    $("currentHmr")
+  ) {
+
+    $("currentHmr").value =
+      site.current_hmr;
+
+  }
+
+
+  if (
+    site.current_kwh !== null &&
+    site.current_kwh !== undefined &&
+    $("currentKwh")
+  ) {
+
+    $("currentKwh").value =
+      site.current_kwh;
+
+  }
+
+
+  if (
+    site.current_balance !== null &&
+    site.current_balance !== undefined &&
+    $("currentBalance")
+  ) {
+
+    $("currentBalance").value =
+      site.current_balance;
+
+  }
+
+}
+
+
+/* =====================================================
+   LOAD EXISTING SITE
+   ===================================================== */
+
+if ($("loadSite")) {
+
+  $("loadSite").addEventListener(
+    "click",
+    async () => {
+
+      const siteId =
+        $("siteId")
+          .value
+          .trim();
+
+
+      clearMessage(
+        $("authMessage")
+      );
+
+
+      if (!siteId) {
+
+        showMessage(
+          $("authMessage"),
+          "Please enter a Site ID.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      $("loadSite").disabled =
+        true;
+
+      $("loadSite").textContent =
+        "Loading...";
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/site?site_id=" +
+            encodeURIComponent(siteId)
+          );
+
+
+        const text =
+          await response.text();
+
+
+        const data =
+          text.trim()
+            ? JSON.parse(text)
+            : {};
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.error ||
+            "Unable to load site."
+          );
+
+        }
+
+
+        showSite(
+          data.site
+        );
+
+
+        showMessage(
+          $("authMessage"),
+          "Site loaded successfully.",
+          "success"
+        );
+
+
+      } catch (error) {
+
+        showMessage(
+          $("authMessage"),
+          error.message ||
+          "Unable to load site.",
+          "error"
+        );
+
+      } finally {
+
+        $("loadSite").disabled =
+          false;
+
+        $("loadSite").textContent =
+          "Load Existing Site";
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   IMAGE SELECTION
+   ===================================================== */
+
+if ($("imageInput")) {
+
+  $("imageInput").addEventListener(
+    "change",
+    () => {
+
+      const file =
+        $("imageInput").files[0];
+
+
+      if (!file) {
+
+        if ($("preview")) {
+          $("preview")
+            .classList
+            .remove("show");
+        }
+
+        return;
+
+      }
+
+
+      if (
+        !file.type.startsWith("image/")
+      ) {
+
+        showMessage(
+          $("authMessage"),
+          "Please select a valid image.",
+          "error"
+        );
+
+        $("imageInput").value =
+          "";
+
+        return;
+
+      }
+
+
+      if ($("fileName")) {
+
+        $("fileName").textContent =
+          file.name;
+
+      }
+
+
+      const reader =
+        new FileReader();
+
+
+      reader.onload =
+        (event) => {
+
+          if ($("previewImage")) {
+
+            $("previewImage").src =
+              event.target.result;
+
+          }
+
+
+          if ($("preview")) {
+
+            $("preview")
+              .classList
+              .add("show");
+
+          }
+
+        };
+
+
+      reader.onerror =
+        () => {
+
+          showMessage(
+            $("authMessage"),
+            "Unable to preview this image.",
+            "error"
+          );
+
+        };
+
+
+      reader.readAsDataURL(file);
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   MANUAL ENTRY BUTTON
+   ===================================================== */
+
+if ($("manualButton")) {
+
+  $("manualButton").addEventListener(
+    "click",
+    () => {
+
+      const section =
+        $("manualSection");
+
+
+      if (!section) return;
+
+
+      section.classList.toggle(
+        "show"
+      );
+
+
+      if (
+        section.classList.contains("show")
+      ) {
+
+        section.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   IMAGE EXTRACTION
+   ===================================================== */
+
+if ($("extractButton")) {
+
+  $("extractButton").addEventListener(
+    "click",
+    async () => {
+
+      const file =
+        $("imageInput").files[0];
+
+
+      const adminKey =
+        $("adminKey")
+          .value
+          .trim();
+
+
+      const siteId =
+        $("siteId")
+          .value
+          .trim();
+
+
+      if (!file) {
+
+        showMessage(
+          $("authMessage"),
+          "Please upload an image first.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (!adminKey) {
+
+        showMessage(
+          $("authMessage"),
+          "Please enter the admin key first.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (!siteId) {
+
+        showMessage(
+          $("authMessage"),
+          "Please enter the Site ID first.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      $("extractButton").disabled =
+        true;
+
+      $("extractButton").textContent =
+        "Extracting...";
+
+
+      clearMessage(
+        $("authMessage")
+      );
+
+
+      try {
+
+        const form =
+          new FormData();
+
+
+        form.append(
+          "image",
+          file
+        );
+
+
+        form.append(
+          "site_id",
+          siteId
+        );
+
+
+        const response =
+          await fetch(
+            "/api/admin/extract-image",
+            {
+              method: "POST",
+
+              headers: {
+                "X-Admin-Key":
+                  adminKey,
+
+                "Accept":
+                  "application/json"
+              },
+
+              body:
+                form
+            }
+          );
+
+
+        const text =
+          await response.text();
+
+
+        let data = {};
+
+
+        try {
+
+          data =
+            text.trim()
+              ? JSON.parse(text)
+              : {};
+
+        } catch {
+
+          throw new Error(
+            "Server returned an invalid response."
+          );
+
+        }
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.error ||
+            "Image extraction failed."
+          );
+
+        }
+
+
+        const extracted =
+          data.extracted || {};
+
+
+        /*
+         * FILL EXTRACTION RESULT
+         */
+
+        if ($("extractedHmr")) {
+
+          $("extractedHmr").value =
+            extracted.current_hmr ?? "";
+
+        }
+
+
+        if ($("extractedKwh")) {
+
+          $("extractedKwh").value =
+            extracted.current_kwh ?? "";
+
+        }
+
+
+        if ($("extractedBalance")) {
+
+          $("extractedBalance").value =
+            extracted.current_balance ?? "";
+
+        }
+
+
+        /*
+         * GENERATOR MODEL IS NOT DECIDED
+         * BY OCR.
+         *
+         * Admin chooses it manually.
+         */
+
+        if (
+          $("extractedModel") &&
+          $("model") &&
+          $("model").value
+        ) {
+
+          $("extractedModel").value =
+            $("model").value;
+
+        }
+
+
+        /*
+         * EXTRA INFORMATION
+         *
+         * These fields may not exist in
+         * the current HTML, so we don't
+         * crash if they aren't present.
+         */
+
+        if ($("balanceBeforeFilling")) {
+
+          $("balanceBeforeFilling").value =
+            extracted.balance_before_filling ?? "";
+
+        }
+
+
+        if ($("fillingQuantity")) {
+
+          $("fillingQuantity").value =
+            extracted.filling_quantity ?? "";
+
+        }
+
+
+        if ($("extractedSiteId")) {
+
+          $("extractedSiteId").value =
+            extracted.site_id ||
+            siteId;
+
+        }
+
+
+        /*
+         * SHOW EXTRACTION SECTION
+         */
+
+        if ($("extractionSection")) {
+
+          $("extractionSection").style.display =
+            "block";
+
+
+          $("extractionSection")
+            .scrollIntoView({
+              behavior: "smooth",
+              block: "start"
+            });
+
+        }
+
+
+        showMessage(
+          $("authMessage"),
+          "Details extracted successfully. Please review and confirm every value before saving.",
+          "success"
+        );
+
+
+      } catch (error) {
+
+        showMessage(
+          $("authMessage"),
+          error.message ||
+          "Image extraction failed.",
+          "error"
+        );
+
+      } finally {
+
+        $("extractButton").disabled =
+          false;
+
+        $("extractButton").textContent =
+          "Extract Details";
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   SAVE MANUAL READING
+   ===================================================== */
+
+if ($("updateSite")) {
+
+  $("updateSite").addEventListener(
+    "click",
+    async () => {
+
+      clearMessage(
+        $("updateMessage")
+      );
+
+
+      const adminKey =
+        $("adminKey")
+          .value
+          .trim();
+
+
+      const siteId =
+        $("siteId")
+          .value
+          .trim();
+
+
+      const model =
+        $("model")
+          .value;
+
+
+      const hmr =
+        $("currentHmr")
+          .value;
+
+
+      const kwh =
+        $("currentKwh")
+          .value;
+
+
+      const balance =
+        $("currentBalance")
+          .value;
+
+
+      if (!adminKey) {
+
+        showMessage(
+          $("updateMessage"),
+          "Please enter the admin key.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (!siteId) {
+
+        showMessage(
+          $("updateMessage"),
+          "Site ID is required.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (
+        hmr === "" ||
+        kwh === "" ||
+        balance === ""
+      ) {
+
+        showMessage(
+          $("updateMessage"),
+          "Please fill all manual reading fields.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      $("updateSite").disabled =
+        true;
+
+      $("updateSite").textContent =
+        "Saving...";
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/admin/update-site",
+            {
+              method: "POST",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json",
+
+                "Accept":
+                  "application/json",
+
+                "X-Admin-Key":
+                  adminKey
+
+              },
+
+              body:
+                JSON.stringify({
+
+                  site_id:
+                    siteId,
+
+                  model:
+                    model,
+
+                  current_hmr:
+                    hmr,
+
+                  current_kwh:
+                    kwh,
+
+                  current_balance:
+                    balance
+
+                })
+
+            }
+          );
+
+
+        const text =
+          await response.text();
+
+
+        const data =
+          text.trim()
+            ? JSON.parse(text)
+            : {};
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.error ||
+            "Site update failed."
+          );
+
+        }
+
+
+        showMessage(
+          $("updateMessage"),
+          data.message ||
+          "Site updated successfully.",
+          "success"
+        );
+
+
+        /*
+         * Reload site information
+         */
+
+        if ($("loadSite")) {
+
+          $("loadSite").click();
+
+        }
+
+
+      } catch (error) {
+
+        showMessage(
+          $("updateMessage"),
+          error.message ||
+          "Site update failed.",
+          "error"
+        );
+
+      } finally {
+
+        $("updateSite").disabled =
+          false;
+
+        $("updateSite").textContent =
+          "Save Manual Reading";
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   SAVE EXTRACTED READING
+   ===================================================== */
+
+if ($("saveExtracted")) {
+
+  $("saveExtracted").addEventListener(
+    "click",
+    async () => {
+
+      clearMessage(
+        $("extractMessage")
+      );
+
+
+      const adminKey =
+        $("adminKey")
+          .value
+          .trim();
+
+
+      const siteId =
+        $("siteId")
+          .value
+          .trim();
+
+
+      const model =
+        $("extractedModel")
+          .value;
+
+
+      const hmr =
+        $("extractedHmr")
+          .value;
+
+
+      const kwh =
+        $("extractedKwh")
+          .value;
+
+
+      const balance =
+        $("extractedBalance")
+          .value;
+
+
+      if (!adminKey) {
+
+        showMessage(
+          $("extractMessage"),
+          "Please enter the admin key.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (!siteId) {
+
+        showMessage(
+          $("extractMessage"),
+          "Site ID is required.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (!model) {
+
+        showMessage(
+          $("extractMessage"),
+          "Please select the generator model.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (
+        hmr === "" ||
+        kwh === "" ||
+        balance === ""
+      ) {
+
+        showMessage(
+          $("extractMessage"),
+          "Please review and fill all extracted values before saving.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      $("saveExtracted").disabled =
+        true;
+
+      $("saveExtracted").textContent =
+        "Saving...";
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/admin/update-site",
+            {
+              method: "POST",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json",
+
+                "Accept":
+                  "application/json",
+
+                "X-Admin-Key":
+                  adminKey
+
+              },
+
+              body:
+                JSON.stringify({
+
+                  site_id:
+                    siteId,
+
+                  model:
+                    model,
+
+                  current_hmr:
+                    hmr,
+
+                  current_kwh:
+                    kwh,
+
+                  current_balance:
+                    balance
+
+                })
+
+            }
+          );
+
+
+        const text =
+          await response.text();
+
+
+        const data =
+          text.trim()
+            ? JSON.parse(text)
+            : {};
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.error ||
+            "Save failed."
+          );
+
+        }
+
+
+        showMessage(
+          $("extractMessage"),
+          data.message ||
+          "Extracted reading saved successfully.",
+          "success"
+        );
+
+
+        /*
+         * Clear image from browser memory/UI
+         *
+         * The image was never stored by the Worker.
+         */
+
+        if ($("imageInput")) {
+
+          $("imageInput").value =
+            "";
+
+        }
+
+
+        if ($("preview")) {
+
+          $("preview")
+            .classList
+            .remove("show");
+
+        }
+
+
+        if ($("previewImage")) {
+
+          $("previewImage").removeAttribute(
+            "src"
+          );
+
+        }
+
+
+        if ($("fileName")) {
+
+          $("fileName").textContent =
+            "";
+
+        }
+
+
+        /*
+         * Keep the extraction result visible
+         * so admin can see what was saved.
+         */
+
+
+        /*
+         * Reload site information
+         */
+
+        if ($("loadSite")) {
+
+          $("loadSite").click();
+
+        }
+
+
+      } catch (error) {
+
+        showMessage(
+          $("extractMessage"),
+          error.message ||
+          "Save failed.",
+          "error"
+        );
+
+      } finally {
+
+        $("saveExtracted").disabled =
+          false;
+
+        $("saveExtracted").textContent =
+          "Confirm & Save";
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   PAGE INITIALIZATION
+   ===================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    /*
+     * Nothing needs to be loaded automatically.
+     *
+     * Admin enters Site ID,
+     * uploads screenshot,
+     * extracts,
+     * reviews,
+     * selects generator model,
+     * confirms and saves.
+     */
+
+  }
+);
+
+</script>
+    
