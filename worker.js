@@ -920,26 +920,6 @@ export default {
       );
 
     }
-
-
-    /* -----------------------------------------------
-       ADMIN IMAGE EXTRACTION
-    ------------------------------------------------ */
-
-    if (
-      url.pathname ===
-        "/api/admin/extract-image" &&
-      request.method === "POST"
-    ) {
-
-      return extractImage(
-        request,
-        env
-      );
-
-    }
-
-
     /* -----------------------------------------------
        DEBUG CONFIG
     ------------------------------------------------ */
