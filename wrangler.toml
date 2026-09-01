@@ -1,6 +1,6 @@
 name = "generator-fuel-calculator-2"
 main = "worker.js"
-compatibility_date = "2026-08-31"
+compatibility_date = "2026-09-01"
 
 [[d1_databases]]
 binding = "DB"
@@ -8,5 +8,5 @@ database_name = "generator-fuel-db"
 database_id = "f1991b43-7083-4d82-b6e0-0c32abb54374"
 
 [assets]
-directory = "."
+directory = "./public"
 binding = "ASSETS"
