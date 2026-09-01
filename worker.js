@@ -1226,7 +1226,7 @@ async function debugConfig(
       !!env.ASSETS,
 
     admin_key:
-      !!env.ADMIN_KEY
+      !!env.ADMIN_KEY,
     ai:
     !!env.AI
 
