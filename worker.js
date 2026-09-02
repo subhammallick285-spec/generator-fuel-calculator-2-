@@ -841,7 +841,18 @@ Rules:
       fuel_filled: fuelFilled,
       current_balance: currentBalance
     });
+  }catch (error) {
+
+    return json(
+      {
+        success: false,
+        error: error?.message || String(error)
+      },
+      500
+    );
   }
+}
+
 
   // -------------------------
 // LLAMA MODEL AGREEMENT
