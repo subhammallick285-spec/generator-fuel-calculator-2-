@@ -405,6 +405,30 @@ findSiteButton.addEventListener(
   findSite
 );
 
+// -------------------------
+// INCOGNITO / MANUAL MODE
+// -------------------------
+
+const incognitoModeButton =
+  $("incognitoMode");
+
+incognitoModeButton.addEventListener(
+  "click",
+  () => {
+
+    siteInfoCard.classList.add("hidden");
+
+    $("resultCard")
+      .classList
+      .add("hidden");
+
+    siteSearchMessage.textContent = "";
+
+    prepareManualCalculator();
+  }
+);
+
+
 
 // -------------------------
 // ENTER KEY
