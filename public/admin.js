@@ -172,9 +172,9 @@ $("loadSite")
       }
 
 
-      showSite(
-        data.site
-        $("editSiteId").value =
+      showSite(data.site);
+
+$("editSiteId").value =
   data.site.site_id || "";
 
 $("editSiteName").value =
@@ -191,7 +191,6 @@ $("editKwh").value =
 
 $("editBalance").value =
   data.site.current_balance ?? "";
-      );
 
 
       message(
