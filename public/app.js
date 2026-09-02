@@ -669,6 +669,14 @@ $("clear").addEventListener(
     $("c").value = "";
     $("d").value = "";
     $("e").value = "";
+    $("fuelFilling").value = "";
+
+$("balanceAfterFilling").textContent =
+  "—";
+
+$("balanceAfterFillingBox")
+  .classList
+  .add("hidden");
 
     $("resultCard")
       .classList
