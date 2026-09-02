@@ -632,6 +632,15 @@ const payload = {
           behavior: "smooth",
           block: "start"
         });
+      // -------------------------
+// SHOW SAVE FOR FUTURE
+// -------------------------
+
+$("saveForFuture")
+  .classList
+  .remove("hidden");
+
+$("saveMessage").textContent = "";
 
 
     } catch (err) {
