@@ -711,13 +711,11 @@ Rules:
 // -------------------------
 
 let output = "";
-
 if (
   aiResult &&
-  aiResult.result &&
-  typeof aiResult.result.response === "string"
+  typeof aiResult.response === "string"
 ) {
-  output = aiResult.result.response.trim();
+  output = aiResult.response.trim();
 }
 
 if (!output) {
