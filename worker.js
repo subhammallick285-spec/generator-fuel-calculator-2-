@@ -724,7 +724,11 @@ if (!output) {
     {
       success: false,
       error: "Workers AI returned an empty response.",
-      ai_response: aiResult || null
+      ai_response: aiResult || null,
+      ai_type: typeof aiResult,
+      ai_keys: aiResult
+        ? Object.keys(aiResult)
+        : []
     },
     502
   );
