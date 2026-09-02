@@ -855,6 +855,66 @@ Rules:
     );
   }
 }
+// -------------------------
+// LLAMA MODEL AGREEMENT
+// -------------------------
+
+async function agreeLlama(request, env) {
+  try {
+    const auth = checkAdminKey(request, env);
+
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    if (!env.AI) {
+      return json(
+        {
+          success: false,
+          error: "Workers AI binding (AI) is not configured."
+        },
+        500
+      );
+    }
+
+    const model =
+      "@cf/meta/llama-3.2-11b-vision-instruct";
+
+    let result;
+
+    try {
+      result = await env.AI.run(model, {
+        prompt: "agree"
+      });
+    } catch (error) {
+      return json(
+        {
+          success: false,
+          error:
+            "Llama agreement request failed: " +
+            (error?.message || String(error))
+        },
+        502
+      );
+    }
+
+    return json({
+      success: true,
+      message:
+        "Llama 3.2 Vision agreement request completed.",
+      ai_response: result || null
+    });
+
+  } catch (error) {
+    return json(
+      {
+        success: false,
+        error: error?.message || String(error)
+      },
+      500
+    );
+  }
+}
 
 
 // -------------------------
