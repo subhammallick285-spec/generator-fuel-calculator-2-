@@ -706,33 +706,18 @@ Rules:
     }
 
 
-    // -------------------------
+// -------------------------
 // READ AI RESPONSE
 // -------------------------
 
 let output = "";
 
-if (aiResult) {
-
-  if (typeof aiResult.response === "string") {
-    output = aiResult.response.trim();
-  }
-
-  else if (typeof aiResult.result === "string") {
-    output = aiResult.result.trim();
-  }
-
-  else if (
-    aiResult.result &&
-    typeof aiResult.result.response === "string"
-  ) {
-    output =
-      aiResult.result.response.trim();
-  }
-
-  else if (typeof aiResult === "string") {
-    output = aiResult.trim();
-  }
+if (
+  aiResult &&
+  aiResult.result &&
+  typeof aiResult.result.response === "string"
+) {
+  output = aiResult.result.response.trim();
 }
 
 if (!output) {
@@ -745,25 +730,15 @@ if (!output) {
     502
   );
 }
-    if (!output) {
-      return json(
-        {
-          success: false,
-          error: "Workers AI returned an empty response.",
-          ai_response: aiResult || null
-        },
-        502
-      );
-    }
 
 
-    // Remove markdown code fences if AI adds them
+// Remove markdown code fences if AI adds them
 
-    output = output
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
+output = output
+  .replace(/^```json\s*/i, "")
+  .replace(/^```\s*/i, "")
+  .replace(/\s*```$/i, "")
+  .trim();
 
 
     // -------------------------
