@@ -877,7 +877,7 @@ async function agreeLlama(request, env) {
       );
     }
 
-    const accountId = "YOUR_ACCOUNT_ID";
+    const accountId = "4b5679a6b80f3058805fa9169e1322cb";
 
     const model =
       "@cf/meta/llama-3.2-11b-vision-instruct";
@@ -1020,7 +1020,7 @@ export default {
     ) {
       return extractImage(request, env);
     }
-    // -------------------------
+   // -------------------------
 // LLAMA MODEL AGREEMENT
 // -------------------------
 
@@ -1042,7 +1042,8 @@ async function agreeLlama(request, env) {
       );
     }
 
-    const accountId = "4b5679a6b80f3058805fa9169e1322cb";
+    const accountId =
+      "4b5679a6b80f3058805fa9169e1322cb";
 
     const model =
       "@cf/meta/llama-3.2-11b-vision-instruct";
@@ -1051,11 +1052,15 @@ async function agreeLlama(request, env) {
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
       {
         method: "POST",
+
         headers: {
           "Authorization":
             `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
-          "Content-Type": "application/json"
+
+          "Content-Type":
+            "application/json"
         },
+
         body: JSON.stringify({
           prompt: "agree"
         })
@@ -1102,7 +1107,8 @@ async function agreeLlama(request, env) {
     return json(
       {
         success: false,
-        error: error?.message || String(error)
+        error:
+          error?.message || String(error)
       },
       500
     );
@@ -1110,39 +1116,136 @@ async function agreeLlama(request, env) {
 }
 
 
-// Activate Llama AI
+// -------------------------
+// DEBUG CONFIGURATION
+// -------------------------
 
-if (
-  path === "/api/admin/agree-llama" &&
-  method === "POST"
-) {
-  return agreeLlama(request, env);
+async function debugConfig(request, env) {
+  return json({
+    success: true,
+    db: !!env.DB,
+    assets: !!env.ASSETS,
+    admin_key: !!env.ADMIN_KEY,
+    ai: !!env.AI,
+    cloudflare_api_token:
+      !!env.CLOUDFLARE_API_TOKEN
+  });
 }
 
-// Debug bindings
 
-if (
-  path === "/api/debug" &&
-  method === "GET"
-) {
-  return debugConfig(request, env);
-}
+// -------------------------
+// WORKER
+// -------------------------
+
+export default {
+
+  async fetch(request, env) {
+
+    const url =
+      new URL(request.url);
+
+    const path =
+      url.pathname;
+
+    const method =
+      request.method;
 
 
-    // Debug bindings
+    // -------------------------
+    // CALCULATOR
+    // -------------------------
+
+    if (
+      path === "/api/calculate" &&
+      method === "POST"
+    ) {
+      return calculate(request);
+    }
+
+
+    // -------------------------
+    // GET SITE
+    // -------------------------
+
+    if (
+      path === "/api/site" &&
+      method === "GET"
+    ) {
+      return getSite(
+        request,
+        env
+      );
+    }
+
+
+    // -------------------------
+    // UPDATE SITE
+    // -------------------------
+
+    if (
+      path === "/api/admin/update-site" &&
+      method === "POST"
+    ) {
+      return updateSite(
+        request,
+        env
+      );
+    }
+
+
+    // -------------------------
+    // EXTRACT IMAGE
+    // -------------------------
+
+    if (
+      path === "/api/admin/extract-image" &&
+      method === "POST"
+    ) {
+      return extractImage(
+        request,
+        env
+      );
+    }
+
+
+    // -------------------------
+    // ACTIVATE LLAMA AI
+    // -------------------------
+
+    if (
+      path === "/api/admin/agree-llama" &&
+      method === "POST"
+    ) {
+      return agreeLlama(
+        request,
+        env
+      );
+    }
+
+
+    // -------------------------
+    // DEBUG
+    // -------------------------
 
     if (
       path === "/api/debug" &&
       method === "GET"
     ) {
-      return debugConfig(request, env);
+      return debugConfig(
+        request,
+        env
+      );
     }
 
 
-    // Serve website
+    // -------------------------
+    // SERVE WEBSITE
+    // -------------------------
 
     if (env.ASSETS) {
-      return env.ASSETS.fetch(request);
+      return env.ASSETS.fetch(
+        request
+      );
     }
 
 
@@ -1150,8 +1253,10 @@ if (
       "Assets binding is not configured.",
       {
         status: 500,
+
         headers: {
-          "Content-Type": "text/plain"
+          "Content-Type":
+            "text/plain"
         }
       }
     );
