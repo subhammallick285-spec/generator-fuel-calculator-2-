@@ -669,16 +669,26 @@ Rules:
     try {
 
       aiResult = await env.AI.run(model, {
-        messages: [
-          {
-            role: "user",
-            content: prompt
+  messages: [
+    {
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text: prompt
+        },
+        {
+          type: "image_url",
+          image_url: {
+            url: imageDataUrl
           }
-        ],
-        image: imageDataUrl,
-        max_tokens: 512,
-        temperature: 0
-      });
+        }
+      ]
+    }
+  ],
+  max_tokens: 512,
+  temperature: 0
+});
 
     } catch (aiError) {
 
