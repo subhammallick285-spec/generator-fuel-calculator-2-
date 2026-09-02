@@ -1170,3 +1170,177 @@ if (activateLlama) {
     }
   });
 }
+/* =====================================================
+   SAVE SITE CHANGES
+   ===================================================== */
+
+$("saveSiteEdit")
+.addEventListener(
+  "click",
+  async () => {
+
+    const siteId =
+      $("editSiteId")
+        .value
+        .trim();
+
+    const siteName =
+      $("editSiteName")
+        .value
+        .trim();
+
+    const model =
+      $("editModel")
+        .value;
+
+    const currentHmr =
+      Number(
+        $("editHmr").value
+      );
+
+    const currentKwh =
+      Number(
+        $("editKwh").value
+      );
+
+    const currentBalance =
+      Number(
+        $("editBalance").value
+      );
+
+    if (!siteId) {
+      message(
+        $("editSiteMessage"),
+        "Please enter a Site ID.",
+        "error"
+      );
+      return;
+    }
+
+    if (!model) {
+      message(
+        $("editSiteMessage"),
+        "Please select a Generator Model.",
+        "error"
+      );
+      return;
+    }
+
+    if (
+      !Number.isFinite(currentHmr) ||
+      !Number.isFinite(currentKwh) ||
+      !Number.isFinite(currentBalance)
+    ) {
+      message(
+        $("editSiteMessage"),
+        "Please enter valid HMR, kWh and Balance.",
+        "error"
+      );
+      return;
+    }
+
+    const adminKey =
+      $("adminKey")
+        .value
+        .trim();
+
+    if (!adminKey) {
+      message(
+        $("editSiteMessage"),
+        "Please enter the Admin Key.",
+        "error"
+      );
+      return;
+    }
+
+    try {
+
+      message(
+        $("editSiteMessage"),
+        "Saving site changes...",
+        "success"
+      );
+
+      const response =
+        await fetch(
+          "/api/admin/update-site",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+              "Accept":
+                "application/json",
+              "X-Admin-Key":
+                adminKey
+            },
+
+            body: JSON.stringify({
+              site_id: siteId,
+              site_name: siteName,
+              model: model,
+              current_hmr: currentHmr,
+              current_kwh: currentKwh,
+              current_balance: currentBalance,
+              data_source: "admin"
+            })
+          }
+        );
+
+      const text =
+        await response.text();
+
+      let data = {};
+
+      try {
+        data =
+          text.trim()
+            ? JSON.parse(text)
+            : {};
+      } catch {
+        throw new Error(
+          "Server returned an invalid response."
+        );
+      }
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.error ||
+          "Unable to save site changes."
+        );
+      }
+
+      message(
+        $("editSiteMessage"),
+        "✅ Site changes saved successfully.",
+        "success"
+      );
+
+      // Refresh the Current Site Information
+      showSite({
+        site_id: siteId,
+        site_name: siteName,
+        model: model,
+        current_hmr: currentHmr,
+        current_kwh: currentKwh,
+        current_balance: currentBalance
+      });
+
+    } catch (error) {
+
+      message(
+        $("editSiteMessage"),
+        "❌ " +
+        (
+          error.message ||
+          "Unable to save site changes."
+        ),
+        "error"
+      );
+    }
+  }
+);
