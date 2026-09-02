@@ -79,255 +79,141 @@ const CHARTS = {
 };
 
 
-/* =====================================================
-   COMMON JSON RESPONSE
-   ===================================================== */
+// -------------------------
+// JSON RESPONSE
+// -------------------------
 
 function json(data, status = 200) {
-  return new Response(
-    JSON.stringify(data),
-    {
-      status,
-      headers: {
-        "Content-Type":
-          "application/json; charset=UTF-8",
-        "Cache-Control":
-          "no-store"
-      }
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=UTF-8",
+      "Cache-Control": "no-store"
     }
-  );
+  });
 }
 
 
-/* =====================================================
-   NUMBER VALIDATION
-   ===================================================== */
+// -------------------------
+// NUMBER VALIDATION
+// -------------------------
 
 function number(value, name) {
-
-  if (
-    value === undefined ||
-    value === null ||
-    String(value).trim() === ""
-  ) {
-    throw new Error(
-      `${name} is required.`
-    );
-  }
-
   const n = Number(value);
 
   if (!Number.isFinite(n)) {
-    throw new Error(
-      `${name} must be a valid number.`
-    );
+    throw new Error(`${name} must be a valid number.`);
   }
 
   return n;
 }
 
 
-/* =====================================================
-   ADMIN AUTHENTICATION
-   ===================================================== */
+// -------------------------
+// ADMIN KEY
+// -------------------------
 
 function checkAdminKey(request, env) {
-
-  const adminKey =
-    request.headers.get(
-      "X-Admin-Key"
-    );
-
+  const key = request.headers.get("X-Admin-Key");
 
   if (!env.ADMIN_KEY) {
-
     return {
       ok: false,
-
       response: json(
         {
           success: false,
-          error:
-            "ADMIN_KEY is not configured in Cloudflare."
+          error: "ADMIN_KEY is not configured."
         },
         500
       )
     };
-
   }
 
-
-  if (
-    !adminKey ||
-    adminKey !== env.ADMIN_KEY
-  ) {
-
+  if (!key || key !== env.ADMIN_KEY) {
     return {
       ok: false,
-
       response: json(
         {
           success: false,
-          error:
-            "Unauthorized."
+          error: "Invalid admin key."
         },
         401
       )
     };
-
   }
-
 
   return {
     ok: true
   };
-
 }
 
 
-/* =====================================================
-   CALCULATOR
-   ===================================================== */
+// -------------------------
+// CALCULATOR
+// -------------------------
 
 async function calculate(request) {
-
   try {
+    const body = await request.json();
 
-    const body =
-      await request.json();
+    const modelKey = String(body.model || "").trim();
 
-
-    const A =
-      number(
-        body.A,
-        "Current HMR"
+    if (!CHARTS[modelKey]) {
+      return json(
+        {
+          success: false,
+          error: "Invalid generator model."
+        },
+        400
       );
-
-
-    const B =
-      number(
-        body.B,
-        "Current kWh"
-      );
-
-
-    const C =
-      number(
-        body.C,
-        "Previous HMR"
-      );
-
-
-    const D =
-      number(
-        body.D,
-        "Previous kWh"
-      );
-
-
-    const E =
-      number(
-        body.E,
-        "Previous balance"
-      );
-
-
-    const model =
-      String(
-        body.model || ""
-      ).trim();
-
-
-    const chart =
-      CHARTS[model];
-
-
-    if (!chart) {
-
-      throw new Error(
-        "Please select a valid generator model."
-      );
-
     }
 
+    const A = number(body.A, "A");
+    const B = number(body.B, "B");
+    const C = number(body.C, "C");
+    const D = number(body.D, "D");
+    const E = number(body.E, "E");
 
-    if (A <= C) {
+    const Z = A - C;
+    const Y = B - D;
 
-      throw new Error(
-        "Current HMR must be greater than previous HMR."
+    if (Z === 0) {
+      return json(
+        {
+          success: false,
+          error: "A − C cannot be zero."
+        },
+        400
       );
-
     }
 
+    const X = Y / Z;
 
-    if (B < D) {
+    const chart = CHARTS[modelKey];
 
-      throw new Error(
-        "Current kWh cannot be less than previous kWh."
-      );
-
-    }
-
-
-    const Z =
-      A - C;
-
-
-    const Y =
-      B - D;
-
-
-    const X =
-      Y / Z;
-
-
-    const row =
-      chart.rows.find(
-        ([lo, hi]) =>
-          X >= lo &&
-          X <= hi
-      );
-
+    const row = chart.rows.find(([lo, hi]) => {
+      return X >= lo && X <= hi;
+    });
 
     if (!row) {
-
-      const max =
-        chart.rows[
-          chart.rows.length - 1
-        ][1];
-
-
-      throw new Error(
-        `X = ${X.toFixed(4)} is outside the ${chart.name} chart range (0-${max}).`
+      return json(
+        {
+          success: false,
+          error: `X value ${X.toFixed(4)} is outside the chart range.`
+        },
+        400
       );
-
     }
 
+    const L = row[2];
 
-    const [
-      lo,
-      hi,
-      L
-    ] = row;
+    const S = L * Z;
 
-
-    const S =
-      L * Z;
-
-
-    const T =
-      E - S;
-
+    const T = E - S;
 
     return json({
-
       success: true,
-
-      modelName:
-        chart.name,
-
-      band:
-        `${lo}-${hi} kW/hr`,
+      model: chart.name,
 
       A,
       B,
@@ -335,402 +221,41 @@ async function calculate(request) {
       D,
       E,
 
-      Z,
-      Y,
       X,
+      Y,
+      Z,
 
       L,
       S,
-      T
+      T,
 
+      chart_range: {
+        from: row[0],
+        to: row[1]
+      }
     });
 
-
   } catch (error) {
-
     return json(
       {
         success: false,
-
-        error:
-          error?.message ||
-          "Calculation failed."
+        error: error?.message || String(error)
       },
       400
     );
-
   }
-
 }
 
 
-/* =====================================================
-   GET SITE
-   ===================================================== */
+// -------------------------
+// GET SITE
+// -------------------------
 
-async function getSite(
-  request,
-  env
-) {
-
+async function getSite(request, env) {
   try {
+    const url = new URL(request.url);
 
-    const url =
-      new URL(
-        request.url
-      );
-
-
-    const siteId =
-      url.searchParams.get(
-        "site_id"
-      );
-
-
-    if (!siteId) {
-
-      return json(
-        {
-          success: false,
-          error:
-            "site_id is required."
-        },
-        400
-      );
-
-    }
-
-
-    const result =
-      await env.DB
-        .prepare(`
-          SELECT
-            site_id,
-            site_name,
-            model,
-            current_hmr,
-            current_kwh,
-            current_balance,
-            last_updated,
-            screenshot_url,
-            data_source
-          FROM sites
-          WHERE site_id = ?
-          LIMIT 1
-        `)
-        .bind(siteId)
-        .first();
-
-
-    if (!result) {
-
-      return json(
-        {
-          success: false,
-          error:
-            "Site ID not found."
-        },
-        404
-      );
-
-    }
-
-
-    return json({
-
-      success: true,
-
-      site: result
-
-    });
-
-
-  } catch (error) {
-
-    return json(
-      {
-        success: false,
-
-        error:
-          error?.message ||
-          "Database error."
-      },
-      500
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   UPDATE SITE
-   ===================================================== */
-
-async function updateSite(
-  request,
-  env
-) {
-
-  try {
-
-    const auth =
-      checkAdminKey(
-        request,
-        env
-      );
-
-
-    if (!auth.ok) {
-      return auth.response;
-    }
-
-
-    const body =
-      await request.json();
-
-
-    const siteId =
-      String(
-        body.site_id || ""
-      ).trim();
-
-
-    if (!siteId) {
-
-      throw new Error(
-        "site_id is required."
-      );
-
-    }
-
-
-    const hmr =
-      number(
-        body.current_hmr,
-        "Current HMR"
-      );
-
-
-    const kwh =
-      number(
-        body.current_kwh,
-        "Current kWh"
-      );
-
-
-    const balance =
-      number(
-        body.current_balance,
-        "Current balance"
-      );
-
-
-    const model =
-      String(
-        body.model || ""
-      ).trim();
-
-
-    if (!CHARTS[model]) {
-
-      throw new Error(
-        "Please select a valid generator model."
-      );
-
-    }
-
-
-    const existing =
-      await env.DB
-        .prepare(`
-          SELECT
-            site_id
-          FROM sites
-          WHERE site_id = ?
-          LIMIT 1
-        `)
-        .bind(siteId)
-        .first();
-
-
-    if (!existing) {
-
-      return json(
-        {
-          success: false,
-          error:
-            "Site ID not found."
-        },
-        404
-      );
-
-    }
-
-
-    const now =
-      new Date()
-        .toISOString();
-
-
-    await env.DB
-      .prepare(`
-        UPDATE sites
-        SET
-          model = ?,
-          current_hmr = ?,
-          current_kwh = ?,
-          current_balance = ?,
-          last_updated = ?,
-          data_source = 'manual'
-        WHERE site_id = ?
-      `)
-      .bind(
-        model,
-        hmr,
-        kwh,
-        balance,
-        now,
-        siteId
-      )
-      .run();
-
-
-    await env.DB
-      .prepare(`
-        INSERT INTO readings
-        (
-          site_id,
-          hmr,
-          kwh,
-          balance,
-          reading_date,
-          source
-        )
-        VALUES
-        (?, ?, ?, ?, ?, 'manual')
-      `)
-      .bind(
-        siteId,
-        hmr,
-        kwh,
-        balance,
-        now
-      )
-      .run();
-
-
-    return json({
-
-      success: true,
-
-      message:
-        "Site updated successfully.",
-
-      site_id:
-        siteId,
-
-      current_hmr:
-        hmr,
-
-      current_kwh:
-        kwh,
-
-      current_balance:
-        balance,
-
-      updated_at:
-        now,
-
-      source:
-        "manual"
-
-    });
-
-
-  } catch (error) {
-
-    return json(
-      {
-        success: false,
-
-        error:
-          error?.message ||
-          "Site update failed."
-      },
-      400
-    );
-
-  }
-   
-
-}
-
-
-/* =====================================================
-   IMAGE EXTRACTION - WORKERS AI
-   ===================================================== */
-
-async function extractImage(request, env) {
-
-  try {
-
-    /* -----------------------------------------------
-       ADMIN AUTHENTICATION
-    ------------------------------------------------ */
-
-    const auth = checkAdminKey(request, env);
-
-    if (!auth.ok) {
-      return auth.response;
-    }
-
-
-    /* -----------------------------------------------
-       CHECK AI BINDING
-    ------------------------------------------------ */
-
-    if (!env.AI) {
-      return json(
-        {
-          success: false,
-          error: "Workers AI binding (AI) is not configured."
-        },
-        500
-      );
-    }
-
-
-    /* -----------------------------------------------
-       CHECK CONTENT TYPE
-    ------------------------------------------------ */
-
-    const contentType =
-      request.headers.get("content-type") || "";
-
-    if (!contentType.includes("multipart/form-data")) {
-      return json(
-        {
-          success: false,
-          error:
-            "Please upload an image using multipart/form-data."
-        },
-        400
-      );
-    }
-
-
-    /* -----------------------------------------------
-       READ FORM
-    ------------------------------------------------ */
-
-    const form = await request.formData();
-
-    const image = form.get("image");
-
-    const siteId =
-      String(form.get("site_id") || "").trim();
-
+    const siteId = url.searchParams.get("site_id");
 
     if (!siteId) {
       return json(
@@ -742,6 +267,260 @@ async function extractImage(request, env) {
       );
     }
 
+    if (!env.DB) {
+      return json(
+        {
+          success: false,
+          error: "D1 database is not configured."
+        },
+        500
+      );
+    }
+
+    const site = await env.DB
+      .prepare(`
+        SELECT
+          site_id,
+          site_name,
+          model,
+          current_hmr,
+          current_kwh,
+          current_balance,
+          last_updated,
+          screenshot_url,
+          data_source
+        FROM sites
+        WHERE site_id = ?
+        LIMIT 1
+      `)
+      .bind(siteId)
+      .first();
+
+    if (!site) {
+      return json(
+        {
+          success: false,
+          error: "Site not found."
+        },
+        404
+      );
+    }
+
+    return json({
+      success: true,
+      site
+    });
+
+  } catch (error) {
+    return json(
+      {
+        success: false,
+        error: error?.message || String(error)
+      },
+      500
+    );
+  }
+}
+
+
+// -------------------------
+// UPDATE SITE
+// -------------------------
+
+async function updateSite(request, env) {
+  try {
+    const auth = checkAdminKey(request, env);
+
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    if (!env.DB) {
+      return json(
+        {
+          success: false,
+          error: "D1 database is not configured."
+        },
+        500
+      );
+    }
+
+    const body = await request.json();
+
+    const siteId = String(body.site_id || "").trim();
+
+    if (!siteId) {
+      return json(
+        {
+          success: false,
+          error: "site_id is required."
+        },
+        400
+      );
+    }
+
+    const model = String(body.model || "").trim();
+
+    if (!CHARTS[model]) {
+      return json(
+        {
+          success: false,
+          error: "Invalid generator model."
+        },
+        400
+      );
+    }
+
+    const currentHmr = number(body.current_hmr, "current_hmr");
+    const currentKwh = number(body.current_kwh, "current_kwh");
+    const currentBalance = number(
+      body.current_balance,
+      "current_balance"
+    );
+
+    const site = await env.DB
+      .prepare(`
+        SELECT site_id
+        FROM sites
+        WHERE site_id = ?
+        LIMIT 1
+      `)
+      .bind(siteId)
+      .first();
+
+    if (!site) {
+      return json(
+        {
+          success: false,
+          error: "Site not found. Create the site in D1 first."
+        },
+        404
+      );
+    }
+
+    const now = new Date().toISOString();
+
+    await env.DB
+      .prepare(`
+        UPDATE sites
+        SET
+          model = ?,
+          current_hmr = ?,
+          current_kwh = ?,
+          current_balance = ?,
+          last_updated = ?,
+          data_source = ?
+        WHERE site_id = ?
+      `)
+      .bind(
+        model,
+        currentHmr,
+        currentKwh,
+        currentBalance,
+        now,
+        body.source || "admin",
+        siteId
+      )
+      .run();
+
+    await env.DB
+      .prepare(`
+        INSERT INTO readings (
+          site_id,
+          hmr,
+          kwh,
+          balance,
+          reading_date,
+          source
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+      `)
+      .bind(
+        siteId,
+        currentHmr,
+        currentKwh,
+        currentBalance,
+        now,
+        body.source || "admin"
+      )
+      .run();
+
+    return json({
+      success: true,
+      message: "Site updated successfully.",
+      site_id: siteId,
+      model,
+      current_hmr: currentHmr,
+      current_kwh: currentKwh,
+      current_balance: currentBalance,
+      last_updated: now
+    });
+
+  } catch (error) {
+    return json(
+      {
+        success: false,
+        error: error?.message || String(error)
+      },
+      500
+    );
+  }
+}
+
+
+// -------------------------
+// Llama Vision IMAGE EXTRACTION
+// -------------------------
+
+async function extractImage(request, env) {
+  try {
+
+    const auth = checkAdminKey(request, env);
+
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    if (!env.AI) {
+      return json(
+        {
+          success: false,
+          error: "Workers AI binding (AI) is not configured."
+        },
+        500
+      );
+    }
+
+    const contentType =
+      request.headers.get("content-type") || "";
+
+    if (!contentType.includes("multipart/form-data")) {
+      return json(
+        {
+          success: false,
+          error: "Please upload an image using multipart/form-data."
+        },
+        400
+      );
+    }
+
+    const form = await request.formData();
+
+    const image = form.get("image");
+
+    const siteId = String(
+      form.get("site_id") || ""
+    ).trim();
+
+    if (!siteId) {
+      return json(
+        {
+          success: false,
+          error: "site_id is required."
+        },
+        400
+      );
+    }
 
     if (!image) {
       return json(
@@ -752,11 +531,6 @@ async function extractImage(request, env) {
         400
       );
     }
-
-
-    /* -----------------------------------------------
-       VALIDATE IMAGE
-    ------------------------------------------------ */
 
     if (
       typeof image === "string" ||
@@ -772,11 +546,6 @@ async function extractImage(request, env) {
       );
     }
 
-
-    /* -----------------------------------------------
-       READ IMAGE
-    ------------------------------------------------ */
-
     const imageBuffer = await image.arrayBuffer();
 
     if (!imageBuffer.byteLength) {
@@ -789,75 +558,22 @@ async function extractImage(request, env) {
       );
     }
 
-
-    /* -----------------------------------------------
-       LIMIT IMAGE SIZE
-    ------------------------------------------------ */
-
     const maxImageSize = 10 * 1024 * 1024;
 
     if (imageBuffer.byteLength > maxImageSize) {
       return json(
         {
           success: false,
-          error:
-            "Image is too large. Maximum size is 10 MB."
+          error: "Image is too large. Maximum size is 10 MB."
         },
         400
       );
     }
 
 
-    /* -----------------------------------------------
-       OCR / VISION PROMPT
-    ------------------------------------------------ */
-
-    const prompt = `
-You are extracting information from a generator/DG monitoring screenshot.
-
-Carefully read the image.
-
-Return ONLY valid JSON using exactly this structure:
-
-{
-  "model": null,
-  "current_hmr": null,
-  "current_kwh": null,
-  "previous_balance": null,
-  "fuel_filled": null,
-  "current_balance": null
-}
-
-Possible generator models:
-
-- Eicher 10 KVA
-- Mahindra 10 KVA
-- Eicher 20 KVA
-- Mahindra 20 KVA
-- KOEL 20 KVA
-
-Rules:
-
-1. Read numbers exactly as visible.
-2. Do not guess.
-3. If a value is not clearly visible, return null.
-4. Keep decimal numbers as numbers.
-5. Do not include units such as L, Lt, KWh or hrs.
-6. current_hmr = current hour-meter reading.
-7. current_kwh = current kWh reading.
-8. previous_balance = fuel balance before the latest filling.
-9. fuel_filled = amount of fuel added.
-10. current_balance = fuel balance after filling.
-11. If previous_balance and fuel_filled are available, current_balance can be calculated as their sum.
-12. Return JSON only.
-13. Do not use markdown.
-14. Do not provide explanations.
-`;
-
-
-    /* -----------------------------------------------
-       CONVERT IMAGE TO BASE64
-    ------------------------------------------------ */
+    // -------------------------
+    // CONVERT IMAGE TO BASE64
+    // -------------------------
 
     const bytes = new Uint8Array(imageBuffer);
 
@@ -870,82 +586,119 @@ Rules:
       i < bytes.length;
       i += chunkSize
     ) {
-
       binary += String.fromCharCode(
         ...bytes.subarray(
           i,
-          Math.min(
-            i + chunkSize,
-            bytes.length
-          )
+          Math.min(i + chunkSize, bytes.length)
         )
       );
-
     }
 
     const base64 = btoa(binary);
-
-
-    /* -----------------------------------------------
-       CREATE IMAGE DATA URL
-    ------------------------------------------------ */
 
     const imageDataUrl =
       `data:${image.type};base64,${base64}`;
 
 
-    /* -----------------------------------------------
-       WORKERS AI VISION MODEL
-    ------------------------------------------------ */
+    // -------------------------
+    // OCR PROMPT
+    // -------------------------
+
+    const prompt = `
+You are reading a generator monitoring screenshot.
+
+Extract only information that is visibly readable in the image.
+
+Return ONLY valid JSON.
+
+Do not use markdown.
+Do not add explanations.
+
+Use exactly this JSON structure:
+
+{
+  "model": null,
+  "current_hmr": null,
+  "current_kwh": null,
+  "previous_balance": null,
+  "fuel_filled": null,
+  "current_balance": null
+}
+
+Rules:
+
+1. current_hmr:
+   Extract the generator's current running hours / HMR.
+
+2. current_kwh:
+   Extract the current kWh reading.
+
+3. previous_balance:
+   Extract the balance BEFORE fuel was added, if visible.
+
+4. fuel_filled:
+   Extract the fuel quantity filled/added, if visible.
+
+5. current_balance:
+   Extract the balance AFTER fuel was added, if visible.
+
+6. model:
+   Identify the generator model only if it is clearly visible.
+   Otherwise return null.
+
+7. Numbers must contain numbers only.
+   Do not include units such as L, Ltr, kWh or hrs.
+
+8. If a value is not clearly visible, return null.
+
+9. Never guess a value.
+
+10. Preserve decimal values exactly as displayed.
+`;
+
+
+    // -------------------------
+    // LLAMA 3.2 VISION
+    // -------------------------
 
     const model =
       "@cf/meta/llama-3.2-11b-vision-instruct";
-
 
     let aiResult;
 
     try {
 
-      aiResult = await env.AI.run(
-        model,
-        {
-          messages: [
-            {
-              role: "user",
-              content: prompt
-            }
-          ],
-
-          image: imageDataUrl,
-
-          max_tokens: 512,
-
-          temperature: 0
-
-        }
-      );
+      aiResult = await env.AI.run(model, {
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        image: imageDataUrl,
+        max_tokens: 512,
+        temperature: 0
+      });
 
     } catch (aiError) {
+
+      const aiMessage =
+        aiError?.message ||
+        String(aiError);
 
       return json(
         {
           success: false,
-          error:
-            "Workers AI error: " +
-            (
-              aiError?.message ||
-              String(aiError)
-            )
+          error: "Workers AI error: " + aiMessage
         },
         502
       );
-
     }
 
 
-    /* -----------------------------------------------
-       GET AI TEXT
-    ------------------------------------------------ */
+    // -------------------------
+    // READ AI RESPONSE
+    // -------------------------
 
     let output = "";
 
@@ -953,53 +706,33 @@ Rules:
       aiResult &&
       typeof aiResult.response === "string"
     ) {
-
-      output =
-        aiResult.response.trim();
-
+      output = aiResult.response.trim();
     }
 
-
     if (!output) {
-
       return json(
         {
           success: false,
-          error:
-            "Workers AI returned an empty response.",
-          ai_response:
-            aiResult || null
+          error: "Workers AI returned an empty response.",
+          ai_response: aiResult || null
         },
         502
       );
-
     }
 
 
-    /* -----------------------------------------------
-       REMOVE MARKDOWN JSON FENCES
-    ------------------------------------------------ */
+    // Remove markdown code fences if AI adds them
 
-    output =
-      output
-        .replace(
-          /^```json\s*/i,
-          ""
-        )
-        .replace(
-          /^```\s*/i,
-          ""
-        )
-        .replace(
-          /\s*```$/i,
-          ""
-        )
-        .trim();
+    output = output
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
 
 
-    /* -----------------------------------------------
-       PARSE JSON
-    ------------------------------------------------ */
+    // -------------------------
+    // PARSE JSON
+    // -------------------------
 
     let extracted;
 
@@ -1007,115 +740,94 @@ Rules:
 
       extracted = JSON.parse(output);
 
-    } catch {
+    } catch (error) {
 
       return json(
         {
           success: false,
-          error:
-            "OCR model returned invalid JSON.",
-          raw_response:
-            output.slice(0, 3000)
+          error: "OCR model returned invalid JSON.",
+          raw_response: output.slice(0, 3000)
         },
         502
       );
-
     }
 
 
-    /* -----------------------------------------------
-       NORMALIZE NUMBERS
-    ------------------------------------------------ */
+    // -------------------------
+    // CLEAN NUMBERS
+    // -------------------------
 
     const cleanNumber = (value) => {
 
       if (
         value === null ||
         value === undefined ||
-        String(value).trim() === ""
+        value === ""
       ) {
         return null;
       }
 
-      const cleaned =
-        String(value)
-          .replace(/,/g, "")
-          .replace(/[^0-9.+-]/g, "");
+      if (typeof value === "number") {
+        return Number.isFinite(value)
+          ? value
+          : null;
+      }
 
-      const n = Number(cleaned);
+      const text = String(value)
+        .replace(/,/g, "")
+        .trim();
+
+      const match =
+        text.match(/-?\d+(?:\.\d+)?/);
+
+      if (!match) {
+        return null;
+      }
+
+      const n = Number(match[0]);
 
       return Number.isFinite(n)
         ? n
         : null;
-
     };
 
-
-    /* -----------------------------------------------
-       EXTRACT VALUES
-    ------------------------------------------------ */
 
     const extractedModel =
       extracted.model
         ? String(extracted.model).trim()
         : null;
 
-
     const currentHmr =
-      cleanNumber(
-        extracted.current_hmr
-      );
-
+      cleanNumber(extracted.current_hmr);
 
     const currentKwh =
-      cleanNumber(
-        extracted.current_kwh
-      );
-
+      cleanNumber(extracted.current_kwh);
 
     const previousBalance =
-      cleanNumber(
-        extracted.previous_balance
-      );
-
+      cleanNumber(extracted.previous_balance);
 
     const fuelFilled =
-      cleanNumber(
-        extracted.fuel_filled
-      );
-
+      cleanNumber(extracted.fuel_filled);
 
     let currentBalance =
-      cleanNumber(
-        extracted.current_balance
-      );
+      cleanNumber(extracted.current_balance);
 
 
-    /* -----------------------------------------------
-       CALCULATE CURRENT BALANCE
-    ------------------------------------------------ */
+    // If current balance isn't directly visible,
+    // calculate it from previous balance + fuel filled.
 
     if (
       currentBalance === null &&
       previousBalance !== null &&
       fuelFilled !== null
     ) {
-
       currentBalance =
-        previousBalance +
-        fuelFilled;
-
+        previousBalance + fuelFilled;
     }
 
 
-    /* -----------------------------------------------
-       RETURN RESULT
-    ------------------------------------------------ */
-
     return json({
-
       success: true,
-
       extraction_ready: true,
 
       site_id: siteId,
@@ -1123,183 +835,128 @@ Rules:
       model: extractedModel,
 
       current_hmr: currentHmr,
-
       current_kwh: currentKwh,
 
       previous_balance: previousBalance,
-
       fuel_filled: fuelFilled,
-
       current_balance: currentBalance
-
     });
-
 
   } catch (error) {
 
     return json(
       {
         success: false,
-
         error:
           "Image extraction failed: " +
-          (
-            error?.message ||
-            String(error)
-          )
+          (error?.message || String(error))
       },
       500
     );
-
   }
-
 }
 
-/* =====================================================
-   DEBUG CONFIG
-   ===================================================== */
 
-async function debugConfig(
-  request,
-  env
-) {
+// -------------------------
+// DEBUG CONFIGURATION
+// -------------------------
+
+async function debugConfig(request, env) {
 
   return json({
-
     success: true,
 
-    db:
-      !!env.DB,
+    db: !!env.DB,
 
-    assets:
-      !!env.ASSETS,
+    assets: !!env.ASSETS,
 
-    admin_key:
-      !!env.ADMIN_KEY,
-    ai:
-    !!env.AI
+    admin_key: !!env.ADMIN_KEY,
 
+    ai: !!env.AI
   });
-
 }
 
 
-/* =====================================================
-   MAIN WORKER
-   ===================================================== */
+// -------------------------
+// MAIN WORKER
+// -------------------------
 
 export default {
 
-  async fetch(
-    request,
-    env
-  ) {
+  async fetch(request, env) {
 
-    const url =
-      new URL(
-        request.url
-      );
+    const url = new URL(request.url);
+
+    const path = url.pathname;
+
+    const method = request.method;
 
 
-    /* -----------------------------------------------
-       CALCULATOR - POST
-    ------------------------------------------------ */
+    // Calculator
 
     if (
-      url.pathname ===
-        "/api/calculate" &&
-      request.method === "POST"
+      path === "/api/calculate" &&
+      method === "POST"
     ) {
-
-      return calculate(
-        request
-      );
-
+      return calculate(request);
     }
 
 
-    /* -----------------------------------------------
-       CALCULATOR - GET TEST
-    ------------------------------------------------ */
+    // Get site
 
     if (
-      url.pathname ===
-        "/api/calculate" &&
-      request.method === "GET"
+      path === "/api/site" &&
+      method === "GET"
     ) {
-
-      return json({
-
-        success: true,
-
-        message:
-          "Generator Fuel Calculator API is working."
-
-      });
-
+      return getSite(request, env);
     }
 
 
-    /* -----------------------------------------------
-       GET SITE
-    ------------------------------------------------ */
+    // Update site
 
     if (
-      url.pathname ===
-        "/api/site" &&
-      request.method === "GET"
+      path === "/api/admin/update-site" &&
+      method === "POST"
     ) {
-
-      return getSite(
-        request,
-        env
-      );
-
+      return updateSite(request, env);
     }
 
 
-    /* -----------------------------------------------
-       ADMIN UPDATE SITE
-    ------------------------------------------------ */
+    // Extract image using Llama Vision
 
     if (
-      url.pathname ===
-        "/api/admin/update-site" &&
-      request.method === "POST"
+      path === "/api/admin/extract-image" &&
+      method === "POST"
     ) {
-
-      return updateSite(
-        request,
-        env
-      );
-
-    }
-    /* -----------------------------------------------
-       DEBUG CONFIG
-    ------------------------------------------------ */
-
-    if (
-      url.pathname ===
-        "/api/debug-config" &&
-      request.method === "GET"
-    ) {
-
-      return debugConfig(
-        request,
-        env
-      );
-
+      return extractImage(request, env);
     }
 
 
-    /* -----------------------------------------------
-       STATIC WEBSITE
-    ------------------------------------------------ */
+    // Debug bindings
 
-    return env.ASSETS.fetch(
-      request
+    if (
+      path === "/api/debug" &&
+      method === "GET"
+    ) {
+      return debugConfig(request, env);
+    }
+
+
+    // Serve website
+
+    if (env.ASSETS) {
+      return env.ASSETS.fetch(request);
+    }
+
+
+    return new Response(
+      "Assets binding is not configured.",
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "text/plain"
+        }
+      }
     );
-
   }
-
 };
