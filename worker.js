@@ -853,13 +853,13 @@ Rules:
   }
 }
 
-
-  // -------------------------
+// -------------------------
 // LLAMA MODEL AGREEMENT
 // -------------------------
 
 async function agreeLlama(request, env) {
   try {
+
     const auth = checkAdminKey(request, env);
 
     if (!auth.ok) {
@@ -876,18 +876,25 @@ async function agreeLlama(request, env) {
       );
     }
 
-    const accountId = "4b5679a6b80f3058805fa9169e1322cb";
+    const accountId =
+      "4b5679a6b80f3058805fa9169e1322cb";
 
-    const model = "@cf/meta/llama-3.2-11b-vision-instruct";
+    const model =
+      "@cf/meta/llama-3.2-11b-vision-instruct";
 
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
       {
         method: "POST",
+
         headers: {
-          "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
-          "Content-Type": "application/json"
+          "Authorization":
+            `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+
+          "Content-Type":
+            "application/json"
         },
+
         body: JSON.stringify({
           prompt: "agree"
         })
@@ -911,6 +918,35 @@ async function agreeLlama(request, env) {
       );
     }
 
+
+    // -------------------------
+    // AGREEMENT SUCCESS
+    // -------------------------
+
+    const agreementMessage =
+      JSON.stringify(data)
+        .toLowerCase();
+
+    if (
+      agreementMessage.includes(
+        "thank you for agreeing"
+      ) &&
+      agreementMessage.includes(
+        "you may now use the model"
+      )
+    ) {
+      return json({
+        success: true,
+        message:
+          "✅ Llama 3.2 Vision agreement completed. The model is now activated."
+      });
+    }
+
+
+    // -------------------------
+    // OTHER CLOUDFLARE ERROR
+    // -------------------------
+
     if (!response.ok || !data.success) {
       return json(
         {
@@ -924,23 +960,26 @@ async function agreeLlama(request, env) {
       );
     }
 
+
     return json({
       success: true,
-      message: "Llama 3.2 Vision agreement completed successfully."
+      message:
+        "✅ Llama 3.2 Vision agreement completed successfully."
     });
 
   } catch (error) {
+
     return json(
       {
         success: false,
-        error: error?.message || String(error)
+        error:
+          error?.message ||
+          String(error)
       },
       500
     );
   }
 }
-
-
 // -------------------------
 // DEBUG CONFIGURATION
 // -------------------------
