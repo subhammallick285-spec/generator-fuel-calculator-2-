@@ -803,7 +803,7 @@ $("saveForFuture").addEventListener(
     try {
 
       const response = await fetch(
-        "/api/admin/update-site",
+        "/api/save-site",
         {
           method: "POST",
 
