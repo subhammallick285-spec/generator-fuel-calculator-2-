@@ -990,6 +990,33 @@ export default {
     ) {
       return extractImage(request, env);
     }
+    // -------------------------
+// LLAMA MODEL AGREEMENT
+// -------------------------
+
+async function agreeLlama(request, env) {
+  // your existing function
+}
+
+
+// Activate Llama AI
+
+if (
+  path === "/api/admin/agree-llama" &&
+  method === "POST"
+) {
+  return agreeLlama(request, env);
+}
+
+
+// Debug bindings
+
+if (
+  path === "/api/debug" &&
+  method === "GET"
+) {
+  return debugConfig(request, env);
+}
 
 
     // Debug bindings
