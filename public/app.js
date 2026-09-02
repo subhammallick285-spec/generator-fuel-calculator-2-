@@ -270,7 +270,7 @@ function displaySite(site) {
 // -------------------------
 
 function prepareExistingSiteCalculator(site) {
-
+  $("manualModelField").classList.add("hidden");
   activeModel.textContent =
     MODEL_NAMES[site.model] ||
     site.model ||
@@ -325,6 +325,7 @@ function prepareExistingSiteCalculator(site) {
 // -------------------------
 
 function prepareManualCalculator() {
+  $("manualModelField").classList.remove("hidden");
 
   delete siteInfoCard.dataset.model;
 
