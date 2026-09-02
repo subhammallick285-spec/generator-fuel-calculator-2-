@@ -748,3 +748,123 @@ window.addEventListener(
 
   }
 );
+// -------------------------
+// SAVE DETAILS FOR FUTURE
+// -------------------------
+
+$("saveForFuture").addEventListener(
+  "click",
+  async () => {
+
+    $("saveMessage").textContent =
+      "Saving site details...";
+
+    const siteId =
+      siteIdInput.value.trim();
+
+    const model =
+      getCurrentModel();
+
+    const currentHmr =
+      Number($("a").value);
+
+    const currentKwh =
+      Number($("b").value);
+
+    const balanceAfterFilling =
+      Number(
+        $("balanceAfterFilling")
+          .textContent
+          .replace(" L", "")
+      );
+
+    if (!siteId) {
+      $("saveMessage").textContent =
+        "Please enter a Site ID first.";
+      return;
+    }
+
+    if (!model) {
+      $("saveMessage").textContent =
+        "Please select a DG Model.";
+      return;
+    }
+
+    if (
+      !Number.isFinite(currentHmr) ||
+      !Number.isFinite(currentKwh) ||
+      !Number.isFinite(balanceAfterFilling)
+    ) {
+      $("saveMessage").textContent =
+        "Please complete the readings and calculate first.";
+      return;
+    }
+
+    try {
+
+      const response = await fetch(
+        "/api/admin/update-site",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+            "Accept":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            site_id: siteId,
+            model: model,
+            current_hmr: currentHmr,
+            current_kwh: currentKwh,
+            current_balance:
+              balanceAfterFilling,
+            data_source:
+              "calculator"
+          })
+        }
+      );
+
+      const responseText =
+        await response.text();
+
+      let data = {};
+
+      if (responseText.trim()) {
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          throw new Error(
+            `Server returned invalid JSON (${response.status}).`
+          );
+        }
+      }
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error ||
+          `Save failed (${response.status}).`
+        );
+      }
+
+      $("saveMessage").textContent =
+        "✅ Details saved successfully for future calculations.";
+
+      localStorage.setItem(
+        "lastSiteId",
+        siteId
+      );
+
+    } catch (error) {
+
+      $("saveMessage").textContent =
+        "❌ " +
+        (
+          error?.message ||
+          "Unable to save site details."
+        );
+    }
+  }
+);
