@@ -265,7 +265,6 @@ function displaySite(site) {
   siteInfoCard.classList.remove("hidden");
 }
 
-
 // -------------------------
 // EXISTING SITE CALCULATOR
 // -------------------------
@@ -278,28 +277,44 @@ function prepareExistingSiteCalculator(site) {
     "Unknown";
 
 
-  $("a").value =
+  // Saved D1 values are PREVIOUS readings
+  $("c").value =
     site.current_hmr ?? "";
 
-  $("b").value =
+  $("d").value =
     site.current_kwh ?? "";
 
   $("e").value =
     site.current_balance ?? "";
 
 
-  $("c").value = "";
-  $("d").value = "";
+  // Current readings must be entered by the user
+  $("a").value = "";
+  $("b").value = "";
+
+
+  // Reset fuel filling
+  $("fuelFilling").value = "";
+
+
+  // Hide old balance-after-filling result
+  $("balanceAfterFillingBox")
+    .classList
+    .add("hidden");
+
+  $("balanceAfterFilling").textContent =
+    "—";
 
 
   $("calculatorDescription").textContent =
-    "Current HMR, kWh and balance were loaded from your saved site data. Enter the previous meter readings.";
+    "Previous HMR, kWh and balance were loaded from your saved site data. Enter the current meter readings.";
 
 
   calculatorCard.classList.remove("hidden");
 
+
   setTimeout(() => {
-    $("c").focus();
+    $("a").focus();
   }, 150);
 }
 
