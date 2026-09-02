@@ -1076,3 +1076,80 @@ $("saveExtracted")
 
   }
 );
+// -------------------------
+// ACTIVATE LLAMA AI
+// -------------------------
+
+const activateLlama =
+  document.getElementById("activateLlama");
+
+const llamaMessage =
+  document.getElementById("llamaMessage");
+
+if (activateLlama) {
+  activateLlama.addEventListener("click", async () => {
+
+    const key =
+      document.getElementById("adminKey")?.value.trim();
+
+    if (!key) {
+      llamaMessage.textContent =
+        "Please enter the Admin Key first.";
+      return;
+    }
+
+    activateLlama.disabled = true;
+    activateLlama.textContent = "Activating...";
+
+    llamaMessage.textContent =
+      "Sending Llama agreement request...";
+
+    try {
+
+      const response = await fetch(
+        "/api/admin/agree-llama",
+        {
+          method: "POST",
+          headers: {
+            "X-Admin-Key": key
+          }
+        }
+      );
+
+      const text = await response.text();
+
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(
+          `Server returned ${response.status}: ${text}`
+        );
+      }
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error ||
+          `Request failed (${response.status})`
+        );
+      }
+
+      llamaMessage.textContent =
+        "✅ Llama AI activated successfully.";
+
+      activateLlama.textContent =
+        "Llama AI Activated";
+
+    } catch (error) {
+
+      llamaMessage.textContent =
+        "❌ " +
+        (error?.message || String(error));
+
+      activateLlama.disabled = false;
+      activateLlama.textContent =
+        "Activate Llama AI";
+    }
+  });
+}
