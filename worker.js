@@ -707,18 +707,44 @@ Rules:
 
 
     // -------------------------
-    // READ AI RESPONSE
-    // -------------------------
+// READ AI RESPONSE
+// -------------------------
 
-    let output = "";
+let output = "";
 
-    if (
-      aiResult &&
-      typeof aiResult.response === "string"
-    ) {
-      output = aiResult.response.trim();
-    }
+if (aiResult) {
 
+  if (typeof aiResult.response === "string") {
+    output = aiResult.response.trim();
+  }
+
+  else if (typeof aiResult.result === "string") {
+    output = aiResult.result.trim();
+  }
+
+  else if (
+    aiResult.result &&
+    typeof aiResult.result.response === "string"
+  ) {
+    output =
+      aiResult.result.response.trim();
+  }
+
+  else if (typeof aiResult === "string") {
+    output = aiResult.trim();
+  }
+}
+
+if (!output) {
+  return json(
+    {
+      success: false,
+      error: "Workers AI returned an empty response.",
+      ai_response: aiResult || null
+    },
+    502
+  );
+}
     if (!output) {
       return json(
         {
