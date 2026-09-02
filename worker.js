@@ -1280,7 +1280,13 @@ export default {
       return getSite(request, env);
     }
 
-
+// Save site from calculator
+if (
+  path === "/api/save-site" &&
+  method === "POST"
+) {
+  return saveCalculatorSite(request, env);
+}
     // Update site
     if (
       path === "/api/admin/update-site" &&
