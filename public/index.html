@@ -68,15 +68,24 @@
       </label>
 
       <button
-        id="findSite"
-        class="primary"
-        type="button"
-      >
-        <span id="findSiteText">Find Site</span>
-        <span id="findSpinner" class="spinner hidden"></span>
-      </button>
+        <button
+  id="findSite"
+  class="primary"
+  type="button"
+>
+  <span id="findSiteText">Find Site</span>
+  <span id="findSpinner" class="spinner hidden"></span>
+</button>
 
-      <p id="siteSearchMessage" class="message"></p>
+<button
+  id="incognitoMode"
+  class="secondary"
+  type="button"
+>
+  🕶️ Incognito / Manual Mode
+</button>
+
+<p id="siteSearchMessage" class="message"></p>
 
     </section>
 
@@ -219,17 +228,43 @@
 
         <label class="field full">
 
-          <span>E · Previous balance after filling</span>
+  <span>E · Previous balance after filling</span>
 
-          <input
-            id="e"
-            type="number"
-            inputmode="decimal"
-            step="any"
-            placeholder="Previous balance"
-          >
+  <input
+    id="e"
+    type="number"
+    inputmode="decimal"
+    step="any"
+    placeholder="Previous balance"
+  >
 
-        </label>
+</label>
+
+
+<label class="field full">
+
+  <span>Fuel Filling · Litres</span>
+
+  <input
+    id="fuelFilling"
+    type="number"
+    inputmode="decimal"
+    step="any"
+    min="0"
+    placeholder="Enter fuel filled in litres"
+  >
+
+</label>
+        <div
+  id="balanceAfterFillingBox"
+  class="field full calculated-field hidden"
+>
+
+  <span>Balance After Filling</span>
+
+  <strong id="balanceAfterFilling">—</strong>
+
+  
 
       </div>
 
