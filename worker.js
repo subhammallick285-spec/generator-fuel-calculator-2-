@@ -322,13 +322,13 @@ async function getSite(request, env) {
   }
 }
 
-
 // -------------------------
 // UPDATE SITE
 // -------------------------
 
 async function updateSite(request, env) {
   try {
+
     const auth = checkAdminKey(request, env);
 
     if (!auth.ok) {
@@ -347,7 +347,8 @@ async function updateSite(request, env) {
 
     const body = await request.json();
 
-    const siteId = String(body.site_id || "").trim();
+    const siteId =
+      String(body.site_id || "").trim();
 
     if (!siteId) {
       return json(
@@ -359,7 +360,8 @@ async function updateSite(request, env) {
       );
     }
 
-    const model = String(body.model || "").trim();
+    const model =
+      String(body.model || "").trim();
 
     if (!CHARTS[model]) {
       return json(
@@ -371,57 +373,113 @@ async function updateSite(request, env) {
       );
     }
 
-    const currentHmr = number(body.current_hmr, "current_hmr");
-    const currentKwh = number(body.current_kwh, "current_kwh");
-    const currentBalance = number(
-      body.current_balance,
-      "current_balance"
-    );
+    const currentHmr =
+      number(body.current_hmr, "current_hmr");
 
-    const site = await env.DB
-      .prepare(`
-        SELECT site_id
-        FROM sites
-        WHERE site_id = ?
-        LIMIT 1
-      `)
-      .bind(siteId)
-      .first();
+    const currentKwh =
+      number(body.current_kwh, "current_kwh");
 
-    if (!site) {
-      return json(
-        {
-          success: false,
-          error: "Site not found. Create the site in D1 first."
-        },
-        404
+    const currentBalance =
+      number(
+        body.current_balance,
+        "current_balance"
       );
+
+    const now =
+      new Date().toISOString();
+
+    const source =
+      body.source || "ocr";
+
+
+    // -------------------------
+    // CHECK IF SITE EXISTS
+    // -------------------------
+
+    const existingSite =
+      await env.DB
+        .prepare(`
+          SELECT
+            site_id,
+            site_name
+          FROM sites
+          WHERE site_id = ?
+          LIMIT 1
+        `)
+        .bind(siteId)
+        .first();
+
+
+    // -------------------------
+    // CREATE NEW SITE
+    // -------------------------
+
+    if (!existingSite) {
+
+      await env.DB
+        .prepare(`
+          INSERT INTO sites (
+            site_id,
+            site_name,
+            model,
+            current_hmr,
+            current_kwh,
+            current_balance,
+            last_updated,
+            screenshot_url,
+            data_source
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `)
+        .bind(
+          siteId,
+          siteId,
+          model,
+          currentHmr,
+          currentKwh,
+          currentBalance,
+          now,
+          null,
+          source
+        )
+        .run();
+
+    } else {
+
+
+      // -------------------------
+      // UPDATE EXISTING SITE
+      // -------------------------
+
+      await env.DB
+        .prepare(`
+          UPDATE sites
+          SET
+            model = ?,
+            current_hmr = ?,
+            current_kwh = ?,
+            current_balance = ?,
+            last_updated = ?,
+            data_source = ?
+          WHERE site_id = ?
+        `)
+        .bind(
+          model,
+          currentHmr,
+          currentKwh,
+          currentBalance,
+          now,
+          source,
+          siteId
+        )
+        .run();
+
     }
 
-    const now = new Date().toISOString();
 
-    await env.DB
-      .prepare(`
-        UPDATE sites
-        SET
-          model = ?,
-          current_hmr = ?,
-          current_kwh = ?,
-          current_balance = ?,
-          last_updated = ?,
-          data_source = ?
-        WHERE site_id = ?
-      `)
-      .bind(
-        model,
-        currentHmr,
-        currentKwh,
-        currentBalance,
-        now,
-        body.source || "admin",
-        siteId
-      )
-      .run();
+    // -------------------------
+    // SAVE READING HISTORY
+    // -------------------------
 
     await env.DB
       .prepare(`
@@ -441,13 +499,19 @@ async function updateSite(request, env) {
         currentKwh,
         currentBalance,
         now,
-        body.source || "admin"
+        source
       )
       .run();
 
+
     return json({
       success: true,
-      message: "Site updated successfully.",
+
+      message:
+        existingSite
+          ? "Site updated successfully."
+          : "New site created and reading saved.",
+
       site_id: siteId,
       model,
       current_hmr: currentHmr,
@@ -456,18 +520,21 @@ async function updateSite(request, env) {
       last_updated: now
     });
 
+
   } catch (error) {
+
     return json(
       {
         success: false,
-        error: error?.message || String(error)
+        error:
+          error?.message ||
+          String(error)
       },
       500
     );
+
   }
 }
-
-
 // -------------------------
 // Llama Vision IMAGE EXTRACTION
 // -------------------------
