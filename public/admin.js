@@ -174,6 +174,23 @@ $("loadSite")
 
       showSite(
         data.site
+        $("editSiteId").value =
+  data.site.site_id || "";
+
+$("editSiteName").value =
+  data.site.site_name || "";
+
+$("editModel").value =
+  data.site.model || "";
+
+$("editHmr").value =
+  data.site.current_hmr ?? "";
+
+$("editKwh").value =
+  data.site.current_kwh ?? "";
+
+$("editBalance").value =
+  data.site.current_balance ?? "";
       );
 
 
