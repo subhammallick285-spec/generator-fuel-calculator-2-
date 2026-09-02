@@ -22,10 +22,6 @@ const changeSiteButton = $("changeSite");
 const activeModel = $("activeModel");
 
 
-// -------------------------
-// MODEL NAMES
-// -------------------------
-
 const MODEL_NAMES = {
   eicher10: "Eicher 10 KVA",
   eicher20: "Eicher 20 KVA",
@@ -314,13 +310,13 @@ function prepareExistingSiteCalculator(site) {
 
 function prepareManualCalculator() {
 
+  delete siteInfoCard.dataset.model;
+
   activeModel.textContent =
     "Manual Selection";
 
-
   $("calculatorDescription").textContent =
     "Site data is not available. Enter all meter readings manually.";
-
 
   $("a").value = "";
   $("b").value = "";
@@ -328,12 +324,7 @@ function prepareManualCalculator() {
   $("d").value = "";
   $("e").value = "";
 
-
   calculatorCard.classList.remove("hidden");
-
-  $("modelSelectWrapper")?.classList.remove(
-    "hidden"
-  );
 
   setTimeout(() => {
     $("a").focus();
@@ -575,8 +566,7 @@ function getCurrentModel() {
     return siteModel;
   }
 
-
-  return "eicher10";
+  return $("manualModel").value;
 }
 
 
