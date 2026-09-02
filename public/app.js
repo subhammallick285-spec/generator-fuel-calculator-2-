@@ -324,7 +324,8 @@ function prepareExistingSiteCalculator(site) {
 // MANUAL / INCOGNITO CALCULATOR
 // -------------------------
 
-function prepareManualCalculator() {
+ function prepareManualCalculator(isIncognito = false) {
+   window.calculatorIncognito = isIncognito;
   $("manualModelField").classList.remove("hidden");
 
   delete siteInfoCard.dataset.model;
