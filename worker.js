@@ -841,6 +841,7 @@ Rules:
       fuel_filled: fuelFilled,
       current_balance: currentBalance
     });
+  }
 
   // -------------------------
 // LLAMA MODEL AGREEMENT
