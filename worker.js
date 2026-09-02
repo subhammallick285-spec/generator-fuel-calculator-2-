@@ -658,7 +658,6 @@ Rules:
 
 
     // -------------------------
-    // -------------------------
 // LLAMA 3.2 VISION
 // -------------------------
 
@@ -671,6 +670,11 @@ try {
 
   aiResult = await env.AI.run(model, {
     messages: [
+      {
+        role: "system",
+        content:
+          "You are a helpful assistant that reads generator monitoring images."
+      },
       {
         role: "user",
         content: prompt
