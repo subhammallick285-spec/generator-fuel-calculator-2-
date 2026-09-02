@@ -320,7 +320,8 @@ function prepareExistingSiteCalculator(site) {
 
 
 // -------------------------
-// MANUAL CALCULATOR
+// -------------------------
+// MANUAL / INCOGNITO CALCULATOR
 // -------------------------
 
 function prepareManualCalculator() {
@@ -330,16 +331,45 @@ function prepareManualCalculator() {
   activeModel.textContent =
     "Manual Selection";
 
-  $("calculatorDescription").textContent =
-    "Site data is not available. Enter all meter readings manually.";
 
-  $("a").value = "";
-  $("b").value = "";
+  $("calculatorDescription").textContent =
+    "Enter all generator readings manually. Nothing will be saved to D1.";
+
+
+  // Previous readings
   $("c").value = "";
   $("d").value = "";
   $("e").value = "";
 
+
+  // Current readings
+  $("a").value = "";
+  $("b").value = "";
+
+
+  // Fuel filling
+  $("fuelFilling").value = "";
+
+
+  // Reset balance-after-filling display
+  $("balanceAfterFilling").textContent =
+    "—";
+
+  $("balanceAfterFillingBox")
+    .classList
+    .add("hidden");
+
+
+  // Hide old result
+  $("resultCard")
+    .classList
+    .add("hidden");
+
+  $("error").textContent = "";
+
+
   calculatorCard.classList.remove("hidden");
+
 
   setTimeout(() => {
     $("a").focus();
