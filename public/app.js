@@ -388,26 +388,43 @@ $("calculate").addEventListener(
 
     $("error").textContent = "";
 
-    const payload = {
+    const fuelFilling =
+  Number($("fuelFilling").value || 0);
 
-      model:
-        getCurrentModel(),
+const previousBalance =
+  Number($("e").value || 0);
 
-      A:
-        $("a").value,
+const balanceAfterFilling =
+  previousBalance + fuelFilling;
 
-      B:
-        $("b").value,
+// Show balance after filling
+$("balanceAfterFilling").textContent =
+  balanceAfterFilling.toFixed(2) + " L";
 
-      C:
-        $("c").value,
+$("balanceAfterFillingBox")
+  .classList
+  .remove("hidden");
 
-      D:
-        $("d").value,
+const payload = {
 
-      E:
-        $("e").value
-    };
+  model:
+    getCurrentModel(),
+
+  A:
+    $("a").value,
+
+  B:
+    $("b").value,
+
+  C:
+    $("c").value,
+
+  D:
+    $("d").value,
+
+  E:
+    balanceAfterFilling
+};
 
 
     try {
