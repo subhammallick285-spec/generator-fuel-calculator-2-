@@ -325,7 +325,186 @@ async function getSite(request, env) {
 // -------------------------
 // UPDATE SITE
 // -------------------------
+async function saveCalculatorSite(request, env) {
 
+  try {
+
+    const body = await request.json();
+
+    const siteId =
+      String(body.site_id || "").trim();
+
+    const model =
+      String(body.model || "").trim();
+
+    const currentHmr =
+      Number(body.current_hmr);
+
+    const currentKwh =
+      Number(body.current_kwh);
+
+    const currentBalance =
+      Number(body.current_balance);
+
+    if (!siteId) {
+      return json(
+        {
+          success: false,
+          error: "Site ID is required."
+        },
+        400
+      );
+    }
+
+    if (!model) {
+      return json(
+        {
+          success: false,
+          error: "DG model is required."
+        },
+        400
+      );
+    }
+
+    if (
+      !Number.isFinite(currentHmr) ||
+      !Number.isFinite(currentKwh) ||
+      !Number.isFinite(currentBalance)
+    ) {
+      return json(
+        {
+          success: false,
+          error: "Invalid HMR, kWh or balance."
+        },
+        400
+      );
+    }
+
+    const allowedModels = [
+      "eicher10",
+      "eicher20",
+      "koel20",
+      "mahindra20",
+      "mahindra10"
+    ];
+
+    if (!allowedModels.includes(model)) {
+      return json(
+        {
+          success: false,
+          error: "Invalid DG model."
+        },
+        400
+      );
+    }
+
+    const now =
+      new Date().toISOString();
+
+    const existing =
+      await env.DB.prepare(
+        `SELECT site_id
+         FROM sites
+         WHERE site_id = ?`
+      )
+      .bind(siteId)
+      .first();
+
+    if (existing) {
+
+      await env.DB.prepare(
+        `UPDATE sites
+         SET model = ?,
+             current_hmr = ?,
+             current_kwh = ?,
+             current_balance = ?,
+             last_updated = ?,
+             data_source = ?
+         WHERE site_id = ?`
+      )
+      .bind(
+        model,
+        currentHmr,
+        currentKwh,
+        currentBalance,
+        now,
+        "calculator",
+        siteId
+      )
+      .run();
+
+    } else {
+
+      await env.DB.prepare(
+        `INSERT INTO sites
+         (
+           site_id,
+           site_name,
+           model,
+           current_hmr,
+           current_kwh,
+           current_balance,
+           last_updated,
+           screenshot_url,
+           data_source
+         )
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .bind(
+        siteId,
+        siteId,
+        model,
+        currentHmr,
+        currentKwh,
+        currentBalance,
+        now,
+        null,
+        "calculator"
+      )
+      .run();
+    }
+
+    await env.DB.prepare(
+      `INSERT INTO readings
+       (
+         site_id,
+         hmr,
+         kwh,
+         balance,
+         reading_date,
+         source
+       )
+       VALUES (?, ?, ?, ?, ?, ?)`
+    )
+    .bind(
+      siteId,
+      currentHmr,
+      currentKwh,
+      currentBalance,
+      now,
+      "calculator"
+    )
+    .run();
+
+    return json({
+      success: true,
+      message:
+        "Site details saved successfully."
+    });
+
+  } catch (error) {
+
+    return json(
+      {
+        success: false,
+        error:
+          error?.message ||
+          "Unable to save calculator site."
+      },
+      500
+    );
+  }
+}
 async function updateSite(request, env) {
   try {
 
