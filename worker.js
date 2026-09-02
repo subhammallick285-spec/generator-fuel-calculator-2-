@@ -658,53 +658,43 @@ Rules:
 
 
     // -------------------------
-    // LLAMA 3.2 VISION
     // -------------------------
+// LLAMA 3.2 VISION
+// -------------------------
 
-    const model =
-      "@cf/meta/llama-3.2-11b-vision-instruct";
+const model =
+  "@cf/meta/llama-3.2-11b-vision-instruct";
 
-    let aiResult;
+let aiResult;
 
-    try {
+try {
 
-      aiResult = await env.AI.run(model, {
-  messages: [
+  aiResult = await env.AI.run(model, {
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    image: imageDataUrl,
+    max_tokens: 512,
+    temperature: 0
+  });
+
+} catch (aiError) {
+
+  const aiMessage =
+    aiError?.message ||
+    String(aiError);
+
+  return json(
     {
-      role: "user",
-      content: [
-        {
-          type: "text",
-          text: prompt
-        },
-        {
-          type: "image_url",
-          image_url: {
-            url: imageDataUrl
-          }
-        }
-      ]
-    }
-  ],
-  max_tokens: 512,
-  temperature: 0
-});
-
-    } catch (aiError) {
-
-      const aiMessage =
-        aiError?.message ||
-        String(aiError);
-
-      return json(
-        {
-          success: false,
-          error: "Workers AI error: " + aiMessage
-        },
-        502
-      );
-    }
-
+      success: false,
+      error: "Workers AI error: " + aiMessage
+    },
+    502
+  );
+}
 
 // -------------------------
 // READ AI RESPONSE
