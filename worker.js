@@ -711,6 +711,7 @@ Rules:
 // -------------------------
 
 let output = "";
+
 if (
   aiResult &&
   typeof aiResult.response === "string"
