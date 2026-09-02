@@ -842,20 +842,7 @@ Rules:
       current_balance: currentBalance
     });
 
-  } catch (error) {
-
-    return json(
-      {
-        success: false,
-        error:
-          "Image extraction failed: " +
-          (error?.message || String(error))
-      },
-      500
-    );
-  }
-}
-// -------------------------
+  // -------------------------
 // LLAMA MODEL AGREEMENT
 // -------------------------
 
@@ -879,188 +866,16 @@ async function agreeLlama(request, env) {
 
     const accountId = "4b5679a6b80f3058805fa9169e1322cb";
 
-    const model =
-      "@cf/meta/llama-3.2-11b-vision-instruct";
+    const model = "@cf/meta/llama-3.2-11b-vision-instruct";
 
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
       {
         method: "POST",
         headers: {
-          "Authorization":
-            `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+          "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          prompt: "agree"
-        })
-      }
-    );
-
-    const text = await response.text();
-
-    let data;
-
-    try {
-      data = JSON.parse(text);
-    } catch {
-      return json(
-        {
-          success: false,
-          error:
-            `Cloudflare returned HTTP ${response.status}: ${text}`
-        },
-        502
-      );
-    }
-
-    if (!response.ok || !data.success) {
-      return json(
-        {
-          success: false,
-          error:
-            data.errors?.length
-              ? JSON.stringify(data.errors)
-              : `Cloudflare AI request failed (${response.status})`,
-          cloudflare_response: data
-        },
-        502
-      );
-    }
-
-    return json({
-      success: true,
-      message:
-        "Llama 3.2 Vision agreement completed successfully.",
-      cloudflare_response: data
-    });
-
-  } catch (error) {
-    return json(
-      {
-        success: false,
-        error:
-          error?.message || String(error)
-      },
-      500
-    );
-  }
-}
-
-// -------------------------
-// DEBUG CONFIGURATION
-// -------------------------
-
-async function debugConfig(request, env) {
-
-  return json({
-    success: true,
-
-    db: !!env.DB,
-
-    assets: !!env.ASSETS,
-
-    admin_key: !!env.ADMIN_KEY,
-
-    ai: !!env.AI
-  });
-}
-
-
-// -------------------------
-// MAIN WORKER
-// -------------------------
-
-export default {
-
-  async fetch(request, env) {
-
-    const url = new URL(request.url);
-
-    const path = url.pathname;
-
-    const method = request.method;
-
-
-    // Calculator
-
-    if (
-      path === "/api/calculate" &&
-      method === "POST"
-    ) {
-      return calculate(request);
-    }
-
-
-    // Get site
-
-    if (
-      path === "/api/site" &&
-      method === "GET"
-    ) {
-      return getSite(request, env);
-    }
-
-
-    // Update site
-
-    if (
-      path === "/api/admin/update-site" &&
-      method === "POST"
-    ) {
-      return updateSite(request, env);
-    }
-
-
-    // Extract image using Llama Vision
-
-    if (
-      path === "/api/admin/extract-image" &&
-      method === "POST"
-    ) {
-      return extractImage(request, env);
-    }
-   // -------------------------
-// LLAMA MODEL AGREEMENT
-// -------------------------
-
-async function agreeLlama(request, env) {
-  try {
-    const auth = checkAdminKey(request, env);
-
-    if (!auth.ok) {
-      return auth.response;
-    }
-
-    if (!env.CLOUDFLARE_API_TOKEN) {
-      return json(
-        {
-          success: false,
-          error: "CLOUDFLARE_API_TOKEN secret is missing."
-        },
-        500
-      );
-    }
-
-    const accountId =
-      "4b5679a6b80f3058805fa9169e1322cb";
-
-    const model =
-      "@cf/meta/llama-3.2-11b-vision-instruct";
-
-    const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
-      {
-        method: "POST",
-
-        headers: {
-          "Authorization":
-            `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
-
-          "Content-Type":
-            "application/json"
-        },
-
         body: JSON.stringify({
           prompt: "agree"
         })
@@ -1099,16 +914,14 @@ async function agreeLlama(request, env) {
 
     return json({
       success: true,
-      message:
-        "Llama 3.2 Vision agreement completed successfully."
+      message: "Llama 3.2 Vision agreement completed successfully."
     });
 
   } catch (error) {
     return json(
       {
         success: false,
-        error:
-          error?.message || String(error)
+        error: error?.message || String(error)
       },
       500
     );
@@ -1127,8 +940,7 @@ async function debugConfig(request, env) {
     assets: !!env.ASSETS,
     admin_key: !!env.ADMIN_KEY,
     ai: !!env.AI,
-    cloudflare_api_token:
-      !!env.CLOUDFLARE_API_TOKEN
+    cloudflare_api_token: !!env.CLOUDFLARE_API_TOKEN
   });
 }
 
@@ -1138,23 +950,14 @@ async function debugConfig(request, env) {
 // -------------------------
 
 export default {
-
   async fetch(request, env) {
 
-    const url =
-      new URL(request.url);
-
-    const path =
-      url.pathname;
-
-    const method =
-      request.method;
+    const url = new URL(request.url);
+    const path = url.pathname;
+    const method = request.method;
 
 
-    // -------------------------
-    // CALCULATOR
-    // -------------------------
-
+    // Calculator
     if (
       path === "/api/calculate" &&
       method === "POST"
@@ -1163,100 +966,62 @@ export default {
     }
 
 
-    // -------------------------
-    // GET SITE
-    // -------------------------
-
+    // Get site
     if (
       path === "/api/site" &&
       method === "GET"
     ) {
-      return getSite(
-        request,
-        env
-      );
+      return getSite(request, env);
     }
 
 
-    // -------------------------
-    // UPDATE SITE
-    // -------------------------
-
+    // Update site
     if (
       path === "/api/admin/update-site" &&
       method === "POST"
     ) {
-      return updateSite(
-        request,
-        env
-      );
+      return updateSite(request, env);
     }
 
 
-    // -------------------------
-    // EXTRACT IMAGE
-    // -------------------------
-
+    // Extract image
     if (
       path === "/api/admin/extract-image" &&
       method === "POST"
     ) {
-      return extractImage(
-        request,
-        env
-      );
+      return extractImage(request, env);
     }
 
 
-    // -------------------------
-    // ACTIVATE LLAMA AI
-    // -------------------------
-
+    // Activate Llama AI
     if (
       path === "/api/admin/agree-llama" &&
       method === "POST"
     ) {
-      return agreeLlama(
-        request,
-        env
-      );
+      return agreeLlama(request, env);
     }
 
 
-    // -------------------------
-    // DEBUG
-    // -------------------------
-
+    // Debug
     if (
       path === "/api/debug" &&
       method === "GET"
     ) {
-      return debugConfig(
-        request,
-        env
-      );
+      return debugConfig(request, env);
     }
 
 
-    // -------------------------
-    // SERVE WEBSITE
-    // -------------------------
-
+    // Serve website
     if (env.ASSETS) {
-      return env.ASSETS.fetch(
-        request
-      );
+      return env.ASSETS.fetch(request);
     }
-
 
     return new Response(
       "Assets binding is not configured.",
       {
         status: 500,
-
         headers: {
-          "Content-Type":
-            "text/plain"
+          "Content-Type": "text/plain"
         }
       }
     );
