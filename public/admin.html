@@ -1031,6 +1031,117 @@
         </div>
 
       </section>
+      <!-- =========================
+     EDIT SITE
+========================== -->
+
+<section class="card">
+
+  <h2>
+    <span class="icon">✏️</span>
+    Edit Site
+  </h2>
+
+  <label for="editSiteId">
+    Site ID
+  </label>
+
+  <input
+    type="text"
+    id="editSiteId"
+    placeholder="Site ID"
+    autocomplete="off"
+  >
+
+  <label for="editSiteName">
+    Site Name
+  </label>
+
+  <input
+    type="text"
+    id="editSiteName"
+    placeholder="Site Name"
+    autocomplete="off"
+  >
+
+  <label for="editModel">
+    Generator Model
+  </label>
+
+  <select id="editModel">
+
+    <option value="">
+      Select generator model
+    </option>
+
+    <option value="eicher10">
+      Eicher 10 KVA
+    </option>
+
+    <option value="eicher20">
+      Eicher 20 KVA
+    </option>
+
+    <option value="koel20">
+      KOEL 20 KVA
+    </option>
+
+    <option value="mahindra20">
+      Mahindra 20 KVA
+    </option>
+
+    <option value="mahindra10">
+      Mahindra 10 KVA
+    </option>
+
+  </select>
+
+  <label for="editHmr">
+    Current HMR
+  </label>
+
+  <input
+    type="number"
+    id="editHmr"
+    step="any"
+    placeholder="Current HMR"
+  >
+
+  <label for="editKwh">
+    Current kWh
+  </label>
+
+  <input
+    type="number"
+    id="editKwh"
+    step="any"
+    placeholder="Current kWh"
+  >
+
+  <label for="editBalance">
+    Current Balance
+  </label>
+
+  <input
+    type="number"
+    id="editBalance"
+    step="any"
+    placeholder="Current Balance"
+  >
+
+  <button
+    type="button"
+    id="saveSiteEdit"
+  >
+    💾 SAVE SITE CHANGES
+  </button>
+
+  <div
+    id="editSiteMessage"
+    class="message"
+  ></div>
+
+</section>
 
 
       <!-- =========================
