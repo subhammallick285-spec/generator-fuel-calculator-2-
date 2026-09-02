@@ -861,59 +861,89 @@ Rules:
 
 async function agreeLlama(request, env) {
   try {
-
     const auth = checkAdminKey(request, env);
 
     if (!auth.ok) {
       return auth.response;
     }
 
-    if (!env.AI) {
-      return json({
-        success: false,
-        step: "AI_BINDING",
-        error: "env.AI is missing"
-      }, 500);
+    if (!env.CLOUDFLARE_API_TOKEN) {
+      return json(
+        {
+          success: false,
+          error: "CLOUDFLARE_API_TOKEN secret is missing."
+        },
+        500
+      );
     }
+
+    const accountId = "YOUR_ACCOUNT_ID";
 
     const model =
       "@cf/meta/llama-3.2-11b-vision-instruct";
 
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization":
+            `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          prompt: "agree"
+        })
+      }
+    );
+
+    const text = await response.text();
+
+    let data;
+
     try {
-
-      const result = await env.AI.run(model, {
-        prompt: "agree"
-      });
-
-      return json({
-        success: true,
-        step: "AI_RUN",
-        message: "Llama agreement request completed.",
-        result: result || null
-      });
-
-    } catch (error) {
-
-      return json({
-        success: false,
-        step: "AI_RUN",
-        error_name: error?.name || "Unknown",
-        error_message: error?.message || String(error),
-        error_stack: error?.stack || null
-      }, 502);
-
+      data = JSON.parse(text);
+    } catch {
+      return json(
+        {
+          success: false,
+          error:
+            `Cloudflare returned HTTP ${response.status}: ${text}`
+        },
+        502
+      );
     }
 
-  } catch (error) {
+    if (!response.ok || !data.success) {
+      return json(
+        {
+          success: false,
+          error:
+            data.errors?.length
+              ? JSON.stringify(data.errors)
+              : `Cloudflare AI request failed (${response.status})`,
+          cloudflare_response: data
+        },
+        502
+      );
+    }
 
     return json({
-      success: false,
-      step: "OUTER",
-      error_name: error?.name || "Unknown",
-      error_message: error?.message || String(error),
-      error_stack: error?.stack || null
-    }, 500);
+      success: true,
+      message:
+        "Llama 3.2 Vision agreement completed successfully.",
+      cloudflare_response: data
+    });
 
+  } catch (error) {
+    return json(
+      {
+        success: false,
+        error:
+          error?.message || String(error)
+      },
+      500
+    );
   }
 }
 
@@ -995,7 +1025,88 @@ export default {
 // -------------------------
 
 async function agreeLlama(request, env) {
-  // your existing function
+  try {
+    const auth = checkAdminKey(request, env);
+
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    if (!env.CLOUDFLARE_API_TOKEN) {
+      return json(
+        {
+          success: false,
+          error: "CLOUDFLARE_API_TOKEN secret is missing."
+        },
+        500
+      );
+    }
+
+    const accountId = "4b5679a6b80f3058805fa9169e1322cb";
+
+    const model =
+      "@cf/meta/llama-3.2-11b-vision-instruct";
+
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization":
+            `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          prompt: "agree"
+        })
+      }
+    );
+
+    const text = await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return json(
+        {
+          success: false,
+          error:
+            `Cloudflare returned HTTP ${response.status}: ${text}`
+        },
+        502
+      );
+    }
+
+    if (!response.ok || !data.success) {
+      return json(
+        {
+          success: false,
+          error:
+            data.errors?.length
+              ? JSON.stringify(data.errors)
+              : `Cloudflare AI request failed (${response.status})`
+        },
+        502
+      );
+    }
+
+    return json({
+      success: true,
+      message:
+        "Llama 3.2 Vision agreement completed successfully."
+    });
+
+  } catch (error) {
+    return json(
+      {
+        success: false,
+        error: error?.message || String(error)
+      },
+      500
+    );
+  }
 }
 
 
@@ -1007,7 +1118,6 @@ if (
 ) {
   return agreeLlama(request, env);
 }
-
 
 // Debug bindings
 
