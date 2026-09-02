@@ -270,6 +270,7 @@ function displaySite(site) {
 // -------------------------
 
 function prepareExistingSiteCalculator(site) {
+  window.calculatorIncognito = false;
   $("manualModelField").classList.add("hidden");
   activeModel.textContent =
     MODEL_NAMES[site.model] ||
@@ -426,7 +427,7 @@ incognitoModeButton.addEventListener(
 
     siteSearchMessage.textContent = "";
 
-    prepareManualCalculator();
+    prepareManualCalculator(true);
   }
 );
 
@@ -637,9 +638,9 @@ const payload = {
 // SHOW SAVE FOR FUTURE
 // -------------------------
 
-$("saveForFuture")
-  .classList
-  .remove("hidden");
+if (!window.calculatorIncognito) {
+  $("saveForFuture").classList.remove("hidden");
+}
 
 $("saveMessage").textContent = "";
 
