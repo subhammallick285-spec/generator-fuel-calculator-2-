@@ -717,12 +717,9 @@ if (!output) {
   return json(
     {
       success: false,
-      error: "Workers AI returned an empty response.",
-      ai_response: aiResult || null,
-      ai_type: typeof aiResult,
-      ai_keys: aiResult
-        ? Object.keys(aiResult)
-        : []
+      error:
+        "RAW WORKERS AI RESULT: " +
+        JSON.stringify(aiResult)
     },
     502
   );
