@@ -671,10 +671,7 @@ async function updateSite(
    IMAGE EXTRACTION - WORKERS AI
    ===================================================== */
 
-async function extractImage(
-  request,
-  env
-) {
+async function extractImage(request, env) {
 
   try {
 
@@ -682,11 +679,7 @@ async function extractImage(
        ADMIN AUTHENTICATION
     ------------------------------------------------ */
 
-    const auth =
-      checkAdminKey(
-        request,
-        env
-      );
+    const auth = checkAdminKey(request, env);
 
     if (!auth.ok) {
       return auth.response;
@@ -698,16 +691,13 @@ async function extractImage(
     ------------------------------------------------ */
 
     if (!env.AI) {
-
       return json(
         {
           success: false,
-          error:
-            "Workers AI binding (AI) is not configured."
+          error: "Workers AI binding (AI) is not configured."
         },
         500
       );
-
     }
 
 
@@ -716,17 +706,9 @@ async function extractImage(
     ------------------------------------------------ */
 
     const contentType =
-      request.headers.get(
-        "content-type"
-      ) || "";
+      request.headers.get("content-type") || "";
 
-
-    if (
-      !contentType.includes(
-        "multipart/form-data"
-      )
-    ) {
-
+    if (!contentType.includes("multipart/form-data")) {
       return json(
         {
           success: false,
@@ -735,7 +717,6 @@ async function extractImage(
         },
         400
       );
-
     }
 
 
@@ -743,45 +724,33 @@ async function extractImage(
        READ FORM
     ------------------------------------------------ */
 
-    const form =
-      await request.formData();
+    const form = await request.formData();
 
-
-    const image =
-      form.get("image");
-
+    const image = form.get("image");
 
     const siteId =
-      String(
-        form.get("site_id") || ""
-      ).trim();
+      String(form.get("site_id") || "").trim();
 
 
     if (!siteId) {
-
       return json(
         {
           success: false,
-          error:
-            "site_id is required."
+          error: "site_id is required."
         },
         400
       );
-
     }
 
 
     if (!image) {
-
       return json(
         {
           success: false,
-          error:
-            "Image is required."
+          error: "Image is required."
         },
         400
       );
-
     }
 
 
@@ -792,20 +761,15 @@ async function extractImage(
     if (
       typeof image === "string" ||
       !image.type ||
-      !image.type.startsWith(
-        "image/"
-      )
+      !image.type.startsWith("image/")
     ) {
-
       return json(
         {
           success: false,
-          error:
-            "The uploaded file must be an image."
+          error: "The uploaded file must be an image."
         },
         400
       );
-
     }
 
 
@@ -813,21 +777,16 @@ async function extractImage(
        READ IMAGE
     ------------------------------------------------ */
 
-    const imageBuffer =
-      await image.arrayBuffer();
-
+    const imageBuffer = await image.arrayBuffer();
 
     if (!imageBuffer.byteLength) {
-
       return json(
         {
           success: false,
-          error:
-            "The uploaded image is empty."
+          error: "The uploaded image is empty."
         },
         400
       );
-
     }
 
 
@@ -835,15 +794,9 @@ async function extractImage(
        LIMIT IMAGE SIZE
     ------------------------------------------------ */
 
-    const maxImageSize =
-      10 * 1024 * 1024;
+    const maxImageSize = 10 * 1024 * 1024;
 
-
-    if (
-      imageBuffer.byteLength >
-      maxImageSize
-    ) {
-
+    if (imageBuffer.byteLength > maxImageSize) {
       return json(
         {
           success: false,
@@ -852,7 +805,6 @@ async function extractImage(
         },
         400
       );
-
     }
 
 
@@ -861,43 +813,11 @@ async function extractImage(
     ------------------------------------------------ */
 
     const prompt = `
-You are extracting data from a generator/DG monitoring screenshot.
+You are extracting information from a generator/DG monitoring screenshot.
 
-Read the screenshot carefully and return ONLY valid JSON.
+Carefully read the image.
 
-The screenshot belongs to one of these generator models:
-
-- Eicher 10 KVA
-- Mahindra 10 KVA
-- Eicher 20 KVA
-- Mahindra 20 KVA
-- KOEL 20 KVA
-
-Extract these fields when visible:
-
-model
-current_hmr
-current_kwh
-previous_balance
-fuel_filled
-current_balance
-
-Important:
-
-1. Do not invent values.
-2. If a value cannot be read confidently, return null.
-3. Keep decimal values as numbers.
-4. Do not add units such as "L", "Lt", "KWh" or "hrs" to numeric fields.
-5. current_balance means the balance after the latest filling.
-6. previous_balance means the balance before the latest filling.
-7. fuel_filled means the quantity added in the latest filling.
-8. If previous_balance and fuel_filled are both available, current_balance should normally equal:
-   previous_balance + fuel_filled
-9. Return JSON only.
-10. Do not include markdown fences.
-11. Do not include explanations.
-
-Required JSON structure:
+Return ONLY valid JSON using exactly this structure:
 
 {
   "model": null,
@@ -907,6 +827,31 @@ Required JSON structure:
   "fuel_filled": null,
   "current_balance": null
 }
+
+Possible generator models:
+
+- Eicher 10 KVA
+- Mahindra 10 KVA
+- Eicher 20 KVA
+- Mahindra 20 KVA
+- KOEL 20 KVA
+
+Rules:
+
+1. Read numbers exactly as visible.
+2. Do not guess.
+3. If a value is not clearly visible, return null.
+4. Keep decimal numbers as numbers.
+5. Do not include units such as L, Lt, KWh or hrs.
+6. current_hmr = current hour-meter reading.
+7. current_kwh = current kWh reading.
+8. previous_balance = fuel balance before the latest filling.
+9. fuel_filled = amount of fuel added.
+10. current_balance = fuel balance after filling.
+11. If previous_balance and fuel_filled are available, current_balance can be calculated as their sum.
+12. Return JSON only.
+13. Do not use markdown.
+14. Do not provide explanations.
 `;
 
 
@@ -914,17 +859,11 @@ Required JSON structure:
        CONVERT IMAGE TO BASE64
     ------------------------------------------------ */
 
-    const bytes =
-      new Uint8Array(
-        imageBuffer
-      );
-
+    const bytes = new Uint8Array(imageBuffer);
 
     let binary = "";
 
-    const chunkSize =
-      0x8000;
-
+    const chunkSize = 0x8000;
 
     for (
       let i = 0;
@@ -944,9 +883,15 @@ Required JSON structure:
 
     }
 
+    const base64 = btoa(binary);
 
-    const base64 =
-      btoa(binary);
+
+    /* -----------------------------------------------
+       CREATE IMAGE DATA URL
+    ------------------------------------------------ */
+
+    const imageDataUrl =
+      `data:${image.type};base64,${base64}`;
 
 
     /* -----------------------------------------------
@@ -957,27 +902,45 @@ Required JSON structure:
       "@cf/meta/llama-3.2-11b-vision-instruct";
 
 
-    const aiResult =
-      await env.AI.run(
+    let aiResult;
+
+    try {
+
+      aiResult = await env.AI.run(
         model,
         {
           messages: [
             {
               role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: prompt
-                },
-                {
-                  type: "image",
-                  image: base64
-                }
-              ]
+              content: prompt
             }
-          ]
+          ],
+
+          image: imageDataUrl,
+
+          max_tokens: 512,
+
+          temperature: 0
+
         }
       );
+
+    } catch (aiError) {
+
+      return json(
+        {
+          success: false,
+          error:
+            "Workers AI error: " +
+            (
+              aiError?.message ||
+              String(aiError)
+            )
+        },
+        502
+      );
+
+    }
 
 
     /* -----------------------------------------------
@@ -985,7 +948,6 @@ Required JSON structure:
     ------------------------------------------------ */
 
     let output = "";
-
 
     if (
       aiResult &&
@@ -1004,7 +966,9 @@ Required JSON structure:
         {
           success: false,
           error:
-            "Workers AI returned an empty response."
+            "Workers AI returned an empty response.",
+          ai_response:
+            aiResult || null
         },
         502
       );
@@ -1039,13 +1003,9 @@ Required JSON structure:
 
     let extracted;
 
-
     try {
 
-      extracted =
-        JSON.parse(
-          output
-        );
+      extracted = JSON.parse(output);
 
     } catch {
 
@@ -1055,10 +1015,7 @@ Required JSON structure:
           error:
             "OCR model returned invalid JSON.",
           raw_response:
-            output.slice(
-              0,
-              2000
-            )
+            output.slice(0, 3000)
         },
         502
       );
@@ -1067,41 +1024,40 @@ Required JSON structure:
 
 
     /* -----------------------------------------------
-       NORMALIZE VALUES
+       NORMALIZE NUMBERS
     ------------------------------------------------ */
 
-    const cleanNumber =
-      (value) => {
+    const cleanNumber = (value) => {
 
-        if (
-          value === null ||
-          value === undefined ||
-          String(value).trim() === ""
-        ) {
-          return null;
-        }
+      if (
+        value === null ||
+        value === undefined ||
+        String(value).trim() === ""
+      ) {
+        return null;
+      }
 
-        const n =
-          Number(
-            String(value)
-              .replace(
-                /[^0-9.+-]/g,
-                ""
-              )
-          );
+      const cleaned =
+        String(value)
+          .replace(/,/g, "")
+          .replace(/[^0-9.+-]/g, "");
 
-        return Number.isFinite(n)
-          ? n
-          : null;
+      const n = Number(cleaned);
 
-      };
+      return Number.isFinite(n)
+        ? n
+        : null;
 
+    };
+
+
+    /* -----------------------------------------------
+       EXTRACT VALUES
+    ------------------------------------------------ */
 
     const extractedModel =
       extracted.model
-        ? String(
-            extracted.model
-          ).trim()
+        ? String(extracted.model).trim()
         : null;
 
 
@@ -1136,9 +1092,7 @@ Required JSON structure:
 
 
     /* -----------------------------------------------
-       CALCULATE BALANCE WHEN BOTH
-       PREVIOUS BALANCE AND FILLING
-       ARE AVAILABLE
+       CALCULATE CURRENT BALANCE
     ------------------------------------------------ */
 
     if (
@@ -1155,36 +1109,28 @@ Required JSON structure:
 
 
     /* -----------------------------------------------
-       RETURN OCR RESULT
+       RETURN RESULT
     ------------------------------------------------ */
 
     return json({
 
       success: true,
 
-      extraction_ready:
-        true,
+      extraction_ready: true,
 
-      site_id:
-        siteId,
+      site_id: siteId,
 
-      model:
-        extractedModel,
+      model: extractedModel,
 
-      current_hmr:
-        currentHmr,
+      current_hmr: currentHmr,
 
-      current_kwh:
-        currentKwh,
+      current_kwh: currentKwh,
 
-      previous_balance:
-        previousBalance,
+      previous_balance: previousBalance,
 
-      fuel_filled:
-        fuelFilled,
+      fuel_filled: fuelFilled,
 
-      current_balance:
-        currentBalance
+      current_balance: currentBalance
 
     });
 
@@ -1196,8 +1142,11 @@ Required JSON structure:
         success: false,
 
         error:
-          error?.message ||
-          "Image extraction failed."
+          "Image extraction failed: " +
+          (
+            error?.message ||
+            String(error)
+          )
       },
       500
     );
