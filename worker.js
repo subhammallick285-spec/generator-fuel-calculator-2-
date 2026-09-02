@@ -706,20 +706,24 @@ try {
 
 let output = "";
 
-if (
-  aiResult &&
-  typeof aiResult.response === "string"
-) {
-  output = aiResult.response.trim();
+if (aiResult && aiResult.response) {
+
+  if (typeof aiResult.response === "string") {
+
+    output = aiResult.response.trim();
+
+  } else if (typeof aiResult.response === "object") {
+
+    output = JSON.stringify(aiResult.response);
+
+  }
 }
 
 if (!output) {
   return json(
     {
       success: false,
-      error:
-        "RAW WORKERS AI RESULT: " +
-        JSON.stringify(aiResult)
+      error: "Workers AI returned an empty response."
     },
     502
   );
