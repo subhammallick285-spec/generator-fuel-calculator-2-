@@ -457,7 +457,17 @@ $("calculate").addEventListener(
   async () => {
 
     $("error").textContent = "";
+const selectedModel =
+  getCurrentModel();
 
+if (!selectedModel) {
+  $("error").textContent =
+    "Please select a DG Model.";
+
+  $("manualModel").focus();
+
+  return;
+}
     const fuelFilling =
   Number($("fuelFilling").value || 0);
 
@@ -478,7 +488,7 @@ $("balanceAfterFillingBox")
 const payload = {
 
   model:
-    getCurrentModel(),
+  selectedModel,
 
   A:
     $("a").value,
@@ -671,6 +681,7 @@ $("clear").addEventListener(
     $("d").value = "";
     $("e").value = "";
     $("fuelFilling").value = "";
+    $("manualModel").value = "";
 
 $("balanceAfterFilling").textContent =
   "—";
