@@ -238,10 +238,10 @@
 
         <label class="field full">
 
-  <span>E · Previous balance after filling</span>
+  <span>E1 · Previous balance after filling</span>
 
   <input
-    id="e"
+    id="e1"
     type="number"
     inputmode="decimal"
     step="any"
@@ -251,24 +251,43 @@
 </label>
 
 
-<label class="field full">
+<label class="field">
 
-  <span>Fuel Filling · Litres</span>
+  <span>Q1 · Current Balance</span>
 
   <input
-    id="fuelFilling"
+    id="q1"
     type="number"
     inputmode="decimal"
     step="any"
     min="0"
-    placeholder="Enter fuel filled in litres"
+    placeholder="Current balance"
   >
 
 </label>
-        <div
-  id="balanceAfterFillingBox"
+
+<label class="field">
+
+  <span>Q2 · Fuel Filling</span>
+
+  <input
+    id="q2"
+    type="number"
+    inputmode="decimal"
+    step="any"
+    min="0"
+    placeholder="Fuel filled in litres"
+  >
+
+</label>
+
+<div
+  id="currentBalanceAfterFillingBox"
   class="field full calculated-field hidden"
 >
+  <span>E2 · Current balance after filling</span>
+  <strong id="e2">—</strong>
+</div>
 
   <span>Balance After Filling</span>
 
@@ -365,7 +384,7 @@
         </div>
 
         <div class="final-row">
-          <span>T = E − S</span>
+          <span>T = E1 − S</span>
           <strong id="t">—</strong>
         </div>
 
