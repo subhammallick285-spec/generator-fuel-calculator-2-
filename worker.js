@@ -861,6 +861,7 @@ Rules:
 
 async function agreeLlama(request, env) {
   try {
+
     const auth = checkAdminKey(request, env);
 
     if (!auth.ok) {
@@ -868,54 +869,53 @@ async function agreeLlama(request, env) {
     }
 
     if (!env.AI) {
-      return json(
-        {
-          success: false,
-          error: "Workers AI binding (AI) is not configured."
-        },
-        500
-      );
+      return json({
+        success: false,
+        step: "AI_BINDING",
+        error: "env.AI is missing"
+      }, 500);
     }
 
     const model =
       "@cf/meta/llama-3.2-11b-vision-instruct";
 
-    let result;
-
     try {
-      result = await env.AI.run(model, {
+
+      const result = await env.AI.run(model, {
         prompt: "agree"
       });
+
+      return json({
+        success: true,
+        step: "AI_RUN",
+        message: "Llama agreement request completed.",
+        result: result || null
+      });
+
     } catch (error) {
-      return json(
-        {
-          success: false,
-          error:
-            "Llama agreement request failed: " +
-            (error?.message || String(error))
-        },
-        502
-      );
+
+      return json({
+        success: false,
+        step: "AI_RUN",
+        error_name: error?.name || "Unknown",
+        error_message: error?.message || String(error),
+        error_stack: error?.stack || null
+      }, 502);
+
     }
 
-    return json({
-      success: true,
-      message:
-        "Llama 3.2 Vision agreement request completed.",
-      ai_response: result || null
-    });
-
   } catch (error) {
-    return json(
-      {
-        success: false,
-        error: error?.message || String(error)
-      },
-      500
-    );
+
+    return json({
+      success: false,
+      step: "OUTER",
+      error_name: error?.name || "Unknown",
+      error_message: error?.message || String(error),
+      error_stack: error?.stack || null
+    }, 500);
+
   }
 }
-
 
 // -------------------------
 // DEBUG CONFIGURATION
