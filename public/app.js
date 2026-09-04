@@ -459,82 +459,106 @@ $("calculate").addEventListener(
   async () => {
 
     $("error").textContent = "";
-const selectedModel =
-  getCurrentModel();
 
-if (!selectedModel) {
-  $("error").textContent =
-    "Please select a DG Model.";
+    const selectedModel =
+      getCurrentModel();
 
-  $("manualModel").focus();
+    if (!selectedModel) {
+      $("error").textContent =
+        "Please select a DG Model.";
 
-  return;
-}
-    const fuelFilling =
-  Number($("fuelFilling").value || 0);
+      $("manualModel").focus();
 
-const previousBalance =
-  Number($("e").value || 0);
+      return;
+    }
 
-const balanceAfterFilling =
-  previousBalance + fuelFilling;
+    // -------------------------
+    // E1 · Previous balance after filling
+    // -------------------------
 
-// Show balance after filling
-$("balanceAfterFilling").textContent =
-  balanceAfterFilling.toFixed(2) + " L";
+    const E1 =
+      Number($("e1").value || 0);
 
-$("balanceAfterFillingBox")
-  .classList
-  .remove("hidden");
+    // -------------------------
+    // Q1 · Current balance
+    // -------------------------
 
-const payload = {
+    const Q1 =
+      Number($("q1").value || 0);
 
-  model:
-  selectedModel,
+    // -------------------------
+    // Q2 · Fuel filling
+    // -------------------------
 
-  A:
-    $("a").value,
+    const Q2 =
+      Number($("q2").value || 0);
 
-  B:
-    $("b").value,
+    // -------------------------
+    // E2 · Current balance after filling
+    // -------------------------
 
-  C:
-    $("c").value,
+    const E2 =
+      Q1 + Q2;
 
-  D:
-    $("d").value,
+    // Show E2
+    $("e2").textContent =
+      E2.toFixed(2) + " L";
 
-  E:
-    balanceAfterFilling
-};
+    $("currentBalanceAfterFillingBox")
+      .classList
+      .remove("hidden");
 
+    // -------------------------
+    // SEND CALCULATION
+    // -------------------------
+
+    const payload = {
+
+      model:
+        selectedModel,
+
+      A:
+        $("a").value,
+
+      B:
+        $("b").value,
+
+      C:
+        $("c").value,
+
+      D:
+        $("d").value,
+
+      // E = E1
+      E:
+        E1
+    };
 
     try {
 
-      const res = await fetch(
-        "/api/calculate",
-        {
-          method: "POST",
+      const res =
+        await fetch(
+          "/api/calculate",
+          {
+            method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
+            headers: {
+              "Content-Type":
+                "application/json",
 
-            "Accept":
-              "application/json"
-          },
+              "Accept":
+                "application/json"
+            },
 
-          body:
-            JSON.stringify(payload)
-        }
-      );
-
+            body:
+              JSON.stringify(payload)
+          }
+        );
 
       const responseText =
         await res.text();
 
       let data = {};
-
 
       if (responseText.trim()) {
 
@@ -551,7 +575,6 @@ const payload = {
         }
       }
 
-
       if (!res.ok) {
 
         throw new Error(
@@ -560,7 +583,6 @@ const payload = {
         );
       }
 
-
       if (!data.success) {
 
         throw new Error(
@@ -568,6 +590,54 @@ const payload = {
           "Calculation failed."
         );
       }
+
+      // -------------------------
+      // DISPLAY CALCULATION
+      // -------------------------
+
+      $("z").textContent =
+        formatNumber(data.Z);
+
+      $("y").textContent =
+        formatNumber(data.Y);
+
+      $("x").textContent =
+        formatNumber(data.X);
+
+      $("l").textContent =
+        formatNumber(data.L);
+
+      $("s").textContent =
+        formatNumber(data.S);
+
+      $("result").textContent =
+        formatNumber(data.T);
+
+      $("resultCard")
+        .classList
+        .remove("hidden");
+
+      // -------------------------
+      // SAVE DETAILS BUTTON
+      // -------------------------
+
+      if (!window.calculatorIncognito) {
+
+        $("saveDetails")
+          .classList
+          .remove("hidden");
+      }
+
+    } catch (err) {
+
+      console.error(err);
+
+      $("error").textContent =
+        err.message ||
+        "Calculation failed.";
+    }
+  }
+);
 
 
       // -------------------------
