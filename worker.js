@@ -1,4 +1,15 @@
+// ============================================================
+// GENERATOR FUEL CALCULATOR - CLOUDFLARE WORKER
+// ============================================================
+
+const ACCOUNT_ID = "4b5679a6b80f3058805fa9169e1322cb";
+
+// ============================================================
+// GENERATOR CHARTS
+// ============================================================
+
 const CHARTS = {
+
   eicher10: {
     name: "Eicher 10 KVA",
     rows: [
@@ -76,29 +87,32 @@ const CHARTS = {
       [9.6, 11.2, 3.02]
     ]
   }
+
 };
 
 
-// -------------------------
-// JSON RESPONSE
-// -------------------------
+// ============================================================
+// BASIC RESPONSE HELPERS
+// ============================================================
 
 function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=UTF-8",
-      "Cache-Control": "no-store"
+
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store"
+      }
     }
-  });
+  );
+
 }
 
 
-// -------------------------
-// NUMBER VALIDATION
-// -------------------------
-
 function number(value, name) {
+
   const n = Number(value);
 
   if (!Number.isFinite(n)) {
@@ -106,30 +120,56 @@ function number(value, name) {
   }
 
   return n;
+
 }
 
 
-// -------------------------
-// ADMIN KEY
-// -------------------------
+// ============================================================
+// ADMIN AUTHENTICATION
+// ============================================================
 
 function checkAdminKey(request, env) {
-  const key = request.headers.get("X-Admin-Key");
 
-  if (!env.ADMIN_KEY) {
+  const configuredKey =
+    String(env.ADMIN_KEY || "").trim();
+
+  if (!configuredKey) {
+
     return {
       ok: false,
       response: json(
         {
           success: false,
-          error: "ADMIN_KEY is not configured."
+          error: "Admin key is not configured."
         },
         500
       )
     };
+
   }
 
-  if (!key || key !== env.ADMIN_KEY) {
+  const suppliedKey =
+    String(
+      request.headers.get("X-Admin-Key") || ""
+    ).trim();
+
+  if (!suppliedKey) {
+
+    return {
+      ok: false,
+      response: json(
+        {
+          success: false,
+          error: "Admin key is required."
+        },
+        401
+      )
+    };
+
+  }
+
+  if (suppliedKey !== configuredKey) {
+
     return {
       ok: false,
       response: json(
@@ -137,28 +177,47 @@ function checkAdminKey(request, env) {
           success: false,
           error: "Invalid admin key."
         },
-        401
+        403
       )
     };
+
   }
 
   return {
     ok: true
   };
+
 }
 
 
-// -------------------------
+// ============================================================
 // CALCULATOR
-// -------------------------
+// ============================================================
 
-async function calculate(request) {
+async function calculate(request, env) {
+
   try {
-    const body = await request.json();
 
-    const modelKey = String(body.model || "").trim();
+    const body =
+      await request.json();
 
-    if (!CHARTS[modelKey]) {
+    const model =
+      String(body.model || "").trim();
+
+    if (!model) {
+
+      return json(
+        {
+          success: false,
+          error: "Generator model is required."
+        },
+        400
+      );
+
+    }
+
+    if (!CHARTS[model]) {
+
       return json(
         {
           success: false,
@@ -166,120 +225,219 @@ async function calculate(request) {
         },
         400
       );
+
     }
 
-    const A = number(body.A, "A");
-    const B = number(body.B, "B");
-    const C = number(body.C, "C");
-    const D = number(body.D, "D");
-    const E = number(body.E, "E");
+
+    const A =
+      number(body.current_hmr, "Current HMR");
+
+    const B =
+      number(body.current_kwh, "Current kWh");
+
+    const C =
+      number(body.previous_hmr, "Previous HMR");
+
+    const D =
+      number(body.previous_kwh, "Previous kWh");
+
+    const E =
+      number(body.previous_balance, "Previous balance");
+
+
+    // --------------------------------------------------------
+    // FORMULA
+    // --------------------------------------------------------
 
     const Z = A - C;
+
     const Y = B - D;
 
-    if (Z === 0) {
+
+    if (Z <= 0) {
+
       return json(
         {
           success: false,
-          error: "A − C cannot be zero."
+          error: "Current HMR must be greater than previous HMR."
         },
         400
       );
+
     }
 
-    const X = Y / Z;
 
-    const chart = CHARTS[modelKey];
+    if (Y < 0) {
 
-    const row = chart.rows.find(([lo, hi]) => {
-      return X >= lo && X <= hi;
-    });
+      return json(
+        {
+          success: false,
+          error: "Current kWh cannot be lower than previous kWh."
+        },
+        400
+      );
+
+    }
+
+
+    const X =
+      Y / Z;
+
+
+    // --------------------------------------------------------
+    // FIND L FROM CHART
+    // --------------------------------------------------------
+
+    const chart =
+      CHARTS[model];
+
+    const row =
+      chart.rows.find(
+        ([lo, hi]) =>
+          X >= lo - 1e-10 &&
+          X <= hi + 1e-10
+      );
+
 
     if (!row) {
+
       return json(
         {
           success: false,
-          error: `X value ${X.toFixed(4)} is outside the chart range.`
+          error:
+            `Calculated kWh/HMR value (${X.toFixed(4)}) is outside the ${chart.name} chart range.`
         },
         400
       );
+
     }
 
-    const L = row[2];
 
-    const S = L * Z;
+    const L =
+      row[2];
 
-    const T = E - S;
+
+    // --------------------------------------------------------
+    // REMAINING CALCULATION
+    // --------------------------------------------------------
+
+    const S =
+      L * Z;
+
+    const T =
+      E - S;
+
+
+    // --------------------------------------------------------
+    // RESPONSE
+    // --------------------------------------------------------
 
     return json({
+
       success: true,
-      model: chart.name,
+
+      model,
+
+      model_name: chart.name,
 
       A,
+
       B,
+
       C,
+
       D,
+
       E,
 
-      X,
-      Y,
       Z,
 
+      Y,
+
+      X,
+
       L,
+
       S,
+
       T,
 
       chart_range: {
-        from: row[0],
-        to: row[1]
+        min: row[0],
+        max: row[1]
       }
+
     });
 
   } catch (error) {
+
+    console.error(
+      "calculate error:",
+      error
+    );
+
     return json(
       {
         success: false,
-        error: error?.message || String(error)
+        error:
+          error?.message ||
+          "Calculation failed."
       },
       400
     );
+
   }
+
 }
 
 
-// -------------------------
+// ============================================================
 // GET SITE
-// -------------------------
+// ============================================================
 
 async function getSite(request, env) {
-  try {
-    const url = new URL(request.url);
 
-    const siteId = url.searchParams.get("site_id");
+  if (!env.DB) {
+
+    return json(
+      {
+        success: false,
+        error: "D1 database is not configured."
+      },
+      500
+    );
+
+  }
+
+
+  try {
+
+    const url =
+      new URL(request.url);
+
+    const siteId =
+      String(
+        url.searchParams.get("site_id") || ""
+      ).trim();
+
 
     if (!siteId) {
+
       return json(
         {
           success: false,
-          error: "site_id is required."
+          error: "Site ID is required."
         },
         400
       );
+
     }
 
-    if (!env.DB) {
-      return json(
-        {
-          success: false,
-          error: "D1 database is not configured."
-        },
-        500
-      );
-    }
 
-    const site = await env.DB
-      .prepare(`
+    const site =
+      await env.DB.prepare(`
         SELECT
+          id,
           site_id,
           site_name,
           model,
@@ -296,7 +454,9 @@ async function getSite(request, env) {
       .bind(siteId)
       .first();
 
+
     if (!site) {
+
       return json(
         {
           success: false,
@@ -304,409 +464,182 @@ async function getSite(request, env) {
         },
         404
       );
+
     }
+
 
     return json({
       success: true,
       site
     });
 
+
   } catch (error) {
-    return json(
-      {
-        success: false,
-        error: error?.message || String(error)
-      },
-      500
+
+    console.error(
+      "getSite error:",
+      error
     );
-  }
-}
 
-// -------------------------
-// UPDATE SITE
-// -------------------------
-async function createSaveRequest(request, env) {
-  try {
-    if (!env.DB) {
-      return json(
-        {
-          success: false,
-          error: "D1 database is not configured."
-        },
-        500
-      );
-    }
-
-    const body = await request.json();
-
-    const siteId =
-      String(body.site_id || "").trim();
-
-    const model =
-      String(body.model || "").trim();
-
-    const currentHmr =
-      Number(body.current_hmr);
-
-    const currentKwh =
-      Number(body.current_kwh);
-
-    const currentBalance =
-      Number(body.current_balance);
-
-    if (!siteId) {
-      return json(
-        {
-          success: false,
-          error: "Site ID is required."
-        },
-        400
-      );
-    }
-
-    if (!model || !CHARTS[model]) {
-      return json(
-        {
-          success: false,
-          error: "Invalid generator model."
-        },
-        400
-      );
-    }
-
-    if (
-      !Number.isFinite(currentHmr) ||
-      !Number.isFinite(currentKwh) ||
-      !Number.isFinite(currentBalance)
-    ) {
-      return json(
-        {
-          success: false,
-          error: "Invalid HMR, kWh or balance."
-        },
-        400
-      );
-    }
-
-    const now =
-      new Date().toISOString();
-
-    await env.DB.prepare(
-      `INSERT INTO save_requests
-       (
-         site_id,
-         site_name,
-         model,
-         current_hmr,
-         current_kwh,
-         current_balance,
-         requested_at,
-         status
-       )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-    .bind(
-      siteId,
-      siteId,
-      model,
-      currentHmr,
-      currentKwh,
-      currentBalance,
-      now,
-      "pending"
-    )
-    .run();
-
-    return json({
-      success: true,
-      message:
-        "Save request sent to admin for approval."
-    });
-
-  } catch (error) {
     return json(
       {
         success: false,
         error:
           error?.message ||
-          "Unable to create save request."
+          "Unable to load site."
       },
       500
     );
+
   }
+
 }
+
+
+// ============================================================
+// ADMIN DIRECT SAVE
+// Kept only for compatibility.
+// PUBLIC USERS CANNOT USE THIS.
+// ============================================================
+
 async function saveCalculatorSite(request, env) {
 
-  try {
+  const auth =
+    checkAdminKey(request, env);
 
-    const body = await request.json();
+  if (!auth.ok) {
+    return auth.response;
+  }
 
-    const siteId =
-      String(body.site_id || "").trim();
 
-    const model =
-      String(body.model || "").trim();
-
-    const currentHmr =
-      Number(body.current_hmr);
-
-    const currentKwh =
-      Number(body.current_kwh);
-
-    const currentBalance =
-      Number(body.current_balance);
-
-    if (!siteId) {
-      return json(
-        {
-          success: false,
-          error: "Site ID is required."
-        },
-        400
-      );
-    }
-
-    if (!model) {
-      return json(
-        {
-          success: false,
-          error: "DG model is required."
-        },
-        400
-      );
-    }
-
-    if (
-      !Number.isFinite(currentHmr) ||
-      !Number.isFinite(currentKwh) ||
-      !Number.isFinite(currentBalance)
-    ) {
-      return json(
-        {
-          success: false,
-          error: "Invalid HMR, kWh or balance."
-        },
-        400
-      );
-    }
-
-    const allowedModels = [
-      "eicher10",
-      "eicher20",
-      "koel20",
-      "mahindra20",
-      "mahindra10"
-    ];
-
-    if (!allowedModels.includes(model)) {
-      return json(
-        {
-          success: false,
-          error: "Invalid DG model."
-        },
-        400
-      );
-    }
-
-    const now =
-      new Date().toISOString();
-
-    const existing =
-      await env.DB.prepare(
-        `SELECT site_id
-         FROM sites
-         WHERE site_id = ?`
-      )
-      .bind(siteId)
-      .first();
-
-    if (existing) {
-
-      await env.DB.prepare(
-        `UPDATE sites
-         SET model = ?,
-             current_hmr = ?,
-             current_kwh = ?,
-             current_balance = ?,
-             last_updated = ?,
-             data_source = ?
-         WHERE site_id = ?`
-      )
-      .bind(
-        model,
-        currentHmr,
-        currentKwh,
-        currentBalance,
-        now,
-        "calculator",
-        siteId
-      )
-      .run();
-
-    } else {
-
-      await env.DB.prepare(
-        `INSERT INTO sites
-         (
-           site_id,
-           site_name,
-           model,
-           current_hmr,
-           current_kwh,
-           current_balance,
-           last_updated,
-           screenshot_url,
-           data_source
-         )
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        siteId,
-        siteId,
-        model,
-        currentHmr,
-        currentKwh,
-        currentBalance,
-        now,
-        null,
-        "calculator"
-      )
-      .run();
-    }
-
-    await env.DB.prepare(
-      `INSERT INTO readings
-       (
-         site_id,
-         hmr,
-         kwh,
-         balance,
-         reading_date,
-         source
-       )
-       VALUES (?, ?, ?, ?, ?, ?)`
-    )
-    .bind(
-      siteId,
-      currentHmr,
-      currentKwh,
-      currentBalance,
-      now,
-      "calculator"
-    )
-    .run();
-
-    return json({
-      success: true,
-      message:
-        "Site details saved successfully."
-    });
-
-  } catch (error) {
+  if (!env.DB) {
 
     return json(
       {
         success: false,
-        error:
-          error?.message ||
-          "Unable to save calculator site."
+        error: "D1 database is not configured."
       },
       500
     );
+
   }
-}
-async function updateSite(request, env) {
+
+
   try {
 
-    const auth = checkAdminKey(request, env);
+    const body =
+      await request.json();
 
-    if (!auth.ok) {
-      return auth.response;
-    }
-
-    if (!env.DB) {
-      return json(
-        {
-          success: false,
-          error: "D1 database is not configured."
-        },
-        500
-      );
-    }
-
-    const body = await request.json();
 
     const siteId =
-      String(body.site_id || "").trim();
+      String(
+        body.site_id || ""
+      ).trim();
 
-    if (!siteId) {
-      return json(
-        {
-          success: false,
-          error: "site_id is required."
-        },
-        400
-      );
-    }
+    const siteName =
+      String(
+        body.site_name || siteId
+      ).trim();
 
     const model =
-      String(body.model || "").trim();
-
-    if (!CHARTS[model]) {
-      return json(
-        {
-          success: false,
-          error: "Invalid generator model."
-        },
-        400
-      );
-    }
+      String(
+        body.model || ""
+      ).trim();
 
     const currentHmr =
-      number(body.current_hmr, "current_hmr");
+      number(
+        body.current_hmr,
+        "Current HMR"
+      );
 
     const currentKwh =
-      number(body.current_kwh, "current_kwh");
+      number(
+        body.current_kwh,
+        "Current kWh"
+      );
 
     const currentBalance =
       number(
         body.current_balance,
-        "current_balance"
+        "Current balance"
       );
+
+
+    if (!siteId) {
+
+      return json(
+        {
+          success: false,
+          error: "Site ID is required."
+        },
+        400
+      );
+
+    }
+
+
+    if (!CHARTS[model]) {
+
+      return json(
+        {
+          success: false,
+          error: "Invalid generator model."
+        },
+        400
+      );
+
+    }
+
 
     const now =
       new Date().toISOString();
 
-    const source =
-      body.source || "ocr";
-
-
-    // -------------------------
-    // CHECK IF SITE EXISTS
-    // -------------------------
 
     const existingSite =
-      await env.DB
-        .prepare(`
-          SELECT
-            site_id,
-            site_name
-          FROM sites
+      await env.DB.prepare(`
+        SELECT id
+        FROM sites
+        WHERE site_id = ?
+        LIMIT 1
+      `)
+      .bind(siteId)
+      .first();
+
+
+    const statements = [];
+
+
+    if (existingSite) {
+
+      statements.push(
+        env.DB.prepare(`
+          UPDATE sites
+          SET
+            site_name = ?,
+            model = ?,
+            current_hmr = ?,
+            current_kwh = ?,
+            current_balance = ?,
+            last_updated = ?,
+            data_source = ?
           WHERE site_id = ?
-          LIMIT 1
         `)
-        .bind(siteId)
-        .first();
+        .bind(
+          siteName,
+          model,
+          currentHmr,
+          currentKwh,
+          currentBalance,
+          now,
+          "admin",
+          siteId
+        )
+      );
 
+    } else {
 
-    // -------------------------
-    // CREATE NEW SITE
-    // -------------------------
-
-    if (!existingSite) {
-
-      await env.DB
-        .prepare(`
+      statements.push(
+        env.DB.prepare(`
           INSERT INTO sites (
             site_id,
             site_name,
@@ -722,56 +655,22 @@ async function updateSite(request, env) {
         `)
         .bind(
           siteId,
-          siteId,
+          siteName,
           model,
           currentHmr,
           currentKwh,
           currentBalance,
           now,
           null,
-          source
+          "admin"
         )
-        .run();
-
-    } else {
-
-
-      // -------------------------
-      // UPDATE EXISTING SITE
-      // -------------------------
-
-      await env.DB
-        .prepare(`
-          UPDATE sites
-          SET
-            model = ?,
-            current_hmr = ?,
-            current_kwh = ?,
-            current_balance = ?,
-            last_updated = ?,
-            data_source = ?
-          WHERE site_id = ?
-        `)
-        .bind(
-          model,
-          currentHmr,
-          currentKwh,
-          currentBalance,
-          now,
-          source,
-          siteId
-        )
-        .run();
+      );
 
     }
 
 
-    // -------------------------
-    // SAVE READING HISTORY
-    // -------------------------
-
-    await env.DB
-      .prepare(`
+    statements.push(
+      env.DB.prepare(`
         INSERT INTO readings (
           site_id,
           hmr,
@@ -788,45 +687,198 @@ async function updateSite(request, env) {
         currentKwh,
         currentBalance,
         now,
-        source
+        "admin"
       )
-      .run();
+    );
+
+
+    await env.DB.batch(
+      statements
+    );
 
 
     return json({
       success: true,
-
-      message:
-        existingSite
-          ? "Site updated successfully."
-          : "New site created and reading saved.",
-
-      site_id: siteId,
-      model,
-      current_hmr: currentHmr,
-      current_kwh: currentKwh,
-      current_balance: currentBalance,
-      last_updated: now
+      message: "Site saved successfully."
     });
 
 
   } catch (error) {
+
+    console.error(
+      "saveCalculatorSite error:",
+      error
+    );
 
     return json(
       {
         success: false,
         error:
           error?.message ||
-          String(error)
+          "Unable to save site."
       },
       500
     );
 
   }
+
 }
+
+
+// ============================================================
+// CREATE SAVE REQUEST
+// PUBLIC USER CAN USE THIS.
+// IT DOES NOT UPDATE sites.
+// ============================================================
+
+async function createSaveRequest(request, env) {
+
+  try {
+
+    if (!env.DB) {
+
+      return json(
+        {
+          success: false,
+          error: "D1 database is not configured."
+        },
+        500
+      );
+
+    }
+
+
+    const body =
+      await request.json();
+
+
+    const siteId =
+      String(
+        body.site_id || ""
+      ).trim();
+
+    const model =
+      String(
+        body.model || ""
+      ).trim();
+
+    const currentHmr =
+      Number(body.current_hmr);
+
+    const currentKwh =
+      Number(body.current_kwh);
+
+    const currentBalance =
+      Number(body.current_balance);
+
+
+    if (!siteId) {
+
+      return json(
+        {
+          success: false,
+          error: "Site ID is required."
+        },
+        400
+      );
+
+    }
+
+
+    if (!model || !CHARTS[model]) {
+
+      return json(
+        {
+          success: false,
+          error: "Invalid generator model."
+        },
+        400
+      );
+
+    }
+
+
+    if (
+      !Number.isFinite(currentHmr) ||
+      !Number.isFinite(currentKwh) ||
+      !Number.isFinite(currentBalance)
+    ) {
+
+      return json(
+        {
+          success: false,
+          error:
+            "Invalid HMR, kWh or balance."
+        },
+        400
+      );
+
+    }
+
+
+    const now =
+      new Date().toISOString();
+
+
+    await env.DB.prepare(`
+      INSERT INTO save_requests
+      (
+        site_id,
+        site_name,
+        model,
+        current_hmr,
+        current_kwh,
+        current_balance,
+        requested_at,
+        status
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+    .bind(
+      siteId,
+      siteId,
+      model,
+      currentHmr,
+      currentKwh,
+      currentBalance,
+      now,
+      "pending"
+    )
+    .run();
+
+
+    return json({
+      success: true,
+      message:
+        "Save request sent to admin for approval."
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      "createSaveRequest error:",
+      error
+    );
+
+    return json(
+      {
+        success: false,
+        error:
+          error?.message ||
+          "Unable to create save request."
+      },
+      500
+    );
+
+  }
+
+}
+
 
 // ============================================================
 // GET PENDING SAVE REQUESTS
+// ADMIN ONLY
 // ============================================================
 
 async function getSaveRequests(request, env) {
@@ -838,7 +890,9 @@ async function getSaveRequests(request, env) {
     return auth.response;
   }
 
+
   if (!env.DB) {
+
     return json(
       {
         success: false,
@@ -846,7 +900,9 @@ async function getSaveRequests(request, env) {
       },
       500
     );
+
   }
+
 
   try {
 
@@ -865,16 +921,23 @@ async function getSaveRequests(request, env) {
         FROM save_requests
         WHERE status = 'pending'
         ORDER BY requested_at DESC
-      `).all();
+      `)
+      .all();
+
 
     return json({
       success: true,
-      requests: result.results || []
+      requests:
+        result.results || []
     });
+
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "getSaveRequests error:",
+      error
+    );
 
     return json(
       {
@@ -885,10 +948,15 @@ async function getSaveRequests(request, env) {
       },
       500
     );
+
   }
+
 }
+
+
 // ============================================================
 // APPROVE / REJECT SAVE REQUEST
+// ADMIN ONLY
 // ============================================================
 
 async function reviewSaveRequest(request, env) {
@@ -900,7 +968,9 @@ async function reviewSaveRequest(request, env) {
     return auth.response;
   }
 
+
   if (!env.DB) {
+
     return json(
       {
         success: false,
@@ -908,12 +978,15 @@ async function reviewSaveRequest(request, env) {
       },
       500
     );
+
   }
+
 
   try {
 
     const body =
       await request.json();
+
 
     const id =
       Number(body.id);
@@ -923,7 +996,12 @@ async function reviewSaveRequest(request, env) {
         .toLowerCase()
         .trim();
 
-    if (!Number.isInteger(id)) {
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+
       return json(
         {
           success: false,
@@ -931,24 +1009,26 @@ async function reviewSaveRequest(request, env) {
         },
         400
       );
+
     }
+
 
     if (
       action !== "approve" &&
       action !== "reject"
     ) {
+
       return json(
         {
           success: false,
-          error: "Action must be approve or reject."
+          error:
+            "Action must be approve or reject."
         },
         400
       );
+
     }
 
-    // -------------------------
-    // GET REQUEST
-    // -------------------------
 
     const requestResult =
       await env.DB.prepare(`
@@ -968,19 +1048,25 @@ async function reviewSaveRequest(request, env) {
       .bind(id)
       .first();
 
+
     if (!requestResult) {
+
       return json(
         {
           success: false,
-          error: "Save request not found."
+          error:
+            "Save request not found."
         },
         404
       );
+
     }
+
 
     if (
       requestResult.status !== "pending"
     ) {
+
       return json(
         {
           success: false,
@@ -989,60 +1075,102 @@ async function reviewSaveRequest(request, env) {
         },
         409
       );
+
     }
 
-    // ========================================================
+
+    // --------------------------------------------------------
     // REJECT
-    // ========================================================
+    // --------------------------------------------------------
 
     if (action === "reject") {
 
-      await env.DB.prepare(`
-        UPDATE save_requests
-        SET
-          status = 'rejected',
-          reviewed_at = ?
-        WHERE id = ?
-          AND status = 'pending'
-      `)
-      .bind(
-        new Date().toISOString(),
-        id
-      )
-      .run();
+      const reviewedAt =
+        new Date().toISOString();
+
+
+      const result =
+        await env.DB.prepare(`
+          UPDATE save_requests
+          SET
+            status = 'rejected',
+            reviewed_at = ?,
+            reviewed_by = ?
+          WHERE id = ?
+            AND status = 'pending'
+        `)
+        .bind(
+          reviewedAt,
+          "admin",
+          id
+        )
+        .run();
+
+
+      if (
+        !result.meta ||
+        result.meta.changes !== 1
+      ) {
+
+        return json(
+          {
+            success: false,
+            error:
+              "Request could not be rejected."
+          },
+          409
+        );
+
+      }
+
 
       return json({
         success: true,
-        message: "Save request rejected."
+        message:
+          "Save request rejected."
       });
+
     }
 
-    // ========================================================
+
+    // --------------------------------------------------------
     // APPROVE
-    // ========================================================
+    // --------------------------------------------------------
 
     const siteId =
-      requestResult.site_id;
+      String(
+        requestResult.site_id || ""
+      ).trim();
 
     const model =
-      requestResult.model;
+      String(
+        requestResult.model || ""
+      ).trim();
 
     const currentHmr =
-      Number(requestResult.current_hmr);
+      Number(
+        requestResult.current_hmr
+      );
 
     const currentKwh =
-      Number(requestResult.current_kwh);
+      Number(
+        requestResult.current_kwh
+      );
 
     const currentBalance =
-      Number(requestResult.current_balance);
+      Number(
+        requestResult.current_balance
+      );
+
 
     if (
       !siteId ||
-      !model ||
+      !CHARTS[model] ||
       !Number.isFinite(currentHmr) ||
       !Number.isFinite(currentKwh) ||
       !Number.isFinite(currentBalance)
     ) {
+
       return json(
         {
           success: false,
@@ -1051,14 +1179,13 @@ async function reviewSaveRequest(request, env) {
         },
         400
       );
+
     }
+
 
     const now =
       new Date().toISOString();
 
-    // -------------------------
-    // CHECK EXISTING SITE
-    // -------------------------
 
     const existingSite =
       await env.DB.prepare(`
@@ -1071,21 +1198,21 @@ async function reviewSaveRequest(request, env) {
       .bind(siteId)
       .first();
 
+
     const siteName =
       existingSite?.site_name ||
       requestResult.site_name ||
       siteId;
 
-    // -------------------------
-    // UPDATE / CREATE SITE
-    // -------------------------
-
-    const siteExists =
-      !!existingSite;
 
     const statements = [];
 
-    if (siteExists) {
+
+    // --------------------------------------------------------
+    // UPDATE EXISTING SITE
+    // --------------------------------------------------------
+
+    if (existingSite) {
 
       statements.push(
         env.DB.prepare(`
@@ -1097,7 +1224,7 @@ async function reviewSaveRequest(request, env) {
             current_kwh = ?,
             current_balance = ?,
             last_updated = ?,
-            data_source = 'calculator'
+            data_source = ?
           WHERE site_id = ?
         `)
         .bind(
@@ -1107,11 +1234,18 @@ async function reviewSaveRequest(request, env) {
           currentKwh,
           currentBalance,
           now,
+          "calculator-approved",
           siteId
         )
       );
 
-    } else {
+    }
+
+    // --------------------------------------------------------
+    // CREATE NEW SITE
+    // --------------------------------------------------------
+
+    else {
 
       statements.push(
         env.DB.prepare(`
@@ -1123,9 +1257,10 @@ async function reviewSaveRequest(request, env) {
             current_kwh,
             current_balance,
             last_updated,
+            screenshot_url,
             data_source
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, 'calculator')
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
         .bind(
           siteId,
@@ -1134,15 +1269,18 @@ async function reviewSaveRequest(request, env) {
           currentHmr,
           currentKwh,
           currentBalance,
-          now
+          now,
+          null,
+          "manual"
         )
       );
 
     }
 
-    // -------------------------
-    // ADD READING
-    // -------------------------
+
+    // --------------------------------------------------------
+    // SAVE READING HISTORY
+    // --------------------------------------------------------
 
     statements.push(
       env.DB.prepare(`
@@ -1154,211 +1292,222 @@ async function reviewSaveRequest(request, env) {
           reading_date,
           source
         )
-        VALUES (?, ?, ?, ?, ?, 'calculator')
+        VALUES (?, ?, ?, ?, ?, ?)
       `)
       .bind(
         siteId,
         currentHmr,
         currentKwh,
         currentBalance,
-        now
-      )
-    );
-
-    // -------------------------
-    // MARK REQUEST APPROVED
-    // -------------------------
-
-    statements.push(
-      env.DB.prepare(`
-        UPDATE save_requests
-        SET
-          status = 'approved',
-          reviewed_at = ?
-        WHERE id = ?
-          AND status = 'pending'
-      `)
-      .bind(
         now,
-        id
+        "manual"
       )
     );
+
+
+    // --------------------------------------------------------
+    // EXECUTE DATABASE CHANGES
+    // --------------------------------------------------------
 
     await env.DB.batch(
       statements
     );
 
+
     return json({
       success: true,
-      message:
-        "Save request approved and site details saved."
+      message: "Site updated successfully."
     });
+
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "updateSite error:",
+      error
+    );
 
     return json(
       {
         success: false,
         error:
           error?.message ||
-          "Unable to review save request."
+          "Unable to update site."
       },
       500
     );
+
   }
+
 }
-// -------------------------
-// Llama Vision IMAGE EXTRACTION
-// -------------------------
+
+
+// ============================================================
+// EXTRACT DATA FROM SCREENSHOT USING LLAMA VISION
+// ============================================================
 
 async function extractImage(request, env) {
+
+  const auth =
+    checkAdminKey(request, env);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
+
+  if (!env.AI) {
+
+    return json(
+      {
+        success: false,
+        error:
+          "Workers AI is not configured."
+      },
+      500
+    );
+
+  }
+
+
   try {
 
-    const auth = checkAdminKey(request, env);
+    if (
+      request.method !== "POST"
+    ) {
 
-    if (!auth.ok) {
-      return auth.response;
-    }
-
-    if (!env.AI) {
       return json(
         {
           success: false,
-          error: "Workers AI binding (AI) is not configured."
+          error: "POST required."
         },
-        500
+        405
       );
+
     }
+
 
     const contentType =
       request.headers.get("content-type") || "";
 
-    if (!contentType.includes("multipart/form-data")) {
-      return json(
-        {
-          success: false,
-          error: "Please upload an image using multipart/form-data."
-        },
-        400
-      );
-    }
-
-    const form = await request.formData();
-
-    const image = form.get("image");
-
-    const siteId = String(
-      form.get("site_id") || ""
-    ).trim();
-
-    if (!siteId) {
-      return json(
-        {
-          success: false,
-          error: "site_id is required."
-        },
-        400
-      );
-    }
-
-    if (!image) {
-      return json(
-        {
-          success: false,
-          error: "Image is required."
-        },
-        400
-      );
-    }
 
     if (
-      typeof image === "string" ||
-      !image.type ||
-      !image.type.startsWith("image/")
+      !contentType.includes(
+        "multipart/form-data"
+      )
     ) {
+
       return json(
         {
           success: false,
-          error: "The uploaded file must be an image."
+          error:
+            "Multipart form-data image is required."
         },
         400
       );
+
     }
 
-    const imageBuffer = await image.arrayBuffer();
 
-    if (!imageBuffer.byteLength) {
+    const form =
+      await request.formData();
+
+
+    const file =
+      form.get("image") ||
+      form.get("file");
+
+
+    if (
+      !(file instanceof File)
+    ) {
+
       return json(
         {
           success: false,
-          error: "The uploaded image is empty."
+          error: "Image file is required."
         },
         400
       );
+
     }
 
-    const maxImageSize = 10 * 1024 * 1024;
 
-    if (imageBuffer.byteLength > maxImageSize) {
+    const MAX_SIZE =
+      10 * 1024 * 1024;
+
+
+    if (
+      file.size > MAX_SIZE
+    ) {
+
       return json(
         {
           success: false,
-          error: "Image is too large. Maximum size is 10 MB."
+          error:
+            "Image is too large. Maximum size is 10 MB."
         },
         400
       );
+
     }
 
 
-    // -------------------------
-    // CONVERT IMAGE TO BASE64
-    // -------------------------
+    const buffer =
+      await file.arrayBuffer();
 
-    const bytes = new Uint8Array(imageBuffer);
+
+    const bytes =
+      new Uint8Array(buffer);
+
 
     let binary = "";
 
-    const chunkSize = 0x8000;
+
+    const CHUNK_SIZE =
+      0x8000;
+
 
     for (
       let i = 0;
       i < bytes.length;
-      i += chunkSize
+      i += CHUNK_SIZE
     ) {
+
       binary += String.fromCharCode(
         ...bytes.subarray(
           i,
-          Math.min(i + chunkSize, bytes.length)
+          i + CHUNK_SIZE
         )
       );
+
     }
 
-    const base64 = btoa(binary);
 
-    const imageDataUrl =
-      `data:${image.type};base64,${base64}`;
+    const base64 =
+      btoa(binary);
 
 
-    // -------------------------
-    // OCR PROMPT
-    // -------------------------
+    const mime =
+      file.type ||
+      "image/jpeg";
+
+
+    const imageData =
+      `data:${mime};base64,${base64}`;
+
 
     const prompt = `
-You are reading a generator monitoring screenshot.
+You are reading a generator control-panel screenshot.
 
-Extract only information that is visibly readable in the image.
+Extract only information that is clearly visible.
 
 Return ONLY valid JSON.
 
-Do not use markdown.
-Do not add explanations.
-
-Use exactly this JSON structure:
+Use exactly these fields:
 
 {
-  "model": null,
+  "model": "",
   "current_hmr": null,
   "current_kwh": null,
   "previous_balance": null,
@@ -1368,146 +1517,111 @@ Use exactly this JSON structure:
 
 Rules:
 
-1. current_hmr:
-   Extract the generator's current running hours / HMR.
-
-2. current_kwh:
-   Extract the current kWh reading.
-
-3. previous_balance:
-   Extract the balance BEFORE fuel was added, if visible.
-
-4. fuel_filled:
-   Extract the fuel quantity filled/added, if visible.
-
-5. current_balance:
-   Extract the balance AFTER fuel was added, if visible.
-
-6. model:
-   Identify the generator model only if it is clearly visible.
-   Otherwise return null.
-
-7. Numbers must contain numbers only.
-   Do not include units such as L, Ltr, kWh or hrs.
-
-8. If a value is not clearly visible, return null.
-
-9. Never guess a value.
-
-10. Preserve decimal values exactly as displayed.
+1. Do not guess.
+2. If a value is not visible, use null.
+3. current_hmr means the current HMR/hour-meter reading.
+4. current_kwh means the current kWh reading.
+5. previous_balance means the balance before filling.
+6. fuel_filled means fuel added during filling.
+7. current_balance means the balance after filling.
+8. Keep decimal values exactly as visible where possible.
+9. Return no markdown.
+10. Return JSON only.
 `;
 
 
-    // -------------------------
-// LLAMA 3.2 VISION
-// -------------------------
-
-const model =
-  "@cf/meta/llama-3.2-11b-vision-instruct";
-
-let aiResult;
-
-try {
-
-  aiResult = await env.AI.run(model, {
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a helpful assistant that reads generator monitoring images."
-      },
-      {
-        role: "user",
-        content: prompt
-      }
-    ],
-    image: imageDataUrl,
-    max_tokens: 512,
-    temperature: 0
-  });
-
-} catch (aiError) {
-
-  const aiMessage =
-    aiError?.message ||
-    String(aiError);
-
-  return json(
-    {
-      success: false,
-      error: "Workers AI error: " + aiMessage
-    },
-    502
-  );
-}
-
-// -------------------------
-// READ AI RESPONSE
-// -------------------------
-
-let output = "";
-
-if (aiResult && aiResult.response) {
-
-  if (typeof aiResult.response === "string") {
-
-    output = aiResult.response.trim();
-
-  } else if (typeof aiResult.response === "object") {
-
-    output = JSON.stringify(aiResult.response);
-
-  }
-}
-
-if (!output) {
-  return json(
-    {
-      success: false,
-      error: "Workers AI returned an empty response."
-    },
-    502
-  );
-}
-
-
-// Remove markdown code fences if AI adds them
-
-output = output
-  .replace(/^```json\s*/i, "")
-  .replace(/^```\s*/i, "")
-  .replace(/\s*```$/i, "")
-  .trim();
-
-
-    // -------------------------
-    // PARSE JSON
-    // -------------------------
-
-    let extracted;
-
-    try {
-
-      extracted = JSON.parse(output);
-
-    } catch (error) {
-
-      return json(
+    const aiResult =
+      await env.AI.run(
+        "@cf/meta/llama-3.2-11b-vision-instruct",
         {
-          success: false,
-          error: "OCR model returned invalid JSON.",
-          raw_response: output.slice(0, 3000)
-        },
-        502
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: prompt
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: imageData
+                  }
+                }
+              ]
+            }
+          ]
+        }
       );
+
+
+    let rawText = "";
+
+
+    if (
+      typeof aiResult === "string"
+    ) {
+
+      rawText =
+        aiResult;
+
+    } else {
+
+      rawText =
+        aiResult?.response ||
+        aiResult?.result?.response ||
+        JSON.stringify(aiResult);
+
     }
 
 
-    // -------------------------
-    // CLEAN NUMBERS
-    // -------------------------
+    rawText =
+      String(rawText)
+        .trim()
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/i, "")
+        .replace(/\s*```$/i, "")
+        .trim();
 
-    const cleanNumber = (value) => {
+
+    let extracted;
+
+
+    try {
+
+      extracted =
+        JSON.parse(rawText);
+
+    } catch {
+
+      const match =
+        rawText.match(
+          /\{[\s\S]*\}/
+        );
+
+
+      if (!match) {
+
+        return json(
+          {
+            success: false,
+            error:
+              "AI returned invalid JSON.",
+            raw: rawText
+          },
+          502
+        );
+
+      }
+
+
+      extracted =
+        JSON.parse(match[0]);
+
+    }
+
+
+    function cleanNumber(value) {
 
       if (
         value === null ||
@@ -1517,350 +1631,496 @@ output = output
         return null;
       }
 
-      if (typeof value === "number") {
-        return Number.isFinite(value)
-          ? value
-          : null;
-      }
 
-      const text = String(value)
-        .replace(/,/g, "")
-        .trim();
+      const cleaned =
+        String(value)
+          .replace(/,/g, "")
+          .replace(/[^\d.-]/g, "");
 
-      const match =
-        text.match(/-?\d+(?:\.\d+)?/);
 
-      if (!match) {
+      if (!cleaned) {
         return null;
       }
 
-      const n = Number(match[0]);
+
+      const n =
+        Number(cleaned);
+
 
       return Number.isFinite(n)
         ? n
         : null;
-    };
 
-
-    const extractedModel =
-      extracted.model
-        ? String(extracted.model).trim()
-        : null;
-
-    const currentHmr =
-      cleanNumber(extracted.current_hmr);
-
-    const currentKwh =
-      cleanNumber(extracted.current_kwh);
-
-    const previousBalance =
-      cleanNumber(extracted.previous_balance);
-
-    const fuelFilled =
-      cleanNumber(extracted.fuel_filled);
-
-    let currentBalance =
-      cleanNumber(extracted.current_balance);
-
-
-    // If current balance isn't directly visible,
-    // calculate it from previous balance + fuel filled.
-
-    if (
-      currentBalance === null &&
-      previousBalance !== null &&
-      fuelFilled !== null
-    ) {
-      currentBalance =
-        previousBalance + fuelFilled;
     }
 
-
-    return json({
-      success: true,
-      extraction_ready: true,
-
-      site_id: siteId,
-
-      model: extractedModel,
-
-      current_hmr: currentHmr,
-      current_kwh: currentKwh,
-
-      previous_balance: previousBalance,
-      fuel_filled: fuelFilled,
-      current_balance: currentBalance
-    });
-  }catch (error) {
-
-    return json(
-      {
-        success: false,
-        error: error?.message || String(error)
-      },
-      500
-    );
-  }
-}
-
-// -------------------------
-// LLAMA MODEL AGREEMENT
-// -------------------------
-
-async function agreeLlama(request, env) {
-  try {
-
-    const auth = checkAdminKey(request, env);
-
-    if (!auth.ok) {
-      return auth.response;
-    }
-
-    if (!env.CLOUDFLARE_API_TOKEN) {
-      return json(
-        {
-          success: false,
-          error: "CLOUDFLARE_API_TOKEN secret is missing."
-        },
-        500
-      );
-    }
-
-    const accountId =
-      "4b5679a6b80f3058805fa9169e1322cb";
 
     const model =
-      "@cf/meta/llama-3.2-11b-vision-instruct";
+      String(
+        extracted.model || ""
+      ).trim();
 
-    const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
-      {
-        method: "POST",
 
-        headers: {
-          "Authorization":
-            `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
-
-          "Content-Type":
-            "application/json"
-        },
-
-        body: JSON.stringify({
-          prompt: "agree"
-        })
-      }
-    );
-
-    const text = await response.text();
-
-    let data;
-
-    try {
-      data = JSON.parse(text);
-    } catch {
-      return json(
-        {
-          success: false,
-          error:
-            `Cloudflare returned HTTP ${response.status}: ${text}`
-        },
-        502
+    const current_hmr =
+      cleanNumber(
+        extracted.current_hmr
       );
-    }
 
+    const current_kwh =
+      cleanNumber(
+        extracted.current_kwh
+      );
 
-    // -------------------------
-    // AGREEMENT SUCCESS
-    // -------------------------
+    const previous_balance =
+      cleanNumber(
+        extracted.previous_balance
+      );
 
-    const agreementMessage =
-      JSON.stringify(data)
-        .toLowerCase();
+    const fuel_filled =
+      cleanNumber(
+        extracted.fuel_filled
+      );
+
+    let current_balance =
+      cleanNumber(
+        extracted.current_balance
+      );
+
 
     if (
-      agreementMessage.includes(
-        "thank you for agreeing"
-      ) &&
-      agreementMessage.includes(
-        "you may now use the model"
-      )
+      current_balance === null &&
+      previous_balance !== null &&
+      fuel_filled !== null
     ) {
-      return json({
-        success: true,
-        message:
-          "✅ Llama 3.2 Vision agreement completed. The model is now activated."
-      });
-    }
 
+      current_balance =
+        previous_balance +
+        fuel_filled;
 
-    // -------------------------
-    // OTHER CLOUDFLARE ERROR
-    // -------------------------
-
-    if (!response.ok || !data.success) {
-      return json(
-        {
-          success: false,
-          error:
-            data.errors?.length
-              ? JSON.stringify(data.errors)
-              : `Cloudflare AI request failed (${response.status})`
-        },
-        502
-      );
     }
 
 
     return json({
+
       success: true,
-      message:
-        "✅ Llama 3.2 Vision agreement completed successfully."
+
+      data: {
+        model,
+        current_hmr,
+        current_kwh,
+        previous_balance,
+        fuel_filled,
+        current_balance
+      }
+
     });
 
+
   } catch (error) {
+
+    console.error(
+      "extractImage error:",
+      error
+    );
 
     return json(
       {
         success: false,
         error:
           error?.message ||
-          String(error)
+          "Unable to extract screenshot data."
       },
       500
     );
+
   }
+
 }
-// -------------------------
+
+
+// ============================================================
+// AGREE / ACTIVATE LLAMA
+// ============================================================
+
+async function agreeLlama(request, env) {
+
+  const auth =
+    checkAdminKey(request, env);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/models/accept`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              `Bearer ${env.CLOUDFLARE_API_TOKEN}`
+          },
+
+          body: JSON.stringify({
+            model:
+              "@cf/meta/llama-3.2-11b-vision-instruct"
+          })
+
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      return json(
+        {
+          success: false,
+          error:
+            data?.errors?.[0]?.message ||
+            "Unable to activate Llama AI.",
+          cloudflare: data
+        },
+        response.status
+      );
+
+    }
+
+
+    return json({
+      success: true,
+      message:
+        "Llama AI activated successfully.",
+      cloudflare: data
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      "agreeLlama error:",
+      error
+    );
+
+    return json(
+      {
+        success: false,
+        error:
+          error?.message ||
+          "Unable to activate Llama AI."
+      },
+      500
+    );
+
+  }
+
+}
+
+
+// ============================================================
 // DEBUG CONFIGURATION
-// -------------------------
+// ADMIN ONLY
+// ============================================================
 
 async function debugConfig(request, env) {
+
+  const auth =
+    checkAdminKey(request, env);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
+
   return json({
+
     success: true,
-    db: !!env.DB,
-    assets: !!env.ASSETS,
-    admin_key: !!env.ADMIN_KEY,
-    ai: !!env.AI,
-    cloudflare_api_token: !!env.CLOUDFLARE_API_TOKEN
+
+    db:
+      !!env.DB,
+
+    ai:
+      !!env.AI,
+
+    assets:
+      !!env.ASSETS,
+
+    admin_key:
+      !!String(
+        env.ADMIN_KEY || ""
+      ).trim(),
+
+    cloudflare_api_token:
+      !!String(
+        env.CLOUDFLARE_API_TOKEN || ""
+      ).trim(),
+
+    charts:
+      Object.keys(CHARTS),
+
+    routes: [
+      "POST /api/calculate",
+      "GET /api/site",
+      "POST /api/save-request",
+      "GET /api/admin/save-requests",
+      "POST /api/admin/save-request/review",
+      "POST /api/admin/update-site",
+      "POST /api/admin/extract-image",
+      "POST /api/admin/agree-llama",
+      "POST /api/save-site",
+      "GET /api/debug"
+    ]
+
   });
+
 }
 
 
-// -------------------------
-// WORKER
-// -------------------------
+// ============================================================
+// MAIN ROUTER
+// ============================================================
 
 export default {
-  async fetch(request, env) {
 
-    const url = new URL(request.url);
-    const path = url.pathname;
-    const method = request.method;
+  async fetch(request, env, ctx) {
 
+    const url =
+      new URL(request.url);
 
-    // Calculator
-    if (
-      path === "/api/calculate" &&
-      method === "POST"
-    ) {
-      return calculate(request);
-    }
+    const path =
+      url.pathname;
+
+    const method =
+      request.method.toUpperCase();
 
 
-    // Get site
-    if (
-      path === "/api/site" &&
-      method === "GET"
-    ) {
-      return getSite(request, env);
-    }
+    try {
 
-// Save site from calculator
-if (
-  path === "/api/save-site" &&
-  method === "POST"
-) {
-  return saveCalculatorSite(request, env);
-}
+      // ------------------------------------------------------
+      // CALCULATOR
+      // ------------------------------------------------------
 
+      if (
+        path === "/api/calculate" &&
+        method === "POST"
+      ) {
 
-// Save request from calculator
-if (
-  path === "/api/save-request" &&
-  method === "POST"
-) {
-  return createSaveRequest(request, env);
-}
-  // Get pending save requests
-if (
-  path === "/api/admin/save-requests" &&
-  method === "GET"
-) {
-  return getSaveRequests(
-    request,
-    env
-  );
-}
+        return await calculate(
+          request,
+          env
+        );
 
-// Approve / reject save request
-if (
-  path === "/api/admin/save-request/review" &&
-  method === "POST"
-) {
-  return reviewSaveRequest(
-    request,
-    env
-  );
-}
-    // Update site
-    if (
-      path === "/api/admin/update-site" &&
-      method === "POST"
-    ) {
-      return updateSite(request, env);
-    }
-
-
-    // Extract image
-    if (
-      path === "/api/admin/extract-image" &&
-      method === "POST"
-    ) {
-      return extractImage(request, env);
-    }
-
-
-    // Activate Llama AI
-    if (
-      path === "/api/admin/agree-llama" &&
-      method === "POST"
-    ) {
-      return agreeLlama(request, env);
-    }
-
-
-    // Debug
-    if (
-      path === "/api/debug" &&
-      method === "GET"
-    ) {
-      return debugConfig(request, env);
-    }
-
-
-    // Serve website
-    if (env.ASSETS) {
-      return env.ASSETS.fetch(request);
-    }
-
-    return new Response(
-      "Assets binding is not configured.",
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "text/plain"
-        }
       }
-    );
+
+
+      // ------------------------------------------------------
+      // SITE LOOKUP
+      // ------------------------------------------------------
+
+      if (
+        path === "/api/site" &&
+        method === "GET"
+      ) {
+
+        return await getSite(
+          request,
+          env
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // PUBLIC SAVE REQUEST
+      // ------------------------------------------------------
+
+      if (
+        path === "/api/save-request" &&
+        method === "POST"
+      ) {
+
+        return await createSaveRequest(
+          request,
+          env
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // ADMIN SAVE REQUESTS
+      // ------------------------------------------------------
+
+      if (
+        path === "/api/admin/save-requests" &&
+        method === "GET"
+      ) {
+
+        return await getSaveRequests(
+          request,
+          env
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // ADMIN APPROVE / REJECT
+      // ------------------------------------------------------
+
+      if (
+        path === "/api/admin/save-request/review" &&
+        method === "POST"
+      ) {
+
+        return await reviewSaveRequest(
+          request,
+          env
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // ADMIN UPDATE SITE
+      // ------------------------------------------------------
+
+      if (
+        path === "/api/admin/update-site" &&
+        method === "POST"
+      ) {
+
+        return await updateSite(
+          request,
+          env
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // ADMIN OCR
+      // ------------------------------------------------------
+
+      if (
+        path === "/api/admin/extract-image" &&
+        method === "POST"
+      ) {
+
+        return await extractImage(
+          request,
+          env
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // ADMIN LLAMA AGREEMENT
+      // ------------------------------------------------------
+
+      if (
+        path === "/api/admin/agree-llama" &&
+        method === "POST"
+      ) {
+
+        return await agreeLlama(
+          request,
+          env
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // DEBUG
+      // ------------------------------------------------------
+
+      if (
+        path === "/api/debug" &&
+        method === "GET"
+      ) {
+
+        return await debugConfig(
+          request,
+          env
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // OLD DIRECT SAVE
+      // ADMIN ONLY
+      // ------------------------------------------------------
+
+      if (
+        path === "/api/save-site" &&
+        method === "POST"
+      ) {
+
+        return await saveCalculatorSite(
+          request,
+          env
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // STATIC ASSETS
+      // ------------------------------------------------------
+
+      if (env.ASSETS) {
+
+        return await env.ASSETS.fetch(
+          request
+        );
+
+      }
+
+
+      return new Response(
+        "Not Found",
+        {
+          status: 404,
+          headers: {
+            "Content-Type":
+              "text/plain; charset=utf-8"
+          }
+        }
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Worker router error:",
+        error
+      );
+
+
+      return json(
+        {
+          success: false,
+          error:
+            error?.message ||
+            "Internal server error."
+        },
+        500
+      );
+
+    }
+
   }
+
 };
