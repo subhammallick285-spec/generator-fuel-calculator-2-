@@ -1,27 +1,50 @@
 <!doctype html>
 <html lang="en">
+
 <head>
+
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#07111f">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#07111f"
+  >
 
   <title>Generator Fuel Calculator</title>
 
-  <link rel="stylesheet" href="/style.css">
+  <link
+    rel="stylesheet"
+    href="/style.css"
+  >
+
 </head>
+
 
 <body>
 
   <div class="background-orb orb-one"></div>
   <div class="background-orb orb-two"></div>
 
+
   <main class="app-shell">
 
-    <!-- HEADER -->
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
     <header class="topbar">
 
       <div>
-        <p class="eyebrow">GENERATOR CONTROL</p>
+
+        <p class="eyebrow">
+          GENERATOR CONTROL
+        </p>
 
         <h1>
           Fuel
@@ -31,32 +54,58 @@
         <p class="subtitle">
           Smart fuel balance calculation with site data.
         </p>
+
       </div>
 
+
       <div class="status-dot">
+
         <span></span>
+
         LIVE
+
       </div>
 
     </header>
 
 
-    <!-- SITE SEARCH -->
-    <section id="siteSearchCard" class="card site-search-card">
 
-      <div class="section-icon">⌕</div>
+    <!-- =========================
+         SITE SEARCH
+    ========================== -->
+
+    <section
+      id="siteSearchCard"
+      class="card site-search-card"
+    >
+
+      <div class="section-icon">
+        ⌕
+      </div>
+
 
       <div class="section-heading">
-        <p class="section-kicker">STEP 01</p>
-        <h2>Enter Site ID</h2>
+
+        <p class="section-kicker">
+          STEP 01
+        </p>
+
+        <h2>
+          Enter Site ID
+        </h2>
+
         <p>
           We'll check your saved site data automatically.
         </p>
+
       </div>
+
 
       <label class="field">
 
-        <span>Site ID</span>
+        <span>
+          Site ID
+        </span>
 
         <input
           id="siteId"
@@ -67,30 +116,47 @@
 
       </label>
 
+
       <button
-        <button
-  id="findSite"
-  class="primary"
-  type="button"
->
-  <span id="findSiteText">Find Site</span>
-  <span id="findSpinner" class="spinner hidden"></span>
-</button>
+        id="findSite"
+        class="primary"
+        type="button"
+      >
 
-<button
-  id="incognitoMode"
-  class="secondary"
-  type="button"
->
-  🕶️ Incognito / Manual Mode
-</button>
+        <span id="findSiteText">
+          Find Site
+        </span>
 
-<p id="siteSearchMessage" class="message"></p>
+        <span
+          id="findSpinner"
+          class="spinner hidden"
+        ></span>
+
+      </button>
+
+
+      <button
+        id="incognitoMode"
+        class="secondary"
+        type="button"
+      >
+        🕶️ Incognito / Manual Mode
+      </button>
+
+
+      <p
+        id="siteSearchMessage"
+        class="message"
+      ></p>
 
     </section>
 
 
-    <!-- CURRENT SITE -->
+
+    <!-- =========================
+         CURRENT SITE
+    ========================== -->
+
     <section
       id="siteInfoCard"
       class="card site-info-card hidden"
@@ -99,9 +165,17 @@
       <div class="site-found-header">
 
         <div>
-          <p class="section-kicker">SITE FOUND</p>
-          <h2 id="displaySiteName">—</h2>
+
+          <p class="section-kicker">
+            SITE FOUND
+          </p>
+
+          <h2 id="displaySiteName">
+            —
+          </h2>
+
         </div>
+
 
         <div class="found-badge">
           ✓ SAVED
@@ -109,29 +183,64 @@
 
       </div>
 
+
       <div class="site-grid">
 
-        <div class="site-stat">
-          <span>MODEL</span>
-          <strong id="displayModel">—</strong>
-        </div>
 
         <div class="site-stat">
-          <span>HMR</span>
-          <strong id="displayHmr">—</strong>
+
+          <span>
+            MODEL
+          </span>
+
+          <strong id="displayModel">
+            —
+          </strong>
+
         </div>
 
-        <div class="site-stat">
-          <span>kWh</span>
-          <strong id="displayKwh">—</strong>
-        </div>
 
         <div class="site-stat">
-          <span>BALANCE</span>
-          <strong id="displayBalance">—</strong>
+
+          <span>
+            HMR
+          </span>
+
+          <strong id="displayHmr">
+            —
+          </strong>
+
         </div>
+
+
+        <div class="site-stat">
+
+          <span>
+            kWh
+          </span>
+
+          <strong id="displayKwh">
+            —
+          </strong>
+
+        </div>
+
+
+        <div class="site-stat">
+
+          <span>
+            LAST BALANCE
+          </span>
+
+          <strong id="displayBalance">
+            —
+          </strong>
+
+        </div>
+
 
       </div>
+
 
       <button
         id="changeSite"
@@ -144,44 +253,105 @@
     </section>
 
 
-    <!-- CALCULATOR -->
+
+    <!-- =========================
+         CALCULATOR
+    ========================== -->
+
     <section
       id="calculatorCard"
       class="card calculator-card hidden"
     >
 
+
       <div class="calculator-heading">
 
         <div>
-          <p class="section-kicker">STEP 02</p>
-          <h2>Meter Readings</h2>
+
+          <p class="section-kicker">
+            STEP 02
+          </p>
+
+          <h2>
+            Meter Readings
+          </h2>
+
           <p id="calculatorDescription">
             Enter the previous meter readings.
           </p>
+
         </div>
 
+
         <div class="model-pill">
-          <span>GENERATOR</span>
-          <strong id="activeModel">—</strong>
+
+          <span>
+            GENERATOR
+          </span>
+
+          <strong id="activeModel">
+            —
+          </strong>
+
         </div>
 
       </div>
-<label class="field full" id="manualModelField">
-  <span>DG Model</span>
-  <select id="manualModel">
-    <option value="">Select DG Model</option>
-    <option value="eicher10">Eicher 10 KVA</option>
-    <option value="eicher20">Eicher 20 KVA</option>
-    <option value="koel20">KOEL 20 KVA</option>
-    <option value="mahindra20">Mahindra 20 KVA</option>
-    <option value="mahindra10">Mahindra 10 KVA</option>
-  </select>
-</label>
+
+
+
+      <!-- MANUAL MODEL -->
+
+      <label
+        class="field full"
+        id="manualModelField"
+      >
+
+        <span>
+          DG Model
+        </span>
+
+        <select id="manualModel">
+
+          <option value="">
+            Select DG Model
+          </option>
+
+          <option value="eicher10">
+            Eicher 10 KVA
+          </option>
+
+          <option value="eicher20">
+            Eicher 20 KVA
+          </option>
+
+          <option value="koel20">
+            KOEL 20 KVA
+          </option>
+
+          <option value="mahindra20">
+            Mahindra 20 KVA
+          </option>
+
+          <option value="mahindra10">
+            Mahindra 10 KVA
+          </option>
+
+        </select>
+
+      </label>
+
+
 
       <div class="grid">
 
+
+        <!-- A -->
+
         <label class="field">
-          <span>A · Current HMR</span>
+
+          <span>
+            A · Current HMR
+          </span>
 
           <input
             id="a"
@@ -190,11 +360,18 @@
             step="any"
             placeholder="Current HMR"
           >
+
         </label>
 
 
+
+        <!-- B -->
+
         <label class="field">
-          <span>B · Current kWh</span>
+
+          <span>
+            B · Current kWh
+          </span>
 
           <input
             id="b"
@@ -203,12 +380,18 @@
             step="any"
             placeholder="Current kWh"
           >
+
         </label>
 
 
+
+        <!-- C -->
+
         <label class="field">
 
-          <span>C · Previous HMR</span>
+          <span>
+            C · Previous HMR
+          </span>
 
           <input
             id="c"
@@ -221,9 +404,14 @@
         </label>
 
 
+
+        <!-- D -->
+
         <label class="field">
 
-          <span>D · Previous kWh</span>
+          <span>
+            D · Previous kWh
+          </span>
 
           <input
             id="d"
@@ -236,59 +424,93 @@
         </label>
 
 
+
+        <!-- E1 -->
+
         <label class="field full">
 
-  <span>E1 · Previous balance after filling</span>
+          <span>
+            E1 · Previous balance after filling
+          </span>
 
-  <input
-    id="e1"
-    type="number"
-    inputmode="decimal"
-    step="any"
-    placeholder="Previous balance"
-  >
+          <input
+            id="e1"
+            type="number"
+            inputmode="decimal"
+            step="any"
+            min="0"
+            placeholder="Previous balance after filling"
+          >
 
-</label>
+        </label>
 
 
-<label class="field">
 
-  <span>Q1 · Current Balance</span>
+        <!-- Q1 -->
 
-  <input
-    id="q1"
-    type="number"
-    inputmode="decimal"
-    step="any"
-    min="0"
-    placeholder="Current balance"
-  >
+        <label class="field">
 
-</label>
+          <span>
+            Q1 · Current Balance
+          </span>
 
-<label class="field">
+          <input
+            id="q1"
+            type="number"
+            inputmode="decimal"
+            step="any"
+            min="0"
+            placeholder="Current balance"
+          >
 
-  <span>Q2 · Fuel Filling</span>
+        </label>
 
-  <input
-    id="q2"
-    type="number"
-    inputmode="decimal"
-    step="any"
-    min="0"
-    placeholder="Fuel filled in litres"
-  >
 
-</label>
 
-<div
-  id="currentBalanceAfterFillingBox"
-  class="field full calculated-field hidden"
->
-  <span>E2 · Current balance after filling</span>
-  <strong id="e2">—</strong>
-</div>
+        <!-- Q2 -->
 
+        <label class="field">
+
+          <span>
+            Q2 · Fuel Filling
+          </span>
+
+          <input
+            id="q2"
+            type="number"
+            inputmode="decimal"
+            step="any"
+            min="0"
+            placeholder="Fuel filled in litres"
+          >
+
+        </label>
+
+
+
+        <!-- E2 -->
+
+        <div
+          id="currentBalanceAfterFillingBox"
+          class="field full calculated-field hidden"
+        >
+
+          <span>
+            E2 · Current balance after filling
+          </span>
+
+          <strong id="e2">
+            —
+          </strong>
+
+        </div>
+
+
+      </div>
+
+
+
+      <!-- CALCULATE -->
 
       <button
         id="calculate"
@@ -297,19 +519,28 @@
       >
         Calculate Fuel Balance
       </button>
-        <button
-  id="saveForFuture"
-  class="secondary hidden"
-  type="button"
->
-  💾 Save Details for Future
-</button>
 
-<p id="saveMessage" class="message"></p>
-      <button id="clear" class="secondary" type="button">
-  Clear Readings
+
+
+      <!-- SAVE -->
+
+      <button
+        id="saveForFuture"
+        class="secondary hidden"
+        type="button"
+      >
+        💾 Save Details for Future
       </button>
 
+
+      <p
+        id="saveMessage"
+        class="message"
+      ></p>
+
+
+
+      <!-- CLEAR -->
 
       <button
         id="clear"
@@ -320,83 +551,170 @@
       </button>
 
 
+
+      <!-- ERROR -->
+
       <p
         id="error"
         class="error"
         role="alert"
       ></p>
 
+
     </section>
 
 
-    <!-- RESULT -->
+
+    <!-- =========================
+         RESULT
+    ========================== -->
+
     <section
       id="resultCard"
       class="card result-card hidden"
     >
 
+
       <div class="result-label">
         FINAL BALANCE · T
       </div>
 
-      <div id="result" class="result">
+
+      <div
+        id="result"
+        class="result"
+      >
         —
       </div>
+
 
       <div class="result-unit">
         Litres
       </div>
 
 
+
       <div class="breakdown">
 
-        <div>
-          <span>Z = A − C</span>
-          <strong id="z">—</strong>
-        </div>
 
         <div>
-          <span>Y = B − D</span>
-          <strong id="y">—</strong>
+
+          <span>
+            Z = A − C
+          </span>
+
+          <strong id="z">
+            —
+          </strong>
+
         </div>
 
-        <div>
-          <span>X = Y ÷ Z</span>
-          <strong id="x">—</strong>
-        </div>
 
         <div>
-          <span>L from chart</span>
-          <strong id="l">—</strong>
+
+          <span>
+            Y = B − D
+          </span>
+
+          <strong id="y">
+            —
+          </strong>
+
         </div>
 
+
         <div>
-          <span>S = L × Z</span>
-          <strong id="s">—</strong>
+
+          <span>
+            X = Y ÷ Z
+          </span>
+
+          <strong id="x">
+            —
+          </strong>
+
         </div>
+
+
+        <div>
+
+          <span>
+            L from chart
+          </span>
+
+          <strong id="l">
+            —
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            S = L × Z
+          </span>
+
+          <strong id="s">
+            —
+          </strong>
+
+        </div>
+
 
         <div class="final-row">
-          <span>T = E1 − S</span>
-          <strong id="t">—</strong>
+
+          <span>
+            T = E1 − S
+          </span>
+
+          <strong id="t">
+            —
+          </strong>
+
         </div>
+
 
       </div>
 
-      <p id="band" class="chart-note"></p>
+
+      <p
+        id="band"
+        class="chart-note"
+      ></p>
+
 
     </section>
 
 
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
     <footer>
-      <span>Generator Fuel Calculator</span>
-      <span>•</span>
-      <span>D1 Connected</span>
+
+      <span>
+        Generator Fuel Calculator
+      </span>
+
+      <span>
+        •
+      </span>
+
+      <span>
+        D1 Connected
+      </span>
+
     </footer>
 
+
   </main>
+
 
 
   <script src="/app.js"></script>
 
 </body>
+
 </html>
