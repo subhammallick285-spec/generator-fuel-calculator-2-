@@ -824,6 +824,396 @@ async function updateSite(request, env) {
 
   }
 }
+
+// ============================================================
+// GET PENDING SAVE REQUESTS
+// ============================================================
+
+async function getSaveRequests(request, env) {
+
+  if (!(await checkAdminKey(request, env))) {
+    return json(
+      {
+        success: false,
+        error: "Unauthorized"
+      },
+      401
+    );
+  }
+
+  if (!env.DB) {
+    return json(
+      {
+        success: false,
+        error: "Database not configured"
+      },
+      500
+    );
+  }
+
+  try {
+
+    const result =
+      await env.DB.prepare(`
+        SELECT
+          id,
+          site_id,
+          site_name,
+          model,
+          current_hmr,
+          current_kwh,
+          current_balance,
+          requested_at,
+          status
+        FROM save_requests
+        WHERE status = 'pending'
+        ORDER BY id DESC
+      `).all();
+
+    return json({
+      success: true,
+      requests: result.results || []
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return json(
+      {
+        success: false,
+        error: error?.message ||
+          "Unable to load save requests."
+      },
+      500
+    );
+  }
+}
+// ============================================================
+// APPROVE / REJECT SAVE REQUEST
+// ============================================================
+
+async function reviewSaveRequest(request, env) {
+
+  if (!(await checkAdminKey(request, env))) {
+    return json(
+      {
+        success: false,
+        error: "Unauthorized"
+      },
+      401
+    );
+  }
+
+  if (!env.DB) {
+    return json(
+      {
+        success: false,
+        error: "Database not configured"
+      },
+      500
+    );
+  }
+
+  try {
+
+    const body =
+      await request.json();
+
+    const id =
+      Number(body.id);
+
+    const action =
+      String(body.action || "")
+        .toLowerCase()
+        .trim();
+
+    if (!Number.isInteger(id)) {
+      return json(
+        {
+          success: false,
+          error: "Invalid request ID."
+        },
+        400
+      );
+    }
+
+    if (
+      action !== "approve" &&
+      action !== "reject"
+    ) {
+      return json(
+        {
+          success: false,
+          error: "Action must be approve or reject."
+        },
+        400
+      );
+    }
+
+    // -------------------------
+    // GET REQUEST
+    // -------------------------
+
+    const requestResult =
+      await env.DB.prepare(`
+        SELECT
+          id,
+          site_id,
+          site_name,
+          model,
+          current_hmr,
+          current_kwh,
+          current_balance,
+          status
+        FROM save_requests
+        WHERE id = ?
+        LIMIT 1
+      `)
+      .bind(id)
+      .first();
+
+    if (!requestResult) {
+      return json(
+        {
+          success: false,
+          error: "Save request not found."
+        },
+        404
+      );
+    }
+
+    if (
+      requestResult.status !== "pending"
+    ) {
+      return json(
+        {
+          success: false,
+          error:
+            "This request has already been reviewed."
+        },
+        409
+      );
+    }
+
+    // ========================================================
+    // REJECT
+    // ========================================================
+
+    if (action === "reject") {
+
+      await env.DB.prepare(`
+        UPDATE save_requests
+        SET
+          status = 'rejected',
+          reviewed_at = ?
+        WHERE id = ?
+          AND status = 'pending'
+      `)
+      .bind(
+        new Date().toISOString(),
+        id
+      )
+      .run();
+
+      return json({
+        success: true,
+        message: "Save request rejected."
+      });
+    }
+
+    // ========================================================
+    // APPROVE
+    // ========================================================
+
+    const siteId =
+      requestResult.site_id;
+
+    const model =
+      requestResult.model;
+
+    const currentHmr =
+      Number(requestResult.current_hmr);
+
+    const currentKwh =
+      Number(requestResult.current_kwh);
+
+    const currentBalance =
+      Number(requestResult.current_balance);
+
+    if (
+      !siteId ||
+      !model ||
+      !Number.isFinite(currentHmr) ||
+      !Number.isFinite(currentKwh) ||
+      !Number.isFinite(currentBalance)
+    ) {
+      return json(
+        {
+          success: false,
+          error:
+            "Save request contains invalid data."
+        },
+        400
+      );
+    }
+
+    const now =
+      new Date().toISOString();
+
+    // -------------------------
+    // CHECK EXISTING SITE
+    // -------------------------
+
+    const existingSite =
+      await env.DB.prepare(`
+        SELECT
+          site_name
+        FROM sites
+        WHERE site_id = ?
+        LIMIT 1
+      `)
+      .bind(siteId)
+      .first();
+
+    const siteName =
+      existingSite?.site_name ||
+      requestResult.site_name ||
+      siteId;
+
+    // -------------------------
+    // UPDATE / CREATE SITE
+    // -------------------------
+
+    const siteExists =
+      !!existingSite;
+
+    const statements = [];
+
+    if (siteExists) {
+
+      statements.push(
+        env.DB.prepare(`
+          UPDATE sites
+          SET
+            site_name = ?,
+            model = ?,
+            current_hmr = ?,
+            current_kwh = ?,
+            current_balance = ?,
+            last_updated = ?,
+            data_source = 'calculator'
+          WHERE site_id = ?
+        `)
+        .bind(
+          siteName,
+          model,
+          currentHmr,
+          currentKwh,
+          currentBalance,
+          now,
+          siteId
+        )
+      );
+
+    } else {
+
+      statements.push(
+        env.DB.prepare(`
+          INSERT INTO sites (
+            site_id,
+            site_name,
+            model,
+            current_hmr,
+            current_kwh,
+            current_balance,
+            last_updated,
+            data_source
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'calculator')
+        `)
+        .bind(
+          siteId,
+          siteName,
+          model,
+          currentHmr,
+          currentKwh,
+          currentBalance,
+          now
+        )
+      );
+
+    }
+
+    // -------------------------
+    // ADD READING
+    // -------------------------
+
+    statements.push(
+      env.DB.prepare(`
+        INSERT INTO readings (
+          site_id,
+          hmr,
+          kwh,
+          balance,
+          reading_date,
+          source
+        )
+        VALUES (?, ?, ?, ?, ?, 'calculator')
+      `)
+      .bind(
+        siteId,
+        currentHmr,
+        currentKwh,
+        currentBalance,
+        now
+      )
+    );
+
+    // -------------------------
+    // MARK REQUEST APPROVED
+    // -------------------------
+
+    statements.push(
+      env.DB.prepare(`
+        UPDATE save_requests
+        SET
+          status = 'approved',
+          reviewed_at = ?
+        WHERE id = ?
+          AND status = 'pending'
+      `)
+      .bind(
+        now,
+        id
+      )
+    );
+
+    await env.DB.batch(
+      statements
+    );
+
+    return json({
+      success: true,
+      message:
+        "Save request approved and site details saved."
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return json(
+      {
+        success: false,
+        error:
+          error?.message ||
+          "Unable to review save request."
+      },
+      500
+    );
+  }
+}
 // -------------------------
 // Llama Vision IMAGE EXTRACTION
 // -------------------------
@@ -1405,6 +1795,27 @@ if (
   method === "POST"
 ) {
   return createSaveRequest(request, env);
+}
+  // Get pending save requests
+if (
+  path === "/api/admin/save-requests" &&
+  method === "GET"
+) {
+  return getSaveRequests(
+    request,
+    env
+  );
+}
+
+// Approve / reject save request
+if (
+  path === "/api/admin/save-request/review" &&
+  method === "POST"
+) {
+  return reviewSaveRequest(
+    request,
+    env
+  );
 }
     // Update site
     if (
