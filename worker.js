@@ -893,21 +893,18 @@ async function getSaveRequests(request, env) {
 
 async function reviewSaveRequest(request, env) {
 
-  if (!(await checkAdminKey(request, env))) {
-    return json(
-      {
-        success: false,
-        error: "Unauthorized"
-      },
-      401
-    );
+  const auth =
+    checkAdminKey(request, env);
+
+  if (!auth.ok) {
+    return auth.response;
   }
 
   if (!env.DB) {
     return json(
       {
         success: false,
-        error: "Database not configured"
+        error: "D1 database is not configured."
       },
       500
     );
