@@ -831,21 +831,18 @@ async function updateSite(request, env) {
 
 async function getSaveRequests(request, env) {
 
-  if (!(await checkAdminKey(request, env))) {
-    return json(
-      {
-        success: false,
-        error: "Unauthorized"
-      },
-      401
-    );
+  const auth =
+    checkAdminKey(request, env);
+
+  if (!auth.ok) {
+    return auth.response;
   }
 
   if (!env.DB) {
     return json(
       {
         success: false,
-        error: "Database not configured"
+        error: "D1 database is not configured."
       },
       500
     );
@@ -867,7 +864,7 @@ async function getSaveRequests(request, env) {
           status
         FROM save_requests
         WHERE status = 'pending'
-        ORDER BY id DESC
+        ORDER BY requested_at DESC
       `).all();
 
     return json({
@@ -882,7 +879,8 @@ async function getSaveRequests(request, env) {
     return json(
       {
         success: false,
-        error: error?.message ||
+        error:
+          error?.message ||
           "Unable to load save requests."
       },
       500
