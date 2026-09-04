@@ -325,6 +325,116 @@ async function getSite(request, env) {
 // -------------------------
 // UPDATE SITE
 // -------------------------
+async function createSaveRequest(request, env) {
+  try {
+    if (!env.DB) {
+      return json(
+        {
+          success: false,
+          error: "D1 database is not configured."
+        },
+        500
+      );
+    }
+
+    const body = await request.json();
+
+    const siteId =
+      String(body.site_id || "").trim();
+
+    const model =
+      String(body.model || "").trim();
+
+    const currentHmr =
+      Number(body.current_hmr);
+
+    const currentKwh =
+      Number(body.current_kwh);
+
+    const currentBalance =
+      Number(body.current_balance);
+
+    if (!siteId) {
+      return json(
+        {
+          success: false,
+          error: "Site ID is required."
+        },
+        400
+      );
+    }
+
+    if (!model || !CHARTS[model]) {
+      return json(
+        {
+          success: false,
+          error: "Invalid generator model."
+        },
+        400
+      );
+    }
+
+    if (
+      !Number.isFinite(currentHmr) ||
+      !Number.isFinite(currentKwh) ||
+      !Number.isFinite(currentBalance)
+    ) {
+      return json(
+        {
+          success: false,
+          error: "Invalid HMR, kWh or balance."
+        },
+        400
+      );
+    }
+
+    const now =
+      new Date().toISOString();
+
+    await env.DB.prepare(
+      `INSERT INTO save_requests
+       (
+         site_id,
+         site_name,
+         model,
+         current_hmr,
+         current_kwh,
+         current_balance,
+         requested_at,
+         status
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .bind(
+      siteId,
+      siteId,
+      model,
+      currentHmr,
+      currentKwh,
+      currentBalance,
+      now,
+      "pending"
+    )
+    .run();
+
+    return json({
+      success: true,
+      message:
+        "Save request sent to admin for approval."
+    });
+
+  } catch (error) {
+    return json(
+      {
+        success: false,
+        error:
+          error?.message ||
+          "Unable to create save request."
+      },
+      500
+    );
+  }
+}
 async function saveCalculatorSite(request, env) {
 
   try {
