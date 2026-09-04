@@ -1,28 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>Generator Admin</title>
 
   <style>
+
+    /* =========================================================
+       RESET
+    ========================================================= */
+
     * {
       box-sizing: border-box;
-    }
-
-    :root {
-      --bg: #050817;
-      --card: rgba(13, 20, 48, 0.72);
-      --border: rgba(91, 126, 255, 0.28);
-      --text: #f7f9ff;
-      --muted: #9ca8c7;
-      --cyan: #00d9ff;
-      --blue: #4d7cff;
-      --purple: #9b35ff;
-      --pink: #ff3fc7;
-      --green: #00e6a8;
-      --yellow: #ffc857;
     }
 
     html {
@@ -32,6 +29,7 @@
     body {
       margin: 0;
       min-height: 100vh;
+
       font-family:
         Inter,
         system-ui,
@@ -40,7 +38,7 @@
         "Segoe UI",
         sans-serif;
 
-      color: var(--text);
+      color: #f7f9ff;
 
       background:
         radial-gradient(
@@ -50,12 +48,12 @@
         ),
         radial-gradient(
           circle at 90% 10%,
-          rgba(155, 53, 255, 0.22),
+          rgba(155, 53, 255, 0.20),
           transparent 28%
         ),
         radial-gradient(
           circle at 50% 100%,
-          rgba(255, 63, 199, 0.14),
+          rgba(255, 63, 199, 0.12),
           transparent 30%
         ),
         linear-gradient(
@@ -68,15 +66,65 @@
       overflow-x: hidden;
     }
 
-    /* =========================
-       ANIMATED BACKGROUND
-    ========================== */
+
+    /* =========================================================
+       VARIABLES
+    ========================================================= */
+
+    :root {
+
+      --card:
+        linear-gradient(
+          145deg,
+          rgba(20, 29, 68, 0.86),
+          rgba(8, 13, 34, 0.80)
+        );
+
+      --border:
+        rgba(91, 126, 255, 0.28);
+
+      --text:
+        #f7f9ff;
+
+      --muted:
+        #9ca8c7;
+
+      --cyan:
+        #00d9ff;
+
+      --blue:
+        #4d7cff;
+
+      --purple:
+        #9b35ff;
+
+      --pink:
+        #ff3fc7;
+
+      --green:
+        #00e6a8;
+
+      --red:
+        #ff6478;
+
+      --yellow:
+        #ffc857;
+    }
+
+
+    /* =========================================================
+       BACKGROUND GLOW
+    ========================================================= */
 
     body::before {
+
       content: "";
+
       position: fixed;
+
       width: 420px;
       height: 420px;
+
       left: -180px;
       top: 80px;
 
@@ -88,16 +136,25 @@
         );
 
       filter: blur(20px);
-      animation: floatOne 9s ease-in-out infinite;
+
+      animation:
+        floatOne 9s ease-in-out infinite;
+
       pointer-events: none;
+
       z-index: -2;
     }
 
+
     body::after {
+
       content: "";
+
       position: fixed;
+
       width: 480px;
       height: 480px;
+
       right: -220px;
       bottom: 20px;
 
@@ -109,54 +166,91 @@
         );
 
       filter: blur(25px);
-      animation: floatTwo 11s ease-in-out infinite;
+
+      animation:
+        floatTwo 11s ease-in-out infinite;
+
       pointer-events: none;
+
       z-index: -2;
     }
 
+
     @keyframes floatOne {
-      0%, 100% {
-        transform: translate(0, 0) scale(1);
+
+      0%,
+      100% {
+        transform:
+          translate(0, 0)
+          scale(1);
       }
 
       50% {
-        transform: translate(100px, 70px) scale(1.15);
+        transform:
+          translate(100px, 70px)
+          scale(1.15);
       }
     }
+
 
     @keyframes floatTwo {
-      0%, 100% {
-        transform: translate(0, 0) scale(1);
+
+      0%,
+      100% {
+        transform:
+          translate(0, 0)
+          scale(1);
       }
 
       50% {
-        transform: translate(-80px, -70px) scale(1.15);
+        transform:
+          translate(-80px, -70px)
+          scale(1.15);
       }
     }
 
-    /* Small glowing dots */
+
+    /* =========================================================
+       PARTICLES
+    ========================================================= */
 
     .particles {
+
       position: fixed;
+
       inset: 0;
+
       pointer-events: none;
+
       z-index: -1;
+
       overflow: hidden;
     }
 
+
     .particle {
+
       position: absolute;
+
       width: 4px;
       height: 4px;
+
       border-radius: 50%;
-      background: #fff;
+
+      background: white;
+
       box-shadow:
         0 0 8px #00d9ff,
         0 0 18px #4d7cff;
 
-      animation: particleMove linear infinite;
+      animation:
+        particleMove
+        linear
+        infinite;
+
       opacity: 0.75;
     }
+
 
     .particle:nth-child(1) {
       left: 8%;
@@ -194,50 +288,76 @@
       animation-duration: 13s;
     }
 
+
     @keyframes particleMove {
+
       0% {
-        transform: translateY(0) scale(1);
+        transform:
+          translateY(0)
+          scale(1);
+
         opacity: 0.3;
       }
 
       50% {
-        transform: translateY(-80px) scale(1.5);
+        transform:
+          translateY(-80px)
+          scale(1.5);
+
         opacity: 1;
       }
 
       100% {
-        transform: translateY(0) scale(1);
+        transform:
+          translateY(0)
+          scale(1);
+
         opacity: 0.3;
       }
     }
 
-    /* =========================
+
+    /* =========================================================
        MAIN
-    ========================== */
+    ========================================================= */
 
     .container {
+
       width: 100%;
+
       max-width: 1100px;
+
       margin: auto;
-      padding: 28px 18px 50px;
+
+      padding:
+        24px 16px 50px;
     }
 
-    /* =========================
+
+    /* =========================================================
        HEADER
-    ========================== */
+    ========================================================= */
 
     .header {
+
       text-align: center;
-      margin-bottom: 30px;
+
+      margin-bottom: 26px;
     }
 
+
     .logo {
+
       width: 64px;
       height: 64px;
-      margin: 0 auto 12px;
+
+      margin:
+        0 auto 12px;
 
       display: flex;
+
       align-items: center;
+
       justify-content: center;
 
       border-radius: 20px;
@@ -245,38 +365,62 @@
       background:
         linear-gradient(
           135deg,
-          rgba(0, 217, 255, 0.2),
-          rgba(155, 53, 255, 0.3)
+          rgba(0, 217, 255, 0.20),
+          rgba(155, 53, 255, 0.30)
         );
 
-      border: 1px solid rgba(255,255,255,0.12);
+      border:
+        1px solid
+        rgba(255,255,255,0.12);
 
       box-shadow:
-        0 0 25px rgba(0,217,255,0.25),
-        0 0 45px rgba(155,53,255,0.18);
+        0 0 25px
+        rgba(0,217,255,0.25),
+
+        0 0 45px
+        rgba(155,53,255,0.18);
 
       font-size: 30px;
 
-      animation: logoGlow 3s ease-in-out infinite;
+      animation:
+        logoGlow 3s
+        ease-in-out
+        infinite;
     }
 
+
     @keyframes logoGlow {
-      0%, 100% {
+
+      0%,
+      100% {
+
         box-shadow:
-          0 0 20px rgba(0,217,255,0.25),
-          0 0 40px rgba(155,53,255,0.15);
+          0 0 20px
+          rgba(0,217,255,0.25),
+
+          0 0 40px
+          rgba(155,53,255,0.15);
       }
 
       50% {
+
         box-shadow:
-          0 0 35px rgba(0,217,255,0.5),
-          0 0 65px rgba(155,53,255,0.3);
+          0 0 35px
+          rgba(0,217,255,0.50),
+
+          0 0 65px
+          rgba(155,53,255,0.30);
       }
     }
 
+
     h1 {
+
       margin: 0;
-      font-size: clamp(28px, 6vw, 48px);
+
+      font-size:
+        clamp(28px, 6vw, 48px);
+
       font-weight: 800;
 
       background:
@@ -288,78 +432,109 @@
           #ffffff
         );
 
-      background-size: 250% auto;
+      background-size:
+        250% auto;
 
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+      -webkit-background-clip:
+        text;
 
-      animation: gradientText 5s linear infinite;
+      background-clip:
+        text;
+
+      color:
+        transparent;
+
+      animation:
+        gradientText
+        5s linear infinite;
     }
 
+
     @keyframes gradientText {
+
       to {
-        background-position: 250% center;
+        background-position:
+          250% center;
       }
     }
 
+
     .subtitle {
-      color: var(--muted);
-      margin-top: 8px;
-      font-size: 14px;
+
+      color:
+        var(--muted);
+
+      margin-top: 7px;
+
+      font-size: 13px;
+
+      line-height: 1.5;
     }
 
-    /* =========================
+
+    /* =========================================================
        GRID
-    ========================== */
+    ========================================================= */
 
     .grid {
+
       display: grid;
-      grid-template-columns: 1fr 1fr;
+
+      grid-template-columns:
+        1fr 1fr;
+
       gap: 18px;
     }
 
+
     .full {
-      grid-column: 1 / -1;
+
+      grid-column:
+        1 / -1;
     }
 
-    /* =========================
-       GLASS CARDS
-    ========================== */
+
+    /* =========================================================
+       CARDS
+    ========================================================= */
 
     .card {
+
       position: relative;
 
       background:
-        linear-gradient(
-          145deg,
-          rgba(20, 29, 68, 0.82),
-          rgba(8, 13, 34, 0.76)
-        );
+        var(--card);
 
-      border: 1px solid var(--border);
+      border:
+        1px solid
+        var(--border);
 
       border-radius: 20px;
 
       padding: 20px;
 
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter:
+        blur(18px);
+
+      -webkit-backdrop-filter:
+        blur(18px);
 
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.06),
-        0 15px 50px rgba(0,0,0,0.25);
+        inset
+        0 1px 0
+        rgba(255,255,255,0.06),
+
+        0 15px 50px
+        rgba(0,0,0,0.25);
 
       overflow: hidden;
-
-      transition:
-        transform 0.25s ease,
-        border-color 0.25s ease,
-        box-shadow 0.25s ease;
     }
 
+
     .card::before {
+
       content: "";
+
       position: absolute;
 
       width: 180px;
@@ -378,34 +553,34 @@
       pointer-events: none;
     }
 
-    .card:hover {
-      transform: translateY(-2px);
-
-      border-color:
-        rgba(91, 145, 255, 0.5);
-
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.07),
-        0 20px 55px rgba(0,0,0,0.32),
-        0 0 25px rgba(55,100,255,0.08);
-    }
 
     .card h2 {
+
       display: flex;
+
       align-items: center;
+
       gap: 10px;
 
-      margin: 0 0 18px;
+      margin:
+        0 0 18px;
 
-      font-size: 19px;
+      font-size: 18px;
     }
 
+
     .icon {
+
       width: 38px;
       height: 38px;
 
+      flex:
+        0 0 auto;
+
       display: inline-flex;
+
       align-items: center;
+
       justify-content: center;
 
       border-radius: 12px;
@@ -418,95 +593,130 @@
         );
 
       box-shadow:
-        0 0 18px rgba(0,217,255,0.2);
+        0 0 18px
+        rgba(0,217,255,0.20);
 
       font-size: 19px;
     }
 
-    /* =========================
+
+    /* =========================================================
        LABELS
-    ========================== */
+    ========================================================= */
 
     label {
+
       display: block;
 
-      margin: 14px 0 7px;
+      margin:
+        14px 0 7px;
 
-      color: #cbd4ef;
+      color:
+        #cbd4ef;
 
       font-size: 13px;
+
       font-weight: 600;
     }
 
-    /* =========================
+
+    /* =========================================================
        INPUTS
-    ========================== */
+    ========================================================= */
 
     input,
     select {
+
       width: 100%;
 
-      padding: 13px 14px;
+      padding:
+        13px 14px;
 
       border-radius: 11px;
 
-      border: 1px solid rgba(110,130,190,0.25);
+      border:
+        1px solid
+        rgba(110,130,190,0.25);
 
       background:
-        rgba(3, 7, 20, 0.72);
+        rgba(3,7,20,0.72);
 
-      color: white;
+      color:
+        white;
 
       font-size: 15px;
 
       outline: none;
 
       transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background 0.2s ease;
+        border-color
+        0.2s ease,
+
+        box-shadow
+        0.2s ease,
+
+        background
+        0.2s ease;
     }
 
+
     input::placeholder {
-      color: #697592;
+
+      color:
+        #697592;
     }
+
 
     input:focus,
     select:focus {
-      border-color: var(--cyan);
+
+      border-color:
+        var(--cyan);
 
       background:
-        rgba(4, 12, 31, 0.9);
+        rgba(4,12,31,0.90);
 
       box-shadow:
-        0 0 0 3px rgba(0,217,255,0.08),
-        0 0 18px rgba(0,217,255,0.12);
+        0 0 0 3px
+        rgba(0,217,255,0.08),
+
+        0 0 18px
+        rgba(0,217,255,0.12);
     }
+
 
     select option {
-      background: #0b1025;
-      color: white;
+
+      background:
+        #0b1025;
+
+      color:
+        white;
     }
 
-    /* =========================
+
+    /* =========================================================
        BUTTONS
-    ========================== */
+    ========================================================= */
 
     button {
-      position: relative;
 
       width: 100%;
 
       margin-top: 14px;
 
-      padding: 14px 16px;
+      padding:
+        14px 16px;
 
       border: 0;
+
       border-radius: 11px;
 
-      color: white;
+      color:
+        white;
 
       font-size: 14px;
+
       font-weight: 800;
 
       cursor: pointer;
@@ -519,37 +729,61 @@
           #9b35ff
         );
 
-      background-size: 200% auto;
+      background-size:
+        200% auto;
 
       box-shadow:
-        0 8px 25px rgba(72,90,255,0.25);
+        0 8px 25px
+        rgba(72,90,255,0.25);
 
       transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        background-position 0.4s ease;
+        transform
+        0.2s ease,
+
+        box-shadow
+        0.2s ease,
+
+        background-position
+        0.4s ease;
     }
+
 
     button:hover {
-      transform: translateY(-2px);
 
-      background-position: right center;
+      transform:
+        translateY(-2px);
+
+      background-position:
+        right center;
 
       box-shadow:
-        0 12px 32px rgba(72,90,255,0.4);
+        0 12px 32px
+        rgba(72,90,255,0.40);
     }
+
 
     button:active {
-      transform: scale(0.98);
+
+      transform:
+        scale(0.98);
     }
+
 
     button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-      transform: none;
+
+      opacity:
+        0.55;
+
+      cursor:
+        not-allowed;
+
+      transform:
+        none;
     }
 
+
     .secondary {
+
       background:
         linear-gradient(
           90deg,
@@ -557,35 +791,89 @@
           rgba(67,40,102,0.95)
         );
 
-      box-shadow: none;
+      box-shadow:
+        none;
     }
 
-    /* =========================
-       SITE INFO
-    ========================== */
+
+    .approve-button {
+
+      background:
+        linear-gradient(
+          90deg,
+          #00b889,
+          #00e6a8
+        );
+    }
+
+
+    .reject-button {
+
+      background:
+        linear-gradient(
+          90deg,
+          #b82f4c,
+          #ff536d
+        );
+    }
+
+
+    /* =========================================================
+       MESSAGES
+    ========================================================= */
+
+    .message {
+
+      min-height: 20px;
+
+      margin-top: 10px;
+
+      font-size: 13px;
+
+      font-weight: 600;
+
+      line-height: 1.5;
+    }
+
+
+    .message.success {
+
+      color:
+        var(--green);
+    }
+
+
+    .message.error {
+
+      color:
+        var(--red);
+    }
+
+
+    /* =========================================================
+       SITE INFORMATION
+    ========================================================= */
 
     .site-info {
-      display: none;
+
+      display:
+        none;
     }
+
 
     .site-info.show {
-      display: block;
-      animation: slideUp 0.4s ease;
+
+      display:
+        block;
+
+      animation:
+        slideUp
+        0.4s ease;
     }
 
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
 
     .info-grid {
+
       display: grid;
 
       grid-template-columns:
@@ -594,667 +882,1029 @@
       gap: 10px;
     }
 
+
     .info-box {
-      min-width: 0;
 
-      padding: 14px;
+      min-width:
+        0;
 
-      border-radius: 13px;
+      padding:
+        14px;
+
+      border-radius:
+        13px;
 
       background:
-        rgba(4, 10, 27, 0.7);
+        rgba(4,10,27,0.70);
 
-      border: 1px solid rgba(90,115,190,0.2);
+      border:
+        1px solid
+        rgba(90,115,190,0.20);
     }
+
 
     .info-label {
-      color: #8491b3;
-      font-size: 11px;
-      margin-bottom: 7px;
+
+      color:
+        #8491b3;
+
+      font-size:
+        11px;
+
+      margin-bottom:
+        7px;
     }
+
 
     .info-value {
-      color: white;
-      font-weight: 800;
-      font-size: 15px;
-      overflow-wrap: anywhere;
+
+      color:
+        white;
+
+      font-weight:
+        800;
+
+      font-size:
+        15px;
+
+      overflow-wrap:
+        anywhere;
     }
 
-    /* =========================
-       IMAGE PREVIEW
-    ========================== */
+
+    /* =========================================================
+       SAVE REQUESTS
+    ========================================================= */
+
+    #saveRequestsList {
+
+      display:
+        flex;
+
+      flex-direction:
+        column;
+
+      gap:
+        12px;
+    }
+
+
+    .request-empty {
+
+      padding:
+        18px;
+
+      border-radius:
+        13px;
+
+      text-align:
+        center;
+
+      color:
+        var(--muted);
+
+      background:
+        rgba(4,10,27,0.55);
+
+      border:
+        1px solid
+        rgba(90,115,190,0.18);
+
+      font-size:
+        13px;
+    }
+
+
+    .request-card {
+
+      position:
+        relative;
+
+      padding:
+        16px;
+
+      border-radius:
+        15px;
+
+      background:
+        rgba(4,10,27,0.72);
+
+      border:
+        1px solid
+        rgba(91,126,255,0.25);
+    }
+
+
+    .request-top {
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        space-between;
+
+      gap:
+        10px;
+
+      margin-bottom:
+        12px;
+    }
+
+
+    .request-site {
+
+      font-size:
+        17px;
+
+      font-weight:
+        800;
+
+      overflow-wrap:
+        anywhere;
+    }
+
+
+    .pending-badge {
+
+      flex:
+        0 0 auto;
+
+      padding:
+        5px 9px;
+
+      border-radius:
+        20px;
+
+      color:
+        #ffe18a;
+
+      background:
+        rgba(255,200,87,0.10);
+
+      border:
+        1px solid
+        rgba(255,200,87,0.25);
+
+      font-size:
+        10px;
+
+      font-weight:
+        800;
+    }
+
+
+    .request-details {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap:
+        8px;
+
+      margin-bottom:
+        12px;
+    }
+
+
+    .request-value {
+
+      padding:
+        10px;
+
+      border-radius:
+        10px;
+
+      background:
+        rgba(10,17,42,0.75);
+    }
+
+
+    .request-label {
+
+      color:
+        #7785a8;
+
+      font-size:
+        10px;
+
+      margin-bottom:
+        4px;
+    }
+
+
+    .request-number {
+
+      color:
+        white;
+
+      font-size:
+        13px;
+
+      font-weight:
+        800;
+
+      overflow-wrap:
+        anywhere;
+    }
+
+
+    .request-time {
+
+      color:
+        #7785a8;
+
+      font-size:
+        11px;
+
+      margin-bottom:
+        10px;
+    }
+
+
+    .request-actions {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap:
+        10px;
+    }
+
+
+    .request-actions button {
+
+      margin-top:
+        0;
+    }
+
+
+    /* =========================================================
+       OCR PREVIEW
+    ========================================================= */
 
     .preview {
-      display: none;
-      margin-top: 15px;
+
+      display:
+        none;
+
+      margin-top:
+        15px;
     }
+
 
     .preview.show {
-      display: block;
-      animation: slideUp 0.35s ease;
+
+      display:
+        block;
+
+      animation:
+        slideUp
+        0.35s ease;
     }
+
 
     .preview img {
-      width: 100%;
-      max-height: 360px;
 
-      object-fit: contain;
+      width:
+        100%;
 
-      display: block;
+      max-height:
+        360px;
 
-      border-radius: 13px;
+      object-fit:
+        contain;
 
-      border: 1px solid rgba(73,130,255,0.3);
+      display:
+        block;
 
-      background: #02040d;
+      border-radius:
+        13px;
+
+      border:
+        1px solid
+        rgba(73,130,255,0.30);
+
+      background:
+        #02040d;
     }
+
 
     .file-name {
-      margin-top: 8px;
 
-      color: var(--muted);
+      margin-top:
+        8px;
 
-      font-size: 12px;
+      color:
+        var(--muted);
 
-      overflow-wrap: anywhere;
+      font-size:
+        12px;
+
+      overflow-wrap:
+        anywhere;
     }
 
-    /* =========================
+
+    /* =========================================================
        LOADING
-    ========================== */
+    ========================================================= */
 
     .loading {
-      display: none;
 
-      margin-top: 12px;
-      padding: 12px;
+      display:
+        none;
 
-      text-align: center;
+      margin-top:
+        12px;
 
-      color: var(--cyan);
+      padding:
+        12px;
 
-      border-radius: 11px;
+      text-align:
+        center;
+
+      color:
+        var(--cyan);
+
+      border-radius:
+        11px;
 
       background:
         rgba(0,217,255,0.06);
 
-      border: 1px solid rgba(0,217,255,0.15);
+      border:
+        1px solid
+        rgba(0,217,255,0.15);
 
-      animation: pulse 1.3s infinite;
+      animation:
+        pulse
+        1.3s infinite;
     }
+
 
     .loading.show {
-      display: block;
+
+      display:
+        block;
     }
 
+
     @keyframes pulse {
+
       50% {
-        opacity: 0.45;
+        opacity:
+          0.45;
       }
     }
 
-    /* =========================
-       WARNING / MESSAGES
-    ========================== */
+
+    /* =========================================================
+       WARNING
+    ========================================================= */
 
     .warning {
-      margin-top: 13px;
 
-      padding: 12px 14px;
+      margin-top:
+        13px;
 
-      border-radius: 11px;
+      padding:
+        12px 14px;
 
-      color: #ffe18a;
+      border-radius:
+        11px;
+
+      color:
+        #ffe18a;
 
       background:
         rgba(255,200,87,0.06);
 
-      border: 1px solid rgba(255,200,87,0.2);
+      border:
+        1px solid
+        rgba(255,200,87,0.20);
 
-      font-size: 12px;
-      line-height: 1.5;
+      font-size:
+        12px;
+
+      line-height:
+        1.5;
     }
 
-    .message {
-      min-height: 20px;
 
-      margin-top: 10px;
-
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .message.success {
-      color: var(--green);
-    }
-
-    .message.error {
-      color: #ff6b7a;
-    }
-
-    /* =========================
+    /* =========================================================
        HIDDEN SECTIONS
-    ========================== */
+    ========================================================= */
 
     .manual-section,
     .extraction-section {
-      display: none;
+
+      display:
+        none;
     }
+
 
     .manual-section.show,
     .extraction-section.show {
-      display: block;
 
-      animation: slideUp 0.4s ease;
+      display:
+        block;
+
+      animation:
+        slideUp
+        0.4s ease;
     }
 
-    /* =========================
+
+    /* =========================================================
+       ANIMATION
+    ========================================================= */
+
+    @keyframes slideUp {
+
+      from {
+
+        opacity:
+          0;
+
+        transform:
+          translateY(12px);
+      }
+
+      to {
+
+        opacity:
+          1;
+
+        transform:
+          translateY(0);
+      }
+    }
+
+
+    /* =========================================================
        FOOTER
-    ========================== */
+    ========================================================= */
 
     footer {
-      text-align: center;
 
-      color: #66718f;
+      text-align:
+        center;
 
-      font-size: 11px;
+      color:
+        #66718f;
 
-      margin-top: 28px;
+      font-size:
+        11px;
+
+      margin-top:
+        28px;
     }
 
-    /* =========================
+
+    /* =========================================================
        MOBILE
-    ========================== */
+    ========================================================= */
 
     @media (max-width: 800px) {
 
       .grid {
-        grid-template-columns: 1fr;
+
+        grid-template-columns:
+          1fr;
       }
+
 
       .full {
-        grid-column: auto;
+
+        grid-column:
+          auto;
       }
 
+
       .info-grid {
+
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+
+      .request-details {
+
         grid-template-columns:
           repeat(2, 1fr);
       }
 
     }
 
+
     @media (max-width: 480px) {
 
       .container {
-        padding: 18px 12px 35px;
+
+        padding:
+          18px 12px 35px;
       }
+
 
       .card {
-        padding: 16px;
-        border-radius: 17px;
+
+        padding:
+          16px;
+
+        border-radius:
+          17px;
       }
 
-      .info-grid {
-        grid-template-columns: 1fr 1fr;
-      }
 
       h1 {
-        font-size: 30px;
+
+        font-size:
+          30px;
+      }
+
+
+      .request-top {
+
+        align-items:
+          flex-start;
+      }
+
+
+      .request-actions {
+
+        grid-template-columns:
+          1fr;
       }
 
     }
+
   </style>
+
 </head>
+
 
 <body>
 
-  <!-- Animated background particles -->
+
+  <!-- =======================================================
+       BACKGROUND
+  ======================================================== -->
+
   <div class="particles">
+
     <span class="particle"></span>
     <span class="particle"></span>
     <span class="particle"></span>
     <span class="particle"></span>
     <span class="particle"></span>
     <span class="particle"></span>
+
   </div>
 
 
-  <main class="container">
+  <!-- ===========================
+  <!-- =========================================================
+     MAIN
+========================================================= -->
 
-    <!-- =========================
-         HEADER
-    ========================== -->
+<main class="container">
 
-    <header class="header">
+  <!-- =======================================================
+       HEADER
+  ======================================================== -->
 
-      <div class="logo">
-        ⚡
+  <header class="header">
+
+    <div class="logo">
+      ⚡
+    </div>
+
+    <h1>
+      Generator Admin
+    </h1>
+
+    <div class="subtitle">
+      Manage generator readings, save requests and AI extraction
+    </div>
+
+  </header>
+
+
+  <div class="grid">
+
+
+    <!-- =====================================================
+         ADMIN ACCESS
+    ====================================================== -->
+
+    <section class="card">
+
+      <h2>
+        <span class="icon">🔐</span>
+        Admin Access
+      </h2>
+
+      <label for="adminKey">
+        Admin Key
+      </label>
+
+      <input
+        type="password"
+        id="adminKey"
+        placeholder="Enter admin key"
+        autocomplete="off"
+      >
+
+      <div
+        id="authMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         AI CONTROL
+    ====================================================== -->
+
+    <section class="card">
+
+      <h2>
+        <span class="icon">🤖</span>
+        AI Control
+      </h2>
+
+      <p class="muted">
+        Activate Cloudflare Llama AI for screenshot reading.
+      </p>
+
+      <button
+        type="button"
+        id="activateLlama"
+      >
+        🤖 ACTIVATE LLAMA AI
+      </button>
+
+      <div
+        id="llamaMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         SAVE REQUESTS
+    ====================================================== -->
+
+    <section class="card full">
+
+      <h2>
+        <span class="icon">🔔</span>
+        Save Requests
+
+        <span
+          id="requestCount"
+          style="
+            display:none;
+            margin-left:8px;
+            padding:3px 9px;
+            border-radius:20px;
+            background:#ef4444;
+            color:white;
+            font-size:12px;
+            font-weight:700;
+          "
+        >
+          0
+        </span>
+
+      </h2>
+
+      <div
+        id="requestMessage"
+        class="message"
+      >
+        Loading pending requests...
       </div>
 
-      <h1>
-        Generator Admin
-      </h1>
+      <div id="saveRequestsList"></div>
 
-      <div class="subtitle">
-        Manage generator readings and extract readings from screenshots
+      <button
+        type="button"
+        id="refreshRequests"
+        class="secondary"
+      >
+        🔄 REFRESH REQUESTS
+      </button>
+
+    </section>
+
+
+    <!-- =====================================================
+         SITE
+    ====================================================== -->
+
+    <section class="card">
+
+      <h2>
+        <span class="icon">📍</span>
+        Site
+      </h2>
+
+      <label for="siteId">
+        Site ID
+      </label>
+
+      <input
+        type="text"
+        id="siteId"
+        placeholder="Enter Site ID"
+        autocomplete="off"
+      >
+
+      <label for="model">
+        DG Model
+      </label>
+
+      <select id="model">
+
+        <option value="">
+          Select DG Model
+        </option>
+
+        <option value="eicher10">
+          Eicher 10 KVA
+        </option>
+
+        <option value="mahindra10">
+          Mahindra 10 KVA
+        </option>
+
+        <option value="eicher20">
+          Eicher 20 KVA
+        </option>
+
+        <option value="mahindra20">
+          Mahindra 20 KVA
+        </option>
+
+        <option value="koel20">
+          KOEL 20 KVA
+        </option>
+
+      </select>
+
+      <button
+        type="button"
+        id="loadSite"
+      >
+        🔍 LOAD SITE
+      </button>
+
+    </section>
+
+
+    <!-- =====================================================
+         CURRENT SITE INFORMATION
+    ====================================================== -->
+
+    <section class="card">
+
+      <h2>
+        <span class="icon">📊</span>
+        Current Site Information
+      </h2>
+
+      <div
+        id="siteInfo"
+        class="site-info"
+      >
+
+        <div>
+          <span>Site Name</span>
+          <strong id="siteName">—</strong>
+        </div>
+
+        <div>
+          <span>DG Model</span>
+          <strong id="siteModel">—</strong>
+        </div>
+
+        <div>
+          <span>Current HMR</span>
+          <strong id="siteHmr">—</strong>
+        </div>
+
+        <div>
+          <span>Current kWh</span>
+          <strong id="siteKwh">—</strong>
+        </div>
+
+        <div>
+          <span>Current Balance</span>
+          <strong id="siteBalance">—</strong>
+        </div>
+
       </div>
 
-    </header>
+    </section>
 
 
-    <div class="grid">
+    <!-- =====================================================
+         EDIT SITE
+    ====================================================== -->
 
-      <!-- =========================
-           ADMIN ACCESS
-      ========================== -->
+    <section class="card full">
 
-      <section class="card">
+      <h2>
+        <span class="icon">✏️</span>
+        Edit Site
+      </h2>
 
-        <h2>
-          <span class="icon">🔐</span>
-          Admin Access
-        </h2>
+      <label for="editSiteId">
+        Site ID
+      </label>
 
-        <label for="adminKey">
-          Admin Key
-        </label>
+      <input
+        type="text"
+        id="editSiteId"
+        placeholder="Site ID"
+      >
 
-        <input
-          type="password"
-          id="adminKey"
-          placeholder="Enter admin key"
-          autocomplete="off"
+      <label for="editSiteName">
+        Site Name
+      </label>
+
+      <input
+        type="text"
+        id="editSiteName"
+        placeholder="Site Name"
+      >
+
+      <label for="editModel">
+        DG Model
+      </label>
+
+      <select id="editModel">
+
+        <option value="">
+          Select DG Model
+        </option>
+
+        <option value="eicher10">
+          Eicher 10 KVA
+        </option>
+
+        <option value="mahindra10">
+          Mahindra 10 KVA
+        </option>
+
+        <option value="eicher20">
+          Eicher 20 KVA
+        </option>
+
+        <option value="mahindra20">
+          Mahindra 20 KVA
+        </option>
+
+        <option value="koel20">
+          KOEL 20 KVA
+        </option>
+
+      </select>
+
+      <label for="editHmr">
+        Current HMR
+      </label>
+
+      <input
+        type="number"
+        id="editHmr"
+        step="any"
+        placeholder="Current HMR"
+      >
+
+      <label for="editKwh">
+        Current kWh
+      </label>
+
+      <input
+        type="number"
+        id="editKwh"
+        step="any"
+        placeholder="Current kWh"
+      >
+
+      <label for="editBalance">
+        Current Balance After Filling
+      </label>
+
+      <input
+        type="number"
+        id="editBalance"
+        step="any"
+        placeholder="Current balance"
+      >
+
+      <button
+        type="button"
+        id="saveSiteEdit"
+      >
+        💾 SAVE SITE CHANGES
+      </button>
+
+      <div
+        id="editSiteMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         SCREENSHOT EXTRACTION
+    ====================================================== -->
+
+    <section class="card full">
+
+      <h2>
+        <span class="icon">📷</span>
+        Screenshot Extraction
+      </h2>
+
+      <label for="imageInput">
+        Generator Screenshot
+      </label>
+
+      <input
+        type="file"
+        id="imageInput"
+        accept="image/*"
+      >
+
+      <div
+        id="preview"
+        class="preview hidden"
+      >
+
+        <img
+          id="previewImage"
+          alt="Screenshot preview"
         >
 
         <div
-          id="authMessage"
-          class="message"
+          id="fileName"
+          class="file-name"
         ></div>
 
-      </section>
-      <button id="activateLlama" type="button">
-  Activate Llama AI
-</button>
+      </div>
 
-<div id="llamaMessage"></div>
+      <button
+        type="button"
+        id="extractButton"
+      >
+        🤖 EXTRACT WITH AI
+      </button>
+
+      <div
+        id="extractLoading"
+        class="loading hidden"
+      >
+        Reading screenshot with AI...
+      </div>
 
 
-      <!-- =========================
-           SITE
-      ========================== -->
+      <!-- ================================================
+           OCR CONFIRMATION
+      ================================================= -->
 
-      <section class="card">
+      <div
+        id="extractionSection"
+        class="hidden"
+      >
 
-        <h2>
-          <span class="icon">🏢</span>
-          Site
-        </h2>
+        <h3>
+          🔎 Extracted Information
+        </h3>
 
-        <label for="siteId">
-          Site ID
+        <label for="extractedModel">
+          DG Model
         </label>
 
         <input
           type="text"
-          id="siteId"
-          placeholder="Enter Site ID"
-          autocomplete="off"
+          id="extractedModel"
         >
-
-        <label for="model">
-          Generator Model
-        </label>
-
-        <select id="model">
-
-          <option value="">
-            Select generator model
-          </option>
-
-          <option value="eicher10">
-            Eicher 10 KVA
-          </option>
-
-          <option value="eicher20">
-            Eicher 20 KVA
-          </option>
-
-          <option value="koel20">
-            KOEL 20 KVA
-          </option>
-
-          <option value="mahindra20">
-            Mahindra 20 KVA
-          </option>
-
-          <option value="mahindra10">
-            Mahindra 10 KVA
-          </option>
-
-        </select>
-
-        <button
-          type="button"
-          id="loadSite"
-        >
-          🔄 LOAD EXISTING SITE
-        </button>
-
-      </section>
-
-
-      <!-- =========================
-           CURRENT SITE
-      ========================== -->
-
-      <section
-        class="card site-info full"
-        id="siteInfo"
-      >
-
-        <h2>
-          <span class="icon">📊</span>
-          Current Site Information
-        </h2>
-
-        <div class="info-grid">
-
-          <div class="info-box">
-            <div class="info-label">
-              SITE
-            </div>
-
-            <div
-              class="info-value"
-              id="siteName"
-            >
-              —
-            </div>
-          </div>
-
-
-          <div class="info-box">
-            <div class="info-label">
-              MODEL
-            </div>
-
-            <div
-              class="info-value"
-              id="siteModel"
-            >
-              —
-            </div>
-          </div>
-
-
-          <div class="info-box">
-            <div class="info-label">
-              HMR
-            </div>
-
-            <div
-              class="info-value"
-              id="siteHmr"
-            >
-              —
-            </div>
-          </div>
-
-
-          <div class="info-box">
-            <div class="info-label">
-              kWh
-            </div>
-
-            <div
-              class="info-value"
-              id="siteKwh"
-            >
-              —
-            </div>
-          </div>
-
-
-          <div class="info-box">
-            <div class="info-label">
-              BALANCE
-            </div>
-
-            <div
-              class="info-value"
-              id="siteBalance"
-            >
-              —
-            </div>
-          </div>
-
-        </div>
-
-      </section>
-      <!-- =========================
-     EDIT SITE
-========================== -->
-
-<section class="card">
-
-  <h2>
-    <span class="icon">✏️</span>
-    Edit Site
-  </h2>
-
-  <label for="editSiteId">
-    Site ID
-  </label>
-
-  <input
-    type="text"
-    id="editSiteId"
-    placeholder="Site ID"
-    autocomplete="off"
-  >
-
-  <label for="editSiteName">
-    Site Name
-  </label>
-
-  <input
-    type="text"
-    id="editSiteName"
-    placeholder="Site Name"
-    autocomplete="off"
-  >
-
-  <label for="editModel">
-    Generator Model
-  </label>
-
-  <select id="editModel">
-
-    <option value="">
-      Select generator model
-    </option>
-
-    <option value="eicher10">
-      Eicher 10 KVA
-    </option>
-
-    <option value="eicher20">
-      Eicher 20 KVA
-    </option>
-
-    <option value="koel20">
-      KOEL 20 KVA
-    </option>
-
-    <option value="mahindra20">
-      Mahindra 20 KVA
-    </option>
-
-    <option value="mahindra10">
-      Mahindra 10 KVA
-    </option>
-
-  </select>
-
-  <label for="editHmr">
-    Current HMR
-  </label>
-
-  <input
-    type="number"
-    id="editHmr"
-    step="any"
-    placeholder="Current HMR"
-  >
-
-  <label for="editKwh">
-    Current kWh
-  </label>
-
-  <input
-    type="number"
-    id="editKwh"
-    step="any"
-    placeholder="Current kWh"
-  >
-
-  <label for="editBalance">
-    Current Balance
-  </label>
-
-  <input
-    type="number"
-    id="editBalance"
-    step="any"
-    placeholder="Current Balance"
-  >
-
-  <button
-    type="button"
-    id="saveSiteEdit"
-  >
-    💾 SAVE SITE CHANGES
-  </button>
-
-  <div
-    id="editSiteMessage"
-    class="message"
-  ></div>
-
-</section>
-
-
-      <!-- =========================
-           IMAGE EXTRACTION
-      ========================== -->
-
-      <section class="card">
-
-        <h2>
-          <span class="icon">📷</span>
-          Extract From Screenshot
-        </h2>
-
-        <label for="imageInput">
-          Generator Screenshot
-        </label>
-
-        <input
-          type="file"
-          id="imageInput"
-          accept="image/*"
-        >
-
-
-        <div
-          id="preview"
-          class="preview"
-        >
-
-          <img
-            id="previewImage"
-            alt="Generator screenshot preview"
-          >
-
-          <div
-            id="fileName"
-            class="file-name"
-          ></div>
-
-        </div>
-
-
-        <button
-          type="button"
-          id="extractButton"
-        >
-          ✨ EXTRACT DETAILS
-        </button>
-
-
-        <div
-          id="extractLoading"
-          class="loading"
-        >
-          ⏳ AI is reading the screenshot...
-        </div>
-
-
-        <div class="warning">
-          ⚠️ Extracted values will be shown for your review.
-          Nothing is saved until you press CONFIRM &amp; SAVE.
-        </div>
-
-      </section>
-
-
-      <!-- =========================
-           OCR CONFIRMATION
-      ========================== -->
-
-      <section
-        class="card extraction-section"
-        id="extractionSection"
-      >
-
-        <h2>
-          <span class="icon">🧾</span>
-          Review Extracted Details
-        </h2>
-
-
-        <label for="extractedModel">
-          Generator Model
-        </label>
-
-        <select id="extractedModel">
-
-          <option value="">
-            Select generator model
-          </option>
-
-          <option value="eicher10">
-            Eicher 10 KVA
-          </option>
-
-          <option value="eicher20">
-            Eicher 20 KVA
-          </option>
-
-          <option value="koel20">
-            KOEL 20 KVA
-          </option>
-
-          <option value="mahindra20">
-            Mahindra 20 KVA
-          </option>
-
-          <option value="mahindra10">
-            Mahindra 10 KVA
-          </option>
-
-        </select>
-
 
         <label for="extractedHmr">
           Current HMR
@@ -1264,7 +1914,6 @@
           type="number"
           id="extractedHmr"
           step="any"
-          placeholder="Current HMR"
         >
 
         <label for="extractedKwh">
@@ -1275,7 +1924,6 @@
           type="number"
           id="extractedKwh"
           step="any"
-          placeholder="Current kWh"
         >
 
         <label for="extractedPreviousBalance">
@@ -1286,7 +1934,6 @@
           type="number"
           id="extractedPreviousBalance"
           step="any"
-          placeholder="Previous balance"
         >
 
         <label for="extractedFuelFilled">
@@ -1297,7 +1944,6 @@
           type="number"
           id="extractedFuelFilled"
           step="any"
-          placeholder="Fuel filled"
         >
 
         <label for="extractedBalance">
@@ -1308,109 +1954,106 @@
           type="number"
           id="extractedBalance"
           step="any"
-          placeholder="Current balance"
         >
+
+        <button
+          type="button"
+          id="saveExtracted"
+        >
+          💾 SAVE EXTRACTED DATA
+        </button>
 
         <div
           id="extractMessage"
           class="message"
         ></div>
 
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         MANUAL READING
+    ====================================================== -->
+
+    <section class="card full">
+
+      <h2>
+        <span class="icon">📝</span>
+        Manual Reading
+      </h2>
+
+      <button
+        type="button"
+        id="manualButton"
+        class="secondary"
+      >
+        ➕ ENTER MANUAL READING
+      </button>
+
+
+      <div
+        id="manualSection"
+        class="hidden"
+      >
+
+        <label for="currentHmr">
+          Current HMR
+        </label>
+
+        <input
+          type="number"
+          id="currentHmr"
+          step="any"
+          placeholder="Current HMR"
+        >
+
+        <label for="currentKwh">
+          Current kWh
+        </label>
+
+        <input
+          type="number"
+          id="currentKwh"
+          step="any"
+          placeholder="Current kWh"
+        >
+
+        <label for="currentBalance">
+          Current Balance After Filling
+        </label>
+
+        <input
+          type="number"
+          id="currentBalance"
+          step="any"
+          placeholder="Current balance"
+        >
+
         <button
           type="button"
-          id="saveExtracted"
+          id="updateSite"
         >
-          ✅ CONFIRM &amp; SAVE
-        </button>
-
-      </section>
-
-      <!-- ===================================
-           MANUAL READING
-      =================================== -->
-
-      <section class="card full">
-
-        <button
-          type="button"
-          id="manualButton"
-          class="secondary"
-        >
-          ⚙️ MANUAL READING
+          💾 UPDATE SITE
         </button>
 
         <div
-          id="manualSection"
-          class="manual-section"
-        >
+          id="updateMessage"
+          class="message"
+        ></div>
 
-          <h2 style="margin-top:22px;">
-            <span class="icon">⚙️</span>
-            Manual Reading
-          </h2>
+      </div>
 
-          <label for="currentHmr">
-            Current HMR
-          </label>
+    </section>
 
-          <input
-            type="number"
-            id="currentHmr"
-            step="any"
-            placeholder="Enter HMR"
-          >
 
-          <label for="currentKwh">
-            Current kWh
-          </label>
+  </div>
 
-          <input
-            type="number"
-            id="currentKwh"
-            step="any"
-            placeholder="Enter kWh"
-          >
+</main>
 
-          <label for="currentBalance">
-            Current Balance
-          </label>
 
-          <input
-            type="number"
-            id="currentBalance"
-            step="any"
-            placeholder="Enter balance"
-          >
-
-          <div
-            id="updateMessage"
-            class="message"
-          ></div>
-
-          <button
-            type="button"
-            id="updateSite"
-          >
-            💾 SAVE MANUAL READING
-          </button>
-
-        </div>
-
-      </section>
-
-    </div>
-
-    <footer>
-      Generator Fuel Calculator · Admin Panel
-    </footer>
-
-  </main>
-
-  <!-- IMPORTANT:
-       JavaScript remains in a separate file.
-  -->
-
-  <script src="/admin.js"></script>
+<script src="/admin.js"></script>
 
 </body>
 </html>
