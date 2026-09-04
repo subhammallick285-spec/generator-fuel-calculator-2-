@@ -1649,48 +1649,34 @@ $("clear").addEventListener(
 );
 
 
+
 // ============================================================
-// SAVE DETAILS FOR FUTURE
+// SAVE DETAILS FOR FUTURE — REQUEST ADMIN APPROVAL
 // ============================================================
 
 $("saveForFuture").addEventListener(
   "click",
   async () => {
 
-    $("saveMessage").textContent =
-      "Saving site details...";
-
-
     const siteId =
       siteIdInput.value.trim();
-
 
     const model =
       getCurrentModel();
 
-
     const currentHmr =
-      Number(
-        $("a").value
-      );
-
+      Number($("a").value);
 
     const currentKwh =
-      Number(
-        $("b").value
-      );
+      Number($("b").value);
 
+    const E2Text =
+      $("e2").textContent
+        .replace(" L", "")
+        .trim();
 
-    // IMPORTANT:
-    // E2 is saved as current_balance.
-    // On the next visit it will be
-    // loaded into E1.
     const E2 =
-      Number(
-        $("e2")
-          .textContent
-          .replace(" L", "")
-      );
+      Number(E2Text);
 
 
     // -------------------------
@@ -1700,7 +1686,7 @@ $("saveForFuture").addEventListener(
     if (!siteId) {
 
       $("saveMessage").textContent =
-        "Please enter a Site ID first.";
+        "Site ID is missing.";
 
       return;
 
@@ -1710,7 +1696,7 @@ $("saveForFuture").addEventListener(
     if (!model) {
 
       $("saveMessage").textContent =
-        "Please select a DG Model.";
+        "DG Model is missing.";
 
       return;
 
@@ -1718,28 +1704,94 @@ $("saveForFuture").addEventListener(
 
 
     if (
-      !Number.isFinite(
-        currentHmr
-      ) ||
-      !Number.isFinite(
-        currentKwh
-      ) ||
-      !Number.isFinite(E2)
+      !Number.isFinite(currentHmr) ||
+      !Number.isFinite(currentKwh)
     ) {
 
       $("saveMessage").textContent =
-        "Please calculate the readings first.";
+        "Please enter valid current HMR and kWh readings.";
 
       return;
 
     }
 
 
+    if (!Number.isFinite(E2)) {
+
+      $("saveMessage").textContent =
+        "Please calculate E2 before requesting to save.";
+
+      return;
+
+    }
+
+
+    // -------------------------
+    // CONFIRMATION
+    // -------------------------
+
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to request saving these details?\n\n" +
+        "The details will be sent to Admin for review and approval."
+      );
+
+
+    if (!confirmed) {
+
+      $("saveMessage").textContent =
+        "Save request cancelled.";
+
+      return;
+
+    }
+
+
+    // -------------------------
+    // DISABLE BUTTON
+    // -------------------------
+
+    const button =
+      $("saveForFuture");
+
+    button.disabled =
+      true;
+
+    $("saveMessage").textContent =
+      "Sending save request to Admin...";
+
+
+    // -------------------------
+    // REQUEST PAYLOAD
+    // -------------------------
+
+    const payload = {
+
+      site_id:
+        siteId,
+
+      model:
+        model,
+
+      current_hmr:
+        currentHmr,
+
+      current_kwh:
+        currentKwh,
+
+      // E2 becomes the
+      // future E1 after approval.
+      current_balance:
+        E2
+
+    };
+
+
     try {
 
       const response =
         await fetch(
-          "/api/save-site",
+          "/api/save-request",
           {
             method:
               "POST",
@@ -1755,29 +1807,7 @@ $("saveForFuture").addEventListener(
             },
 
             body:
-              JSON.stringify({
-
-                site_id:
-                  siteId,
-
-                model:
-                  model,
-
-                current_hmr:
-                  currentHmr,
-
-                current_kwh:
-                  currentKwh,
-
-                // E2 becomes
-                // next E1
-                current_balance:
-                  E2,
-
-                data_source:
-                  "calculator"
-
-              })
+              JSON.stringify(payload)
 
           }
         );
@@ -1813,14 +1843,21 @@ $("saveForFuture").addEventListener(
       }
 
 
-      if (
-        !response.ok ||
-        !data.success
-      ) {
+      if (!response.ok) {
 
         throw new Error(
           data.error ||
-          `Save failed (${response.status}).`
+          `Server error (${response.status}).`
+        );
+
+      }
+
+
+      if (!data.success) {
+
+        throw new Error(
+          data.error ||
+          "Unable to send save request."
         );
 
       }
@@ -1831,13 +1868,15 @@ $("saveForFuture").addEventListener(
       // -------------------------
 
       $("saveMessage").textContent =
-        "✅ Details saved successfully. E2 will be used as E1 next time.";
+        "✓ Save request sent to Admin. Waiting for approval.";
 
 
-      localStorage.setItem(
-        "lastSiteId",
-        siteId
-      );
+      button.textContent =
+        "Request Sent ✓";
+
+
+      button.disabled =
+        true;
 
 
     } catch (error) {
@@ -1846,17 +1885,18 @@ $("saveForFuture").addEventListener(
 
 
       $("saveMessage").textContent =
-        "❌ " +
-        (
-          error?.message ||
-          "Unable to save site details."
-        );
+        error?.message ||
+        "Unable to send save request.";
+
+
+      button.disabled =
+        false;
 
     }
 
   }
 );
-
+      
 
 // ============================================================
 // LOAD LAST SITE ID
