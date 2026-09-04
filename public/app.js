@@ -1,39 +1,79 @@
+// ============================================================
+// GENERATOR FUEL CALCULATOR
+// COMPLETE FRESH APP.JS
+// ============================================================
+
+
+// ============================================================
+// HELPER
+// ============================================================
+
 const $ = (id) =>
   document.getElementById(id);
 
 
-// -------------------------
+// ============================================================
 // ELEMENTS
-// -------------------------
+// ============================================================
 
-const siteIdInput = $("siteId");
-const findSiteButton = $("findSite");
-const findSiteText = $("findSiteText");
-const findSpinner = $("findSpinner");
+const siteIdInput =
+  $("siteId");
 
-const siteSearchCard = $("siteSearchCard");
-const siteSearchMessage = $("siteSearchMessage");
+const findSiteButton =
+  $("findSite");
 
-const siteInfoCard = $("siteInfoCard");
-const calculatorCard = $("calculatorCard");
+const findSiteText =
+  $("findSiteText");
 
-const changeSiteButton = $("changeSite");
+const findSpinner =
+  $("findSpinner");
 
-const activeModel = $("activeModel");
+const siteSearchCard =
+  $("siteSearchCard");
 
+const siteSearchMessage =
+  $("siteSearchMessage");
+
+const siteInfoCard =
+  $("siteInfoCard");
+
+const calculatorCard =
+  $("calculatorCard");
+
+const changeSiteButton =
+  $("changeSite");
+
+const activeModel =
+  $("activeModel");
+
+
+// ============================================================
+// MODEL NAMES
+// ============================================================
 
 const MODEL_NAMES = {
-  eicher10: "Eicher 10 KVA",
-  eicher20: "Eicher 20 KVA",
-  koel20: "KOEL 20 KVA",
-  mahindra20: "Mahindra 20 KVA",
-  mahindra10: "Mahindra 10 KVA"
+
+  eicher10:
+    "Eicher 10 KVA",
+
+  eicher20:
+    "Eicher 20 KVA",
+
+  koel20:
+    "KOEL 20 KVA",
+
+  mahindra20:
+    "Mahindra 20 KVA",
+
+  mahindra10:
+    "Mahindra 10 KVA"
+
 };
 
 
-// -------------------------
+// ============================================================
 // FORMAT NUMBER
-// -------------------------
+// ============================================================
 
 function formatNumber(value) {
 
@@ -42,71 +82,161 @@ function formatNumber(value) {
     value === undefined ||
     value === ""
   ) {
+
     return "—";
+
   }
 
-  const n = Number(value);
+
+  const n =
+    Number(value);
+
 
   if (!Number.isFinite(n)) {
+
     return "—";
+
   }
 
-  return n.toLocaleString("en-IN", {
-    maximumFractionDigits: 4
-  });
+
+  return n.toLocaleString(
+    "en-IN",
+    {
+      maximumFractionDigits: 4
+    }
+  );
+
 }
 
 
-// -------------------------
-// SHOW MESSAGE
-// -------------------------
+// ============================================================
+// SHOW SITE MESSAGE
+// ============================================================
 
-function showSiteMessage(message, type = "") {
+function showSiteMessage(
+  message,
+  type = ""
+) {
 
-  siteSearchMessage.textContent = message;
+  siteSearchMessage.textContent =
+    message;
 
   siteSearchMessage.className =
     "message " + type;
+
 }
 
 
-// -------------------------
-// SET LOADING
-// -------------------------
+// ============================================================
+// FIND BUTTON LOADING
+// ============================================================
 
-function setFindLoading(loading) {
+function setFindLoading(
+  loading
+) {
 
-  findSiteButton.disabled = loading;
+  findSiteButton.disabled =
+    loading;
+
 
   if (loading) {
 
     findSiteText.textContent =
       "Checking...";
 
-    findSpinner.classList.remove("hidden");
+    findSpinner
+      .classList
+      .remove("hidden");
 
   } else {
 
     findSiteText.textContent =
       "Find Site";
 
-    findSpinner.classList.add("hidden");
+    findSpinner
+      .classList
+      .add("hidden");
+
   }
+
 }
 
 
-// -------------------------
+// ============================================================
+// RESET RESULT
+// ============================================================
+
+function resetResult() {
+
+  $("resultCard")
+    .classList
+    .add("hidden");
+
+  $("result").textContent =
+    "—";
+
+  $("z").textContent =
+    "—";
+
+  $("y").textContent =
+    "—";
+
+  $("x").textContent =
+    "—";
+
+  $("l").textContent =
+    "—";
+
+  $("s").textContent =
+    "—";
+
+  $("t").textContent =
+    "—";
+
+  $("band").textContent =
+    "";
+
+}
+
+
+// ============================================================
+// RESET E2
+// ============================================================
+
+function resetE2() {
+
+  $("e2").textContent =
+    "—";
+
+  $("currentBalanceAfterFillingBox")
+    .classList
+    .add("hidden");
+
+}
+
+
+// ============================================================
 // FIND SITE
-// -------------------------
+// ============================================================
 
 async function findSite() {
 
   const siteId =
     siteIdInput.value.trim();
 
-  siteInfoCard.classList.add("hidden");
-  calculatorCard.classList.add("hidden");
-  $("resultCard").classList.add("hidden");
+
+  siteInfoCard
+    .classList
+    .add("hidden");
+
+
+  calculatorCard
+    .classList
+    .add("hidden");
+
+
+  resetResult();
+
 
   if (!siteId) {
 
@@ -118,32 +248,43 @@ async function findSite() {
     siteIdInput.focus();
 
     return;
+
   }
 
+
   setFindLoading(true);
+
 
   showSiteMessage(
     "Checking saved site data..."
   );
 
+
   try {
 
-    const response = await fetch(
-      `/api/site?site_id=${encodeURIComponent(siteId)}`,
-      {
-        method: "GET",
-        headers: {
-          "Accept": "application/json"
-        },
-        cache: "no-store"
-      }
-    );
+    const response =
+      await fetch(
+        `/api/site?site_id=${encodeURIComponent(siteId)}`,
+        {
+          method: "GET",
+
+          headers: {
+            "Accept":
+              "application/json"
+          },
+
+          cache:
+            "no-store"
+        }
+      );
 
 
     const responseText =
       await response.text();
 
+
     let data = {};
+
 
     if (responseText.trim()) {
 
@@ -157,7 +298,9 @@ async function findSite() {
         throw new Error(
           `Server returned invalid JSON (${response.status}).`
         );
+
       }
+
     }
 
 
@@ -172,9 +315,14 @@ async function findSite() {
         "warning-message"
       );
 
-      prepareManualCalculator();
+
+      prepareManualCalculator(
+        false
+      );
+
 
       return;
+
     }
 
 
@@ -184,15 +332,20 @@ async function findSite() {
         data.error ||
         `Server error (${response.status}).`
       );
+
     }
 
 
-    if (!data.success || !data.site) {
+    if (
+      !data.success ||
+      !data.site
+    ) {
 
       throw new Error(
         data.error ||
         "Unable to load site."
       );
+
     }
 
 
@@ -200,7 +353,9 @@ async function findSite() {
     // SITE FOUND
     // -------------------------
 
-    const site = data.site;
+    const site =
+      data.site;
+
 
     localStorage.setItem(
       "lastSiteId",
@@ -210,7 +365,11 @@ async function findSite() {
 
     displaySite(site);
 
-    prepareExistingSiteCalculator(site);
+
+    prepareExistingSiteCalculator(
+      site
+    );
+
 
     showSiteMessage(
       "✓ Existing site data loaded automatically.",
@@ -220,24 +379,35 @@ async function findSite() {
 
   } catch (error) {
 
+    console.error(error);
+
+
     showSiteMessage(
       error?.message ||
       "Unable to connect to the site database.",
       "error-message"
     );
 
+
   } finally {
 
     setFindLoading(false);
+
   }
+
 }
 
 
-// -------------------------
+// ============================================================
 // DISPLAY SITE
-// -------------------------
+// ============================================================
 
 function displaySite(site) {
+
+  // Store model directly on site card
+  siteInfoCard.dataset.model =
+    site.model || "";
+
 
   const modelName =
     MODEL_NAMES[site.model] ||
@@ -247,269 +417,503 @@ function displaySite(site) {
 
   $("displaySiteName").textContent =
     site.site_name ||
-    site.site_id;
+    site.site_id ||
+    "—";
+
 
   $("displayModel").textContent =
     modelName;
 
+
+  // IMPORTANT:
+  // HMR comes from current_hmr
   $("displayHmr").textContent =
-    formatNumber(site.current_hmr);
+    formatNumber(
+      site.current_hmr
+    );
 
+
+  // IMPORTANT:
+  // kWh comes from current_kwh
   $("displayKwh").textContent =
-    formatNumber(site.current_kwh);
+    formatNumber(
+      site.current_kwh
+    );
 
+
+  // current_balance is the latest
+  // saved E2 and therefore becomes
+  // the next calculation's E1.
   $("displayBalance").textContent =
     `${formatNumber(site.current_balance)} L`;
 
 
-  siteInfoCard.classList.remove("hidden");
+  siteInfoCard
+    .classList
+    .remove("hidden");
+
 }
 
-// -------------------------
-// EXISTING SITE CALCULATOR
-// -------------------------
 
-function prepareExistingSiteCalculator(site) {
-  window.calculatorIncognito = false;
-  $("manualModelField").classList.add("hidden");
+// ============================================================
+// EXISTING SITE CALCULATOR
+// ============================================================
+
+function prepareExistingSiteCalculator(
+  site
+) {
+
+  window.calculatorIncognito =
+    false;
+
+
+  // Existing site already has model
+  $("manualModelField")
+    .classList
+    .add("hidden");
+
+
   activeModel.textContent =
     MODEL_NAMES[site.model] ||
     site.model ||
     "Unknown";
 
 
-  // Saved D1 values are PREVIOUS readings
+  // -------------------------
+  // PREVIOUS READINGS
+  // -------------------------
+
+  // C = previous HMR
   $("c").value =
     site.current_hmr ?? "";
 
+
+  // D = previous kWh
   $("d").value =
     site.current_kwh ?? "";
 
-  $("e").value =
+
+  // E1 = previous balance
+  // after filling.
+  // This is the saved E2
+  // from the previous cycle.
+  $("e1").value =
     site.current_balance ?? "";
 
 
-  // Current readings must be entered by the user
-  $("a").value = "";
-  $("b").value = "";
+  // -------------------------
+  // CURRENT READINGS
+  // -------------------------
+
+  $("a").value =
+    "";
+
+  $("b").value =
+    "";
+
+  $("q1").value =
+    "";
+
+  $("q2").value =
+    "";
 
 
-  // Reset fuel filling
-  $("fuelFilling").value = "";
+  resetE2();
+
+  resetResult();
 
 
-  // Hide old balance-after-filling result
-  $("balanceAfterFillingBox")
+  $("saveForFuture")
     .classList
     .add("hidden");
 
-  $("balanceAfterFilling").textContent =
-    "—";
+
+  $("saveMessage")
+    .textContent =
+    "";
 
 
-  $("calculatorDescription").textContent =
-    "Previous HMR, kWh and balance were loaded from your saved site data. Enter the current meter readings.";
+  $("calculatorDescription")
+    .textContent =
+    "Previous HMR, kWh and balance after filling were loaded automatically. Enter the current readings and balance.";
 
 
-  calculatorCard.classList.remove("hidden");
+  calculatorCard
+    .classList
+    .remove("hidden");
 
 
-  setTimeout(() => {
-    $("a").focus();
-  }, 150);
+  setTimeout(
+    () => {
+      $("a").focus();
+    },
+    150
+  );
+
 }
 
 
-// -------------------------
-// -------------------------
+// ============================================================
 // MANUAL / INCOGNITO CALCULATOR
-// -------------------------
+// ============================================================
 
- function prepareManualCalculator(isIncognito = false) {
-   window.calculatorIncognito = isIncognito;
-  $("manualModelField").classList.remove("hidden");
+function prepareManualCalculator(
+  isIncognito = false
+) {
+
+  window.calculatorIncognito =
+    isIncognito;
+
+
+  $("manualModelField")
+    .classList
+    .remove("hidden");
+
 
   delete siteInfoCard.dataset.model;
+
 
   activeModel.textContent =
     "Manual Selection";
 
 
-  $("calculatorDescription").textContent =
-    "Enter all generator readings manually. Nothing will be saved to D1.";
+  $("calculatorDescription")
+    .textContent =
+    isIncognito
+      ? "Manual / Incognito mode. Nothing will be saved to D1."
+      : "Enter all generator readings manually.";
 
 
-  // Previous readings
-  $("c").value = "";
-  $("d").value = "";
-  $("e").value = "";
+  // -------------------------
+  // PREVIOUS
+  // -------------------------
+
+  $("c").value =
+    "";
+
+  $("d").value =
+    "";
+
+  $("e1").value =
+    "";
 
 
-  // Current readings
-  $("a").value = "";
-  $("b").value = "";
+  // -------------------------
+  // CURRENT
+  // -------------------------
+
+  $("a").value =
+    "";
+
+  $("b").value =
+    "";
+
+  $("q1").value =
+    "";
+
+  $("q2").value =
+    "";
 
 
-  // Fuel filling
-  $("fuelFilling").value = "";
+  $("manualModel").value =
+    "";
 
 
-  // Reset balance-after-filling display
-  $("balanceAfterFilling").textContent =
-    "—";
+  resetE2();
 
-  $("balanceAfterFillingBox")
+  resetResult();
+
+
+  $("saveForFuture")
     .classList
     .add("hidden");
 
 
-  // Hide old result
-  $("resultCard")
+  $("saveMessage")
+    .textContent =
+    "";
+
+  $("error")
+    .textContent =
+    "";
+
+
+  calculatorCard
     .classList
-    .add("hidden");
-
-  $("error").textContent = "";
+    .remove("hidden");
 
 
-  calculatorCard.classList.remove("hidden");
+  setTimeout(
+    () => {
+      $("manualModel").focus();
+    },
+    150
+  );
 
-
-  setTimeout(() => {
-    $("a").focus();
-  }, 150);
 }
 
 
-// -------------------------
-// CHANGE SITE
-// -------------------------
+// ============================================================
+// GET CURRENT MODEL
+// ============================================================
 
-changeSiteButton.addEventListener(
-  "click",
-  () => {
+function getCurrentModel() {
 
-    siteInfoCard.classList.add("hidden");
-    calculatorCard.classList.add("hidden");
-    $("resultCard").classList.add("hidden");
+  const siteModel =
+    siteInfoCard.dataset.model;
 
-    siteSearchMessage.textContent = "";
 
-    siteIdInput.focus();
+  if (siteModel) {
+
+    return siteModel;
+
   }
-);
 
 
-// -------------------------
-// FIND BUTTON
-// -------------------------
+  return $("manualModel").value;
+
+}
+
+
+// ============================================================
+// FIND SITE BUTTON
+// ============================================================
 
 findSiteButton.addEventListener(
   "click",
   findSite
 );
 
-// -------------------------
-// INCOGNITO / MANUAL MODE
-// -------------------------
 
-const incognitoModeButton =
-  $("incognitoMode");
-
-incognitoModeButton.addEventListener(
-  "click",
-  () => {
-
-    siteInfoCard.classList.add("hidden");
-
-    $("resultCard")
-      .classList
-      .add("hidden");
-
-    siteSearchMessage.textContent = "";
-
-    prepareManualCalculator(true);
-  }
-);
-
-
-
-// -------------------------
-// ENTER KEY
-// -------------------------
+// ============================================================
+// ENTER KEY ON SITE ID
+// ============================================================
 
 siteIdInput.addEventListener(
   "keydown",
   (event) => {
 
-    if (event.key === "Enter") {
+    if (
+      event.key === "Enter"
+    ) {
+
       event.preventDefault();
+
       findSite();
+
     }
 
   }
 );
 
 
-// -------------------------
+// ============================================================
+// CHANGE SITE
+// ============================================================
+
+changeSiteButton.addEventListener(
+  "click",
+  () => {
+
+    siteInfoCard
+      .classList
+      .add("hidden");
+
+
+    calculatorCard
+      .classList
+      .add("hidden");
+
+
+    resetResult();
+
+
+    siteSearchMessage
+      .textContent =
+      "";
+
+
+    siteIdInput.focus();
+
+  }
+);
+
+
+// ============================================================
+// INCOGNITO
+// ============================================================
+
+const incognitoModeButton =
+  $("incognitoMode");
+
+
+incognitoModeButton.addEventListener(
+  "click",
+  () => {
+
+    siteInfoCard
+      .classList
+      .add("hidden");
+
+
+    siteSearchMessage
+      .textContent =
+      "";
+
+
+    prepareManualCalculator(
+      true
+    );
+
+  }
+);
+
+
+// ============================================================
 // CALCULATE
-// -------------------------
+// ============================================================
 
 $("calculate").addEventListener(
   "click",
   async () => {
 
-    $("error").textContent = "";
+    $("error").textContent =
+      "";
+
+
+    // -------------------------
+    // MODEL
+    // -------------------------
 
     const selectedModel =
       getCurrentModel();
 
+
     if (!selectedModel) {
+
       $("error").textContent =
         "Please select a DG Model.";
 
+
       $("manualModel").focus();
 
+
       return;
+
     }
 
+
     // -------------------------
-    // E1 · Previous balance after filling
+    // READINGS
     // -------------------------
 
+    const A =
+      Number($("a").value);
+
+
+    const B =
+      Number($("b").value);
+
+
+    const C =
+      Number($("c").value);
+
+
+    const D =
+      Number($("d").value);
+
+
+    // E1
     const E1 =
-      Number($("e1").value || 0);
+      Number($("e1").value);
 
-    // -------------------------
-    // Q1 · Current balance
-    // -------------------------
 
+    // Q1
     const Q1 =
-      Number($("q1").value || 0);
+      Number($("q1").value);
 
-    // -------------------------
-    // Q2 · Fuel filling
-    // -------------------------
 
+    // Q2
     const Q2 =
-      Number($("q2").value || 0);
+      Number($("q2").value);
+
 
     // -------------------------
-    // E2 · Current balance after filling
+    // VALIDATION
+    // -------------------------
+
+    if (
+      !Number.isFinite(A) ||
+      !Number.isFinite(B) ||
+      !Number.isFinite(C) ||
+      !Number.isFinite(D)
+    ) {
+
+      $("error").textContent =
+        "Please enter valid HMR and kWh readings.";
+
+      return;
+
+    }
+
+
+    if (
+      !Number.isFinite(E1) ||
+      !Number.isFinite(Q1) ||
+      !Number.isFinite(Q2)
+    ) {
+
+      $("error").textContent =
+        "Please enter valid E1, Q1 and Q2 values.";
+
+      return;
+
+    }
+
+
+    if (
+      A <= C
+    ) {
+
+      $("error").textContent =
+        "Current HMR must be greater than Previous HMR.";
+
+      return;
+
+    }
+
+
+    if (
+      B < D
+    ) {
+
+      $("error").textContent =
+        "Current kWh cannot be lower than Previous kWh.";
+
+      return;
+
+    }
+
+
+    // -------------------------
+    // E2
     // -------------------------
 
     const E2 =
       Q1 + Q2;
 
-    // Show E2
+
     $("e2").textContent =
       E2.toFixed(2) + " L";
+
 
     $("currentBalanceAfterFillingBox")
       .classList
       .remove("hidden");
 
+
     // -------------------------
-    // SEND CALCULATION
+    // SEND TO WORKER
     // -------------------------
 
     const payload = {
@@ -518,21 +922,24 @@ $("calculate").addEventListener(
         selectedModel,
 
       A:
-        $("a").value,
+        A,
 
       B:
-        $("b").value,
+        B,
 
       C:
-        $("c").value,
+        C,
 
       D:
-        $("d").value,
+        D,
 
-      // E = E1
+      // IMPORTANT:
+      // Worker E = E1
       E:
         E1
+
     };
+
 
     try {
 
@@ -540,40 +947,55 @@ $("calculate").addEventListener(
         await fetch(
           "/api/calculate",
           {
-            method: "POST",
+            method:
+              "POST",
 
             headers: {
+
               "Content-Type":
                 "application/json",
 
               "Accept":
                 "application/json"
+
             },
 
             body:
               JSON.stringify(payload)
+
           }
         );
+
 
       const responseText =
         await res.text();
 
-      let data = {};
 
-      if (responseText.trim()) {
+      let data =
+        {};
+
+
+      if (
+        responseText.trim()
+      ) {
 
         try {
 
           data =
-            JSON.parse(responseText);
+            JSON.parse(
+              responseText
+            );
 
         } catch {
 
           throw new Error(
             `Server returned invalid JSON (${res.status}).`
           );
+
         }
+
       }
+
 
       if (!res.ok) {
 
@@ -581,7 +1003,9 @@ $("calculate").addEventListener(
           data.error ||
           `Server Error (${res.status})`
         );
+
       }
+
 
       if (!data.success) {
 
@@ -589,94 +1013,73 @@ $("calculate").addEventListener(
           data.error ||
           "Calculation failed."
         );
+
       }
 
+
       // -------------------------
-      // DISPLAY CALCULATION
+      // SHOW Z
       // -------------------------
 
       $("z").textContent =
-        formatNumber(data.Z);
+        Number(data.Z)
+          .toFixed(4);
+
+
+      // -------------------------
+      // SHOW Y
+      // -------------------------
 
       $("y").textContent =
-        formatNumber(data.Y);
+        Number(data.Y)
+          .toFixed(4);
+
+
+      // -------------------------
+      // SHOW X
+      // -------------------------
 
       $("x").textContent =
-        formatNumber(data.X);
+        Number(data.X)
+          .toFixed(4);
+
+
+      // -------------------------
+      // SHOW L
+      // -------------------------
 
       $("l").textContent =
-        formatNumber(data.L);
-
-      $("s").textContent =
-        formatNumber(data.S);
-
-      $("result").textContent =
-        formatNumber(data.T);
-
-      $("resultCard")
-        .classList
-        .remove("hidden");
-
-      // -------------------------
-      // SAVE DETAILS BUTTON
-      // -------------------------
-
-      if (!window.calculatorIncognito) {
-
-        $("saveDetails")
-          .classList
-          .remove("hidden");
-      }
-
-    } catch (err) {
-
-      console.error(err);
-
-      $("error").textContent =
-        err.message ||
-        "Calculation failed.";
-    }
-  }
-);
-
-
-      // -------------------------
-      // SHOW RESULT
-      // -------------------------
-
-      $("resultCard")
-        .classList
-        .remove("hidden");
-
-
-      $("result").textContent =
-        Number(data.T).toFixed(2);
-
-
-      $("z").textContent =
-        Number(data.Z).toFixed(4);
-
-
-      $("y").textContent =
-        Number(data.Y).toFixed(4);
-
-
-      $("x").textContent =
-        Number(data.X).toFixed(4);
-
-
-      $("l").textContent =
-        Number(data.L).toFixed(2) +
+        Number(data.L)
+          .toFixed(2) +
         " L/hr";
 
 
+      // -------------------------
+      // SHOW S
+      // -------------------------
+
       $("s").textContent =
-        Number(data.S).toFixed(2);
+        Number(data.S)
+          .toFixed(2);
+
+
+      // -------------------------
+      // SHOW T
+      // -------------------------
+
+      $("result").textContent =
+        Number(data.T)
+          .toFixed(2);
 
 
       $("t").textContent =
-        Number(data.T).toFixed(2);
+        Number(data.T)
+          .toFixed(2);
 
+
+      // -------------------------
+      // CHART RANGE
+      // -------------------------
 
       const range =
         data.chart_range;
@@ -696,30 +1099,62 @@ $("calculate").addEventListener(
         $("band").textContent =
           `${data.model}: chart value L = ` +
           `${Number(data.L).toFixed(2)} L/hr.`;
+
       }
 
 
+      // -------------------------
+      // SHOW RESULT
+      // -------------------------
+
+      $("resultCard")
+        .classList
+        .remove("hidden");
+
+
+      // -------------------------
+      // SAVE BUTTON
+      // -------------------------
+
+      if (
+        !window.calculatorIncognito
+      ) {
+
+        $("saveForFuture")
+          .classList
+          .remove("hidden");
+
+      }
+
+
+      $("saveMessage")
+        .textContent =
+        "";
+
+
+      // -------------------------
+      // SCROLL
+      // -------------------------
+
       $("resultCard")
         .scrollIntoView({
-          behavior: "smooth",
-          block: "start"
+          behavior:
+            "smooth",
+
+          block:
+            "start"
         });
-      // -------------------------
-// SHOW SAVE FOR FUTURE
-// -------------------------
-
-if (!window.calculatorIncognito) {
-  $("saveForFuture").classList.remove("hidden");
-}
-
-$("saveMessage").textContent = "";
 
 
     } catch (err) {
 
+      console.error(err);
+
+
       $("resultCard")
         .classList
         .add("hidden");
+
 
       $("error").textContent =
         err?.message ||
@@ -731,76 +1166,701 @@ $("saveMessage").textContent = "";
 );
 
 
-// -------------------------
-// GET CURRENT MODEL
-// -------------------------
-
-function getCurrentModel() {
-
-  const siteModel =
-    siteInfoCard.dataset.model;
-
-  if (siteModel) {
-    return siteModel;
-  }
-
-  return $("manualModel").value;
-}
-
-
-// -------------------------
+// ============================================================
 // CLEAR
-// -------------------------
+// ============================================================
 
 $("clear").addEventListener(
   "click",
   () => {
 
-    $("a").value = "";
-    $("b").value = "";
-    $("c").value = "";
-    $("d").value = "";
-    $("e").value = "";
-    $("fuelFilling").value = "";
-    $("manualModel").value = "";
+    $("a").value =
+      "";
 
-$("balanceAfterFilling").textContent =
-  "—";
+    $("b").value =
+      "";
 
-$("balanceAfterFillingBox")
-  .classList
-  .add("hidden");
+    $("c").value =
+      "";
 
-    $("resultCard")
+    $("d").value =
+      "";
+
+    $("e1").value =
+      "";
+
+    $("q1").value =
+      "";
+
+    $("q2").value =
+      "";
+
+    $("manualModel").value =
+      "";
+
+
+    resetE2();
+
+    resetResult();
+
+
+    $("saveForFuture")
       .classList
       .add("hidden");
 
-    $("error").textContent = "";
+
+    $("error").textContent =
+      "";
+
+    $("saveMessage").textContent =
+      "";
+
 
     $("a").focus();
+
   }
 );
 
 
+// ============================================================
+// SAVE DETAILS FOR FUTURE
+// ============================================================
+
+$("saveForFuture").addEventListener(
+  "click",
+  async () => {
+
+    $("saveMessage").textContent =
+      "Saving site details...";
+
+
+    const siteId =
+      siteIdInput.value.trim();
+
+
+    const model =
+      getCurrentModel();
+
+
+    const currentHmr =
+      Number(
+        $("a").value
+      );
+
+
+    const currentKwh =
+      Number(
+        $("b").value
+      );
+
+
+    // IMPORTANT:
+    // E2 is saved as current_balance.
+    // On the next visit it will be
+    // loaded into E1.
+    const E2 =
+      Number(
+        $("e2")
+          .textContent
+          .replace(" L", "")
+      );
+
 // -------------------------
-// STORE MODEL WHEN SITE FOUND
-// -------------------------
+    // VALIDATION
+    // -------------------------
 
-const originalDisplaySite =
-  displaySite;
+    if (
+      !Number.isFinite(A) ||
+      !Number.isFinite(B) ||
+      !Number.isFinite(C) ||
+      !Number.isFinite(D)
+    ) {
 
-displaySite = function(site) {
+      $("error").textContent =
+        "Please enter valid HMR and kWh readings.";
 
-  siteInfoCard.dataset.model =
-    site.model;
+      return;
 
-  originalDisplaySite(site);
-};
+    }
 
 
-// -------------------------
-// LOAD LAST SITE
-// -------------------------
+    if (
+      !Number.isFinite(E1) ||
+      !Number.isFinite(Q1) ||
+      !Number.isFinite(Q2)
+    ) {
+
+      $("error").textContent =
+        "Please enter valid E1, Q1 and Q2 values.";
+
+      return;
+
+    }
+
+
+    if (
+      A <= C
+    ) {
+
+      $("error").textContent =
+        "Current HMR must be greater than Previous HMR.";
+
+      return;
+
+    }
+
+
+    if (
+      B < D
+    ) {
+
+      $("error").textContent =
+        "Current kWh cannot be lower than Previous kWh.";
+
+      return;
+
+    }
+
+
+    // -------------------------
+    // E2
+    // -------------------------
+
+    const E2 =
+      Q1 + Q2;
+
+
+    $("e2").textContent =
+      E2.toFixed(2) + " L";
+
+
+    $("currentBalanceAfterFillingBox")
+      .classList
+      .remove("hidden");
+
+
+    // -------------------------
+    // SEND TO WORKER
+    // -------------------------
+
+    const payload = {
+
+      model:
+        selectedModel,
+
+      A:
+        A,
+
+      B:
+        B,
+
+      C:
+        C,
+
+      D:
+        D,
+
+      // IMPORTANT:
+      // Worker E = E1
+      E:
+        E1
+
+    };
+
+
+    try {
+
+      const res =
+        await fetch(
+          "/api/calculate",
+          {
+            method:
+              "POST",
+
+            headers: {
+
+              "Content-Type":
+                "application/json",
+
+              "Accept":
+                "application/json"
+
+            },
+
+            body:
+              JSON.stringify(payload)
+
+          }
+        );
+
+
+      const responseText =
+        await res.text();
+
+
+      let data =
+        {};
+
+
+      if (
+        responseText.trim()
+      ) {
+
+        try {
+
+          data =
+            JSON.parse(
+              responseText
+            );
+
+        } catch {
+
+          throw new Error(
+            `Server returned invalid JSON (${res.status}).`
+          );
+
+        }
+
+      }
+
+
+      if (!res.ok) {
+
+        throw new Error(
+          data.error ||
+          `Server Error (${res.status})`
+        );
+
+      }
+
+
+      if (!data.success) {
+
+        throw new Error(
+          data.error ||
+          "Calculation failed."
+        );
+
+      }
+
+
+      // -------------------------
+      // SHOW Z
+      // -------------------------
+
+      $("z").textContent =
+        Number(data.Z)
+          .toFixed(4);
+
+
+      // -------------------------
+      // SHOW Y
+      // -------------------------
+
+      $("y").textContent =
+        Number(data.Y)
+          .toFixed(4);
+
+
+      // -------------------------
+      // SHOW X
+      // -------------------------
+
+      $("x").textContent =
+        Number(data.X)
+          .toFixed(4);
+
+
+      // -------------------------
+      // SHOW L
+      // -------------------------
+
+      $("l").textContent =
+        Number(data.L)
+          .toFixed(2) +
+        " L/hr";
+
+
+      // -------------------------
+      // SHOW S
+      // -------------------------
+
+      $("s").textContent =
+        Number(data.S)
+          .toFixed(2);
+
+
+      // -------------------------
+      // SHOW T
+      // -------------------------
+
+      $("result").textContent =
+        Number(data.T)
+          .toFixed(2);
+
+
+      $("t").textContent =
+        Number(data.T)
+          .toFixed(2);
+
+
+      // -------------------------
+      // CHART RANGE
+      // -------------------------
+
+      const range =
+        data.chart_range;
+
+
+      if (range) {
+
+        $("band").textContent =
+          `${data.model}: X = ` +
+          `${Number(data.X).toFixed(4)} ` +
+          `falls in ${range.from}–${range.to}. ` +
+          `Chart value L = ` +
+          `${Number(data.L).toFixed(2)} L/hr.`;
+
+      } else {
+
+        $("band").textContent =
+          `${data.model}: chart value L = ` +
+          `${Number(data.L).toFixed(2)} L/hr.`;
+
+      }
+
+
+      // -------------------------
+      // SHOW RESULT
+      // -------------------------
+
+      $("resultCard")
+        .classList
+        .remove("hidden");
+
+
+      // -------------------------
+      // SAVE BUTTON
+      // -------------------------
+
+      if (
+        !window.calculatorIncognito
+      ) {
+
+        $("saveForFuture")
+          .classList
+          .remove("hidden");
+
+      }
+
+
+      $("saveMessage")
+        .textContent =
+        "";
+
+
+      // -------------------------
+      // SCROLL
+      // -------------------------
+
+      $("resultCard")
+        .scrollIntoView({
+          behavior:
+            "smooth",
+
+          block:
+            "start"
+        });
+
+
+    } catch (err) {
+
+      console.error(err);
+
+
+      $("resultCard")
+        .classList
+        .add("hidden");
+
+
+      $("error").textContent =
+        err?.message ||
+        "Something went wrong.";
+
+    }
+
+  }
+);
+
+
+// ============================================================
+// CLEAR
+// ============================================================
+
+$("clear").addEventListener(
+  "click",
+  () => {
+
+    $("a").value =
+      "";
+
+    $("b").value =
+      "";
+
+    $("c").value =
+      "";
+
+    $("d").value =
+      "";
+
+    $("e1").value =
+      "";
+
+    $("q1").value =
+      "";
+
+    $("q2").value =
+      "";
+
+    $("manualModel").value =
+      "";
+
+
+    resetE2();
+
+    resetResult();
+
+
+    $("saveForFuture")
+      .classList
+      .add("hidden");
+
+
+    $("error").textContent =
+      "";
+
+    $("saveMessage").textContent =
+      "";
+
+
+    $("a").focus();
+
+  }
+);
+
+
+// ============================================================
+// SAVE DETAILS FOR FUTURE
+// ============================================================
+
+$("saveForFuture").addEventListener(
+  "click",
+  async () => {
+
+    $("saveMessage").textContent =
+      "Saving site details...";
+
+
+    const siteId =
+      siteIdInput.value.trim();
+
+
+    const model =
+      getCurrentModel();
+
+
+    const currentHmr =
+      Number(
+        $("a").value
+      );
+
+
+    const currentKwh =
+      Number(
+        $("b").value
+      );
+
+
+    // IMPORTANT:
+    // E2 is saved as current_balance.
+    // On the next visit it will be
+    // loaded into E1.
+    const E2 =
+      Number(
+        $("e2")
+          .textContent
+          .replace(" L", "")
+      );
+
+
+    // -------------------------
+    // VALIDATION
+    // -------------------------
+
+    if (!siteId) {
+
+      $("saveMessage").textContent =
+        "Please enter a Site ID first.";
+
+      return;
+
+    }
+
+
+    if (!model) {
+
+      $("saveMessage").textContent =
+        "Please select a DG Model.";
+
+      return;
+
+    }
+
+
+    if (
+      !Number.isFinite(
+        currentHmr
+      ) ||
+      !Number.isFinite(
+        currentKwh
+      ) ||
+      !Number.isFinite(E2)
+    ) {
+
+      $("saveMessage").textContent =
+        "Please calculate the readings first.";
+
+      return;
+
+    }
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/save-site",
+          {
+            method:
+              "POST",
+
+            headers: {
+
+              "Content-Type":
+                "application/json",
+
+              "Accept":
+                "application/json"
+
+            },
+
+            body:
+              JSON.stringify({
+
+                site_id:
+                  siteId,
+
+                model:
+                  model,
+
+                current_hmr:
+                  currentHmr,
+
+                current_kwh:
+                  currentKwh,
+
+                // E2 becomes
+                // next E1
+                current_balance:
+                  E2,
+
+                data_source:
+                  "calculator"
+
+              })
+
+          }
+        );
+
+
+      const responseText =
+        await response.text();
+
+
+      let data =
+        {};
+
+
+      if (
+        responseText.trim()
+      ) {
+
+        try {
+
+          data =
+            JSON.parse(
+              responseText
+            );
+
+        } catch {
+
+          throw new Error(
+            `Server returned invalid JSON (${response.status}).`
+          );
+
+        }
+
+      }
+
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+
+        throw new Error(
+          data.error ||
+          `Save failed (${response.status}).`
+        );
+
+      }
+
+
+      // -------------------------
+      // SUCCESS
+      // -------------------------
+
+      $("saveMessage").textContent =
+        "✅ Details saved successfully. E2 will be used as E1 next time.";
+
+
+      localStorage.setItem(
+        "lastSiteId",
+        siteId
+      );
+
+
+    } catch (error) {
+
+      console.error(error);
+
+
+      $("saveMessage").textContent =
+        "❌ " +
+        (
+          error?.message ||
+          "Unable to save site details."
+        );
+
+    }
+
+  }
+);
+
+
+// ============================================================
+// LOAD LAST SITE ID
+// ============================================================
 
 window.addEventListener(
   "DOMContentLoaded",
@@ -811,6 +1871,7 @@ window.addEventListener(
         "lastSiteId"
       );
 
+
     if (lastSite) {
 
       siteIdInput.value =
@@ -820,123 +1881,5 @@ window.addEventListener(
 
   }
 );
-// -------------------------
-// SAVE DETAILS FOR FUTURE
-// -------------------------
 
-$("saveForFuture").addEventListener(
-  "click",
-  async () => {
-
-    $("saveMessage").textContent =
-      "Saving site details...";
-
-    const siteId =
-      siteIdInput.value.trim();
-
-    const model =
-      getCurrentModel();
-
-    const currentHmr =
-      Number($("a").value);
-
-    const currentKwh =
-      Number($("b").value);
-
-    const balanceAfterFilling =
-      Number(
-        $("balanceAfterFilling")
-          .textContent
-          .replace(" L", "")
-      );
-
-    if (!siteId) {
-      $("saveMessage").textContent =
-        "Please enter a Site ID first.";
-      return;
-    }
-
-    if (!model) {
-      $("saveMessage").textContent =
-        "Please select a DG Model.";
-      return;
-    }
-
-    if (
-      !Number.isFinite(currentHmr) ||
-      !Number.isFinite(currentKwh) ||
-      !Number.isFinite(balanceAfterFilling)
-    ) {
-      $("saveMessage").textContent =
-        "Please complete the readings and calculate first.";
-      return;
-    }
-
-    try {
-
-      const response = await fetch(
-        "/api/save-site",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-            "Accept":
-              "application/json"
-          },
-
-          body: JSON.stringify({
-            site_id: siteId,
-            model: model,
-            current_hmr: currentHmr,
-            current_kwh: currentKwh,
-            current_balance:
-              balanceAfterFilling,
-            data_source:
-              "calculator"
-          })
-        }
-      );
-
-      const responseText =
-        await response.text();
-
-      let data = {};
-
-      if (responseText.trim()) {
-        try {
-          data = JSON.parse(responseText);
-        } catch {
-          throw new Error(
-            `Server returned invalid JSON (${response.status}).`
-          );
-        }
-      }
-
-      if (!response.ok || !data.success) {
-        throw new Error(
-          data.error ||
-          `Save failed (${response.status}).`
-        );
-      }
-
-      $("saveMessage").textContent =
-        "✅ Details saved successfully for future calculations.";
-
-      localStorage.setItem(
-        "lastSiteId",
-        siteId
-      );
-
-    } catch (error) {
-
-      $("saveMessage").textContent =
-        "❌ " +
-        (
-          error?.message ||
-          "Unable to save site details."
-        );
-    }
-  }
-);
+     
