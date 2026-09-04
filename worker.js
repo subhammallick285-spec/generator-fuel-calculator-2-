@@ -1397,6 +1397,15 @@ if (
 ) {
   return saveCalculatorSite(request, env);
 }
+
+
+// Save request from calculator
+if (
+  path === "/api/save-request" &&
+  method === "POST"
+) {
+  return createSaveRequest(request, env);
+}
     // Update site
     if (
       path === "/api/admin/update-site" &&
