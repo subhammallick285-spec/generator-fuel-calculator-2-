@@ -10,317 +10,54 @@
     content="width=device-width, initial-scale=1.0"
   >
 
+  <meta
+    name="theme-color"
+    content="#050817"
+  >
+
   <title>Generator Admin</title>
 
-body.admin-locked {
-  overflow: hidden;
-}
 
-body.admin-locked > *:not(#adminGate) {
-  visibility: hidden;
-}
-
-#adminGate {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 20px;
-
-  background:
-    radial-gradient(
-      circle at 50% 40%,
-      rgba(0,217,255,0.12),
-      transparent 35%
-    ),
-    linear-gradient(
-      135deg,
-      #030512,
-      #080d25,
-      #050817
-    );
-
-  opacity: 1;
-  visibility: visible;
-
-  transition:
-    opacity 0.65s ease,
-    visibility 0.65s ease;
-}
-
-#adminGate.unlocking {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.admin-gate-box {
-  width: min(100%, 390px);
-
-  padding: 30px 22px 24px;
-
-  text-align: center;
-
-  border-radius: 24px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(20,29,68,0.94),
-      rgba(8,13,34,0.92)
-    );
-
-  border:
-    1px solid
-    rgba(91,126,255,0.35);
-
-  box-shadow:
-    0 25px 80px rgba(0,0,0,0.55),
-    0 0 45px rgba(0,217,255,0.10);
-
-  backdrop-filter: blur(22px);
-
-  animation:
-    adminGateEnter
-    0.75s
-    cubic-bezier(.16,1,.3,1);
-}
-
-.admin-lock {
-  width: 78px;
-  height: 78px;
-
-  margin: 0 auto 18px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 24px;
-
-  font-size: 34px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(0,217,255,0.18),
-      rgba(155,53,255,0.28)
-    );
-
-  border:
-    1px solid
-    rgba(255,255,255,0.12);
-
-  box-shadow:
-    0 0 25px rgba(0,217,255,0.20),
-    0 0 55px rgba(155,53,255,0.12);
-
-  animation:
-    lockPulse
-    2.5s
-    ease-in-out
-    infinite;
-}
-
-.admin-lock.unlocked {
-  animation:
-    unlockPop
-    0.55s
-    cubic-bezier(.16,1,.3,1);
-}
-
-.admin-gate-title {
-  margin: 0;
-
-  font-size: 25px;
-  font-weight: 800;
-
-  color: white;
-}
-
-.admin-gate-subtitle {
-  margin: 8px 0 22px;
-
-  color: #9ca8c7;
-
-  font-size: 13px;
-}
-
-#adminGateKey {
-  width: 100%;
-
-  padding: 14px 15px;
-
-  border-radius: 12px;
-
-  border:
-    1px solid
-    rgba(110,130,190,0.30);
-
-  background:
-    rgba(3,7,20,0.80);
-
-  color: white;
-
-  font-size: 16px;
-
-  text-align: center;
-
-  letter-spacing: 2px;
-
-  outline: none;
-}
-
-#adminGateKey:focus {
-  border-color: #00d9ff;
-
-  box-shadow:
-    0 0 0 3px rgba(0,217,255,0.08),
-    0 0 22px rgba(0,217,255,0.15);
-}
-
-#adminGateButton {
-  margin-top: 14px;
-}
-
-#adminGateMessage {
-  min-height: 20px;
-
-  margin-top: 10px;
-
-  font-size: 12px;
-  font-weight: 600;
-}
-
-#adminGateMessage.error {
-  color: #ff6478;
-}
-
-#adminGateMessage.success {
-  color: #00e6a8;
-}
-
-@keyframes adminGateEnter {
-
-  from {
-    opacity: 0;
-    transform:
-      translateY(25px)
-      scale(0.94);
-    filter: blur(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform:
-      translateY(0)
-      scale(1);
-    filter: blur(0);
-  }
-}
-
-@keyframes lockPulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow:
-      0 0 25px rgba(0,217,255,0.20),
-      0 0 55px rgba(155,53,255,0.12);
-  }
-
-  50% {
-    transform: scale(1.04);
-    box-shadow:
-      0 0 35px rgba(0,217,255,0.38),
-      0 0 70px rgba(155,53,255,0.22);
-  }
-}
-
-@keyframes unlockPop {
-
-  0% {
-    transform: scale(1);
-  }
-
-  45% {
-    transform: scale(1.18);
-  }
-
-  100% {
-    transform: scale(1);
-  }
-}
+  <!-- =======================================================
+       ADMIN KEY GATE + MAIN PAGE CSS
+  ======================================================== -->
 
   <style>
-  </head>
 
-<body>
+    :root {
+      --bg: #050817;
+      --bg2: #080d25;
 
-<!-- =======================================================
-     ADMIN KEY GATE
-======================================================= -->
+      --card: rgba(13, 20, 47, 0.82);
+      --card-strong: rgba(17, 25, 57, 0.94);
 
-<div id="adminGate">
+      --border: rgba(110, 130, 190, 0.20);
+      --border-blue: rgba(0, 217, 255, 0.28);
 
-  <div class="admin-gate-box">
+      --text: #ffffff;
+      --muted: #9ca8c7;
 
-    <div id="adminLock" class="admin-lock">
-      🔒
-    </div>
+      --cyan: #00d9ff;
+      --purple: #9b35ff;
+      --green: #00e6a8;
+      --red: #ff6478;
+      --yellow: #ffd166;
 
-    <h2 class="admin-gate-title">
-      Admin Access
-    </h2>
+      --shadow:
+        0 20px 60px rgba(0, 0, 0, 0.35);
+    }
 
-    <p class="admin-gate-subtitle">
-      Enter your admin key to continue
-    </p>
-
-    <input
-      type="password"
-      id="adminGateKey"
-      placeholder="Admin Key"
-      autocomplete="off"
-      autocapitalize="none"
-      spellcheck="false"
-    >
-
-    <button
-      type="button"
-      id="adminGateButton"
-    >
-      🔓 UNLOCK ADMIN
-    </button>
-
-    <div id="adminGateMessage"></div>
-
-  </div>
-
-</div>
-
-<script>
-  document.body.classList.add("admin-locked");
-</script>
-
-  <div class="background">
-  </div>
-
-    /* =========================================================
-       RESET
-    ========================================================= */
 
     * {
       box-sizing: border-box;
     }
 
+
     html {
-      scroll-behavior: smooth;
+      min-height: 100%;
+      background: var(--bg);
     }
+
 
     body {
       margin: 0;
@@ -334,23 +71,69 @@ body.admin-locked > *:not(#adminGate) {
         "Segoe UI",
         sans-serif;
 
-      color: #f7f9ff;
+      color: var(--text);
 
       background:
         radial-gradient(
-          circle at 10% 10%,
-          rgba(0, 217, 255, 0.16),
-          transparent 25%
-        ),
-        radial-gradient(
-          circle at 90% 10%,
-          rgba(155, 53, 255, 0.20),
-          transparent 28%
-        ),
-        radial-gradient(
-          circle at 50% 100%,
-          rgba(255, 63, 199, 0.12),
+          circle at 15% 10%,
+          rgba(0, 217, 255, 0.07),
           transparent 30%
+        ),
+        radial-gradient(
+          circle at 85% 20%,
+          rgba(155, 53, 255, 0.08),
+          transparent 32%
+        ),
+        var(--bg);
+
+      overflow-x: hidden;
+    }
+
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+
+    button {
+      cursor: pointer;
+    }
+
+
+    /* =======================================================
+       ADMIN KEY LOCK
+    ======================================================== */
+
+    body.admin-locked {
+      overflow: hidden;
+    }
+
+
+    body.admin-locked > *:not(#adminGate) {
+      visibility: hidden;
+    }
+
+
+    #adminGate {
+      position: fixed;
+      inset: 0;
+
+      z-index: 99999;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 20px;
+
+      background:
+        radial-gradient(
+          circle at 50% 40%,
+          rgba(0, 217, 255, 0.12),
+          transparent 35%
         ),
         linear-gradient(
           135deg,
@@ -359,1286 +142,1086 @@ body.admin-locked > *:not(#adminGate) {
           #050817
         );
 
-      overflow-x: hidden;
+      opacity: 1;
+      visibility: visible;
+
+      transition:
+        opacity 0.65s ease,
+        visibility 0.65s ease;
     }
 
 
-    /* =========================================================
-       VARIABLES
-    ========================================================= */
-
-    :root {
-
-      --card:
-        linear-gradient(
-          145deg,
-          rgba(20, 29, 68, 0.86),
-          rgba(8, 13, 34, 0.80)
-        );
-
-      --border:
-        rgba(91, 126, 255, 0.28);
-
-      --text:
-        #f7f9ff;
-
-      --muted:
-        #9ca8c7;
-
-      --cyan:
-        #00d9ff;
-
-      --blue:
-        #4d7cff;
-
-      --purple:
-        #9b35ff;
-
-      --pink:
-        #ff3fc7;
-
-      --green:
-        #00e6a8;
-
-      --red:
-        #ff6478;
-
-      --yellow:
-        #ffc857;
-    }
-
-
-    /* =========================================================
-       BACKGROUND GLOW
-    ========================================================= */
-
-    body::before {
-
-      content: "";
-
-      position: fixed;
-
-      width: 420px;
-      height: 420px;
-
-      left: -180px;
-      top: 80px;
-
-      background:
-        radial-gradient(
-          circle,
-          rgba(0, 217, 255, 0.25),
-          transparent 65%
-        );
-
-      filter: blur(20px);
-
-      animation:
-        floatOne 9s ease-in-out infinite;
-
+    #adminGate.unlocking {
+      opacity: 0;
+      visibility: hidden;
       pointer-events: none;
-
-      z-index: -2;
     }
 
 
-    body::after {
+    .admin-gate-box {
+      width: min(100%, 390px);
 
-      content: "";
-
-      position: fixed;
-
-      width: 480px;
-      height: 480px;
-
-      right: -220px;
-      bottom: 20px;
-
-      background:
-        radial-gradient(
-          circle,
-          rgba(155, 53, 255, 0.25),
-          transparent 65%
-        );
-
-      filter: blur(25px);
-
-      animation:
-        floatTwo 11s ease-in-out infinite;
-
-      pointer-events: none;
-
-      z-index: -2;
-    }
-
-
-    @keyframes floatOne {
-
-      0%,
-      100% {
-        transform:
-          translate(0, 0)
-          scale(1);
-      }
-
-      50% {
-        transform:
-          translate(100px, 70px)
-          scale(1.15);
-      }
-    }
-
-
-    @keyframes floatTwo {
-
-      0%,
-      100% {
-        transform:
-          translate(0, 0)
-          scale(1);
-      }
-
-      50% {
-        transform:
-          translate(-80px, -70px)
-          scale(1.15);
-      }
-    }
-
-
-    /* =========================================================
-       PARTICLES
-    ========================================================= */
-
-    .particles {
-
-      position: fixed;
-
-      inset: 0;
-
-      pointer-events: none;
-
-      z-index: -1;
-
-      overflow: hidden;
-    }
-
-
-    .particle {
-
-      position: absolute;
-
-      width: 4px;
-      height: 4px;
-
-      border-radius: 50%;
-
-      background: white;
-
-      box-shadow:
-        0 0 8px #00d9ff,
-        0 0 18px #4d7cff;
-
-      animation:
-        particleMove
-        linear
-        infinite;
-
-      opacity: 0.75;
-    }
-
-
-    .particle:nth-child(1) {
-      left: 8%;
-      top: 18%;
-      animation-duration: 8s;
-    }
-
-    .particle:nth-child(2) {
-      left: 22%;
-      top: 70%;
-      animation-duration: 11s;
-    }
-
-    .particle:nth-child(3) {
-      left: 75%;
-      top: 20%;
-      animation-duration: 9s;
-    }
-
-    .particle:nth-child(4) {
-      left: 90%;
-      top: 65%;
-      animation-duration: 12s;
-    }
-
-    .particle:nth-child(5) {
-      left: 55%;
-      top: 85%;
-      animation-duration: 10s;
-    }
-
-    .particle:nth-child(6) {
-      left: 42%;
-      top: 12%;
-      animation-duration: 13s;
-    }
-
-
-    @keyframes particleMove {
-
-      0% {
-        transform:
-          translateY(0)
-          scale(1);
-
-        opacity: 0.3;
-      }
-
-      50% {
-        transform:
-          translateY(-80px)
-          scale(1.5);
-
-        opacity: 1;
-      }
-
-      100% {
-        transform:
-          translateY(0)
-          scale(1);
-
-        opacity: 0.3;
-      }
-    }
-
-
-    /* =========================================================
-       MAIN
-    ========================================================= */
-
-    .container {
-
-      width: 100%;
-
-      max-width: 1100px;
-
-      margin: auto;
-
-      padding:
-        24px 16px 50px;
-    }
-
-
-    /* =========================================================
-       HEADER
-    ========================================================= */
-
-    .header {
+      padding: 30px 22px 24px;
 
       text-align: center;
 
-      margin-bottom: 26px;
-    }
-
-
-    .logo {
-
-      width: 64px;
-      height: 64px;
-
-      margin:
-        0 auto 12px;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      border-radius: 20px;
+      border-radius: 24px;
 
       background:
         linear-gradient(
-          135deg,
-          rgba(0, 217, 255, 0.20),
-          rgba(155, 53, 255, 0.30)
+          145deg,
+          rgba(20, 29, 68, 0.94),
+          rgba(8, 13, 34, 0.92)
         );
 
       border:
         1px solid
-        rgba(255,255,255,0.12);
+        rgba(91, 126, 255, 0.35);
 
       box-shadow:
-        0 0 25px
-        rgba(0,217,255,0.25),
+        0 25px 80px rgba(0, 0, 0, 0.55),
+        0 0 45px rgba(0, 217, 255, 0.10);
 
-        0 0 45px
-        rgba(155,53,255,0.18);
-
-      font-size: 30px;
+      backdrop-filter: blur(22px);
 
       animation:
-        logoGlow 3s
+        adminGateEnter
+        0.75s
+        cubic-bezier(.16, 1, .3, 1);
+    }
+
+
+    .admin-lock {
+      width: 78px;
+      height: 78px;
+
+      margin: 0 auto 18px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 24px;
+
+      font-size: 34px;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(0, 217, 255, 0.18),
+          rgba(155, 53, 255, 0.28)
+        );
+
+      border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+      box-shadow:
+        0 0 25px rgba(0, 217, 255, 0.20),
+        0 0 55px rgba(155, 53, 255, 0.12);
+
+      animation:
+        lockPulse
+        2.5s
         ease-in-out
         infinite;
     }
 
 
-    @keyframes logoGlow {
-
-      0%,
-      100% {
-
-        box-shadow:
-          0 0 20px
-          rgba(0,217,255,0.25),
-
-          0 0 40px
-          rgba(155,53,255,0.15);
-      }
-
-      50% {
-
-        box-shadow:
-          0 0 35px
-          rgba(0,217,255,0.50),
-
-          0 0 65px
-          rgba(155,53,255,0.30);
-      }
+    .admin-lock.unlocked {
+      animation:
+        unlockPop
+        0.55s
+        cubic-bezier(.16, 1, .3, 1);
     }
 
 
-    h1 {
-
+    .admin-gate-title {
       margin: 0;
 
-      font-size:
-        clamp(28px, 6vw, 48px);
-
+      font-size: 25px;
       font-weight: 800;
 
-      background:
-        linear-gradient(
-          90deg,
-          #ffffff,
-          #56dfff,
-          #a95cff,
-          #ffffff
-        );
-
-      background-size:
-        250% auto;
-
-      -webkit-background-clip:
-        text;
-
-      background-clip:
-        text;
-
-      color:
-        transparent;
-
-      animation:
-        gradientText
-        5s linear infinite;
+      color: white;
     }
 
 
-    @keyframes gradientText {
+    .admin-gate-subtitle {
+      margin: 8px 0 22px;
 
-      to {
-        background-position:
-          250% center;
-      }
-    }
-
-
-    .subtitle {
-
-      color:
-        var(--muted);
-
-      margin-top: 7px;
+      color: #9ca8c7;
 
       font-size: 13px;
-
-      line-height: 1.5;
     }
 
 
-    /* =========================================================
-       GRID
-    ========================================================= */
+    #adminGateKey {
+      width: 100%;
 
-    .grid {
+      padding: 14px 15px;
 
-      display: grid;
-
-      grid-template-columns:
-        1fr 1fr;
-
-      gap: 18px;
-    }
-
-
-    .full {
-
-      grid-column:
-        1 / -1;
-    }
-
-
-    /* =========================================================
-       CARDS
-    ========================================================= */
-
-    .card {
-
-      position: relative;
-
-      background:
-        var(--card);
+      border-radius: 12px;
 
       border:
         1px solid
-        var(--border);
+        rgba(110, 130, 190, 0.30);
 
-      border-radius: 20px;
+      background:
+        rgba(3, 7, 20, 0.80);
 
-      padding: 20px;
+      color: white;
 
-      backdrop-filter:
-        blur(18px);
+      font-size: 16px;
 
-      -webkit-backdrop-filter:
-        blur(18px);
+      text-align: center;
+
+      letter-spacing: 2px;
+
+      outline: none;
+    }
+
+
+    #adminGateKey::placeholder {
+      color: #687493;
+    }
+
+
+    #adminGateKey:focus {
+      border-color: var(--cyan);
 
       box-shadow:
-        inset
-        0 1px 0
-        rgba(255,255,255,0.06),
+        0 0 0 3px rgba(0, 217, 255, 0.08),
+        0 0 22px rgba(0, 217, 255, 0.15);
+    }
 
-        0 15px 50px
-        rgba(0,0,0,0.25);
+
+    #adminGateButton {
+      width: 100%;
+
+      margin-top: 14px;
+    }
+
+
+    #adminGateMessage {
+      min-height: 20px;
+
+      margin-top: 10px;
+
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+
+    #adminGateMessage.error {
+      color: var(--red);
+    }
+
+
+    #adminGateMessage.success {
+      color: var(--green);
+    }
+
+
+    @keyframes adminGateEnter {
+
+      from {
+        opacity: 0;
+
+        transform:
+          translateY(25px)
+          scale(0.94);
+
+        filter: blur(8px);
+      }
+
+      to {
+        opacity: 1;
+
+        transform:
+          translateY(0)
+          scale(1);
+
+        filter: blur(0);
+      }
+    }
+
+
+    @keyframes lockPulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+
+        box-shadow:
+          0 0 25px rgba(0, 217, 255, 0.20),
+          0 0 55px rgba(155, 53, 255, 0.12);
+      }
+
+      50% {
+        transform: scale(1.04);
+
+        box-shadow:
+          0 0 35px rgba(0, 217, 255, 0.38),
+          0 0 70px rgba(155, 53, 255, 0.22);
+      }
+    }
+
+
+    @keyframes unlockPop {
+
+      0% {
+        transform: scale(1);
+      }
+
+      45% {
+        transform: scale(1.18);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+
+    /* =======================================================
+       PAGE BACKGROUND
+    ======================================================== */
+
+    .background {
+      position: fixed;
+      inset: 0;
+
+      z-index: -1;
+
+      pointer-events: none;
 
       overflow: hidden;
     }
 
 
-    .card::before {
-
+    .background::before {
       content: "";
 
       position: absolute;
 
-      width: 180px;
-      height: 180px;
+      width: 420px;
+      height: 420px;
 
-      top: -100px;
-      right: -80px;
+      top: -180px;
+      left: -160px;
+
+      border-radius: 50%;
 
       background:
         radial-gradient(
           circle,
-          rgba(0,217,255,0.13),
+          rgba(0, 217, 255, 0.09),
           transparent 70%
         );
 
-      pointer-events: none;
+      filter: blur(15px);
     }
 
 
-    .card h2 {
+    .background::after {
+      content: "";
+
+      position: absolute;
+
+      width: 460px;
+      height: 460px;
+
+      right: -200px;
+      bottom: -220px;
+
+      border-radius: 50%;
+
+      background:
+        radial-gradient(
+          circle,
+          rgba(155, 53, 255, 0.10),
+          transparent 70%
+        );
+
+      filter: blur(18px);
+    }
+
+
+    /* =======================================================
+       MAIN APP
+    ======================================================== */
+
+    .app {
+      width: 100%;
+      min-height: 100vh;
+    }
+
+
+    .container {
+      width: min(100%, 1100px);
+
+      margin: 0 auto;
+
+      padding:
+        18px
+        16px
+        50px;
+    }
+
+
+    /* =======================================================
+       HEADER
+    ======================================================== */
+
+    .header {
+      position: relative;
 
       display: flex;
 
       align-items: center;
+      justify-content: space-between;
 
-      gap: 10px;
+      gap: 14px;
+
+      margin-bottom: 22px;
+
+      padding: 18px;
+
+      border-radius: 20px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(16, 25, 58, 0.90),
+          rgba(7, 12, 32, 0.82)
+        );
+
+      border:
+        1px solid
+        var(--border);
+
+      box-shadow: var(--shadow);
+
+      backdrop-filter: blur(18px);
+    }
+
+
+    .brand {
+      min-width: 0;
+    }
+
+
+    .brand h1 {
+      margin: 0;
+
+      font-size: clamp(20px, 5vw, 28px);
+
+      font-weight: 850;
+
+      letter-spacing: -0.5px;
+    }
+
+
+    .brand p {
+      margin: 5px 0 0;
+
+      color: var(--muted);
+
+      font-size: 12px;
+    }
+
+
+    /* =======================================================
+       NOTIFICATION BELL
+    ======================================================== */
+
+    .notification-button {
+      position: relative;
+
+      flex: 0 0 auto;
+
+      width: 44px;
+      height: 44px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+
+      border:
+        1px solid
+        rgba(110, 130, 190, 0.28);
+
+      background:
+        rgba(7, 13, 32, 0.82);
+
+      color: white;
+
+      font-size: 19px;
+
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+
+    .notification-button:hover,
+    .notification-button:focus-visible {
+      transform: translateY(-1px);
+
+      border-color:
+        rgba(0, 217, 255, 0.45);
+
+      box-shadow:
+        0 0 20px
+        rgba(0, 217, 255, 0.12);
+
+      outline: none;
+    }
+
+
+    .notification-badge {
+      position: absolute;
+
+      top: -2px;
+      right: -1px;
+
+      min-width: 17px;
+      height: 17px;
+
+      display: none;
+
+      align-items: center;
+      justify-content: center;
+
+      padding: 0 4px;
+
+      border-radius: 50%;
+
+      background: var(--red);
+
+      color: white;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      border:
+        2px solid
+        #080d25;
+    }
+
+
+    .notification-badge.show {
+      display: flex;
+    }
+
+
+    /* =======================================================
+       CARDS
+    ======================================================== */
+
+    .grid {
+      display: grid;
+
+      grid-template-columns: 1fr;
+
+      gap: 16px;
+    }
+
+
+    .card {
+      padding: 18px;
+
+      border-radius: 20px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(16, 25, 58, 0.88),
+          rgba(7, 12, 32, 0.78)
+        );
+
+      border:
+        1px solid
+        var(--border);
+
+      box-shadow: var(--shadow);
+
+      backdrop-filter: blur(18px);
+    }
+
+
+    .card.full {
+      width: 100%;
+    }
+
+
+    .card h2 {
+      display: flex;
+
+      align-items: center;
+
+      gap: 9px;
 
       margin:
-        0 0 18px;
+        0
+        0
+        16px;
 
-      font-size: 18px;
+      font-size: 17px;
+
+      font-weight: 800;
     }
 
 
     .icon {
-
-      width: 38px;
-      height: 38px;
-
-      flex:
-        0 0 auto;
+      width: 31px;
+      height: 31px;
 
       display: inline-flex;
 
       align-items: center;
-
       justify-content: center;
 
-      border-radius: 12px;
+      flex: 0 0 auto;
+
+      border-radius: 9px;
 
       background:
-        linear-gradient(
-          135deg,
-          rgba(0,217,255,0.25),
-          rgba(155,53,255,0.35)
-        );
-
-      box-shadow:
-        0 0 18px
-        rgba(0,217,255,0.20);
-
-      font-size: 19px;
-    }
-
-
-    /* =========================================================
-       LABELS
-    ========================================================= */
-
-    label {
-
-      display: block;
-
-      margin:
-        14px 0 7px;
-
-      color:
-        #cbd4ef;
-
-      font-size: 13px;
-
-      font-weight: 600;
-    }
-
-
-    /* =========================================================
-       INPUTS
-    ========================================================= */
-
-    input,
-    select {
-
-      width: 100%;
-
-      padding:
-        13px 14px;
-
-      border-radius: 11px;
+        rgba(0, 217, 255, 0.10);
 
       border:
         1px solid
-        rgba(110,130,190,0.25);
-
-      background:
-        rgba(3,7,20,0.72);
-
-      color:
-        white;
+        rgba(0, 217, 255, 0.14);
 
       font-size: 15px;
+    }
+
+
+    /* =======================================================
+       FORM ELEMENTS
+    ======================================================== */
+
+    label {
+      display: block;
+
+      margin:
+        0
+        0
+        7px;
+
+      color: #c6cee4;
+
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+
+      min-height: 46px;
+
+      padding:
+        12px
+        13px;
+
+      border-radius: 12px;
+
+      border:
+        1px solid
+        rgba(110, 130, 190, 0.24);
+
+      background:
+        rgba(3, 7, 20, 0.72);
+
+      color: white;
 
       outline: none;
 
       transition:
-        border-color
-        0.2s ease,
-
-        box-shadow
-        0.2s ease,
-
-        background
-        0.2s ease;
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
     }
 
 
-    input::placeholder {
-
-      color:
-        #697592;
+    input::placeholder,
+    textarea::placeholder {
+      color: #66718e;
     }
 
 
     input:focus,
-    select:focus {
-
+    select:focus,
+    textarea:focus {
       border-color:
-        var(--cyan);
-
-      background:
-        rgba(4,12,31,0.90);
+        rgba(0, 217, 255, 0.60);
 
       box-shadow:
         0 0 0 3px
-        rgba(0,217,255,0.08),
-
-        0 0 18px
-        rgba(0,217,255,0.12);
-    }
-
-
-    select option {
+        rgba(0, 217, 255, 0.07);
 
       background:
-        #0b1025;
-
-      color:
-        white;
+        rgba(4, 9, 25, 0.90);
     }
 
 
-    /* =========================================================
+    select {
+      appearance: auto;
+    }
+
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+
+    /* =======================================================
        BUTTONS
-    ========================================================= */
+    ======================================================== */
 
     button {
-
-      width: 100%;
-
-      margin-top: 14px;
+      min-height: 46px;
 
       padding:
-        14px 16px;
+        11px
+        15px;
 
-      border: 0;
+      border-radius: 12px;
 
-      border-radius: 11px;
+      border: 1px solid transparent;
 
-      color:
-        white;
+      font-size: 13px;
+      font-weight: 750;
 
-      font-size: 14px;
-
-      font-weight: 800;
-
-      cursor: pointer;
+      color: white;
 
       background:
         linear-gradient(
-          90deg,
-          #00bff5,
-          #536cff,
-          #9b35ff
+          135deg,
+          #087dff,
+          #6b35ff
         );
 
-      background-size:
-        200% auto;
-
       box-shadow:
-        0 8px 25px
-        rgba(72,90,255,0.25);
+        0 10px 25px
+        rgba(40, 76, 255, 0.18);
 
       transition:
-        transform
-        0.2s ease,
-
-        box-shadow
-        0.2s ease,
-
-        background-position
-        0.4s ease;
+        transform 0.18s ease,
+        opacity 0.18s ease,
+        box-shadow 0.18s ease;
     }
 
 
     button:hover {
-
-      transform:
-        translateY(-2px);
-
-      background-position:
-        right center;
+      transform: translateY(-1px);
 
       box-shadow:
-        0 12px 32px
-        rgba(72,90,255,0.40);
+        0 13px 30px
+        rgba(40, 76, 255, 0.25);
     }
 
 
     button:active {
-
-      transform:
-        scale(0.98);
+      transform: scale(0.98);
     }
 
 
     button:disabled {
+      opacity: 0.55;
 
-      opacity:
-        0.55;
+      cursor: not-allowed;
 
-      cursor:
-        not-allowed;
-
-      transform:
-        none;
+      transform: none;
     }
 
 
-    .secondary {
+    button.secondary {
+      width: 100%;
 
       background:
-        linear-gradient(
-          90deg,
-          rgba(34,47,86,0.95),
-          rgba(67,40,102,0.95)
-        );
+        rgba(8, 15, 38, 0.88);
+
+      border:
+        1px solid
+        rgba(110, 130, 190, 0.28);
+
+      box-shadow: none;
+    }
+
+
+    button.secondary:hover {
+      border-color:
+        rgba(0, 217, 255, 0.42);
 
       box-shadow:
-        none;
+        0 0 20px
+        rgba(0, 217, 255, 0.08);
     }
 
 
-    .approve-button {
-
+    button.danger {
       background:
         linear-gradient(
-          90deg,
-          #00b889,
-          #00e6a8
+          135deg,
+          #d83250,
+          #8e2440
         );
     }
 
 
-    .reject-button {
-
+    button.success {
       background:
         linear-gradient(
-          90deg,
-          #b82f4c,
-          #ff536d
+          135deg,
+          #00c994,
+          #008d82
         );
     }
 
 
-    /* =========================================================
+    /* =======================================================
+       SITE SEARCH
+    ======================================================== */
+
+    .search-row {
+      display: flex;
+
+      gap: 9px;
+    }
+
+
+    .search-row input {
+      flex: 1;
+      min-width: 0;
+    }
+
+
+    .search-row button {
+      flex: 0 0 auto;
+
+      width: 52px;
+
+      padding:
+        10px;
+    }
+
+
+    .search-hint {
+      margin-top: 8px;
+
+      color: #7884a3;
+
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+
+    /* =======================================================
+       SITE RESULT
+    ======================================================== */
+
+    .site-result {
+      display: none;
+
+      margin-top: 16px;
+
+      padding: 15px;
+
+      border-radius: 15px;
+
+      background:
+        rgba(4, 9, 25, 0.62);
+
+      border:
+        1px solid
+        rgba(110, 130, 190, 0.18);
+
+      animation:
+        slideUp
+        0.35s
+        cubic-bezier(.16, 1, .3, 1);
+    }
+
+
+    .site-result.show {
+      display: block;
+    }
+
+
+    .site-title {
+      margin: 0;
+
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+
+    .site-meta {
+      margin-top: 5px;
+
+      color: var(--muted);
+
+      font-size: 12px;
+    }
+
+
+    .site-values {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 8px;
+
+      margin-top: 14px;
+    }
+
+
+    .value-box {
+      min-width: 0;
+
+      padding: 11px 8px;
+
+      text-align: center;
+
+      border-radius: 12px;
+
+      background:
+        rgba(17, 27, 60, 0.70);
+
+      border:
+        1px solid
+        rgba(110, 130, 190, 0.15);
+    }
+
+
+    .value-box span {
+      display: block;
+
+      margin-bottom: 4px;
+
+      color: #7783a2;
+
+      font-size: 9px;
+
+      text-transform: uppercase;
+
+      letter-spacing: 0.4px;
+    }
+
+
+    .value-box strong {
+      display: block;
+
+      overflow: hidden;
+
+      text-overflow: ellipsis;
+
+      white-space: nowrap;
+
+      font-size: 13px;
+    }
+
+
+    /* =======================================================
+       EDIT / ADD ACTION AREA
+    ======================================================== */
+
+    .site-question {
+      margin:
+        15px
+        0
+        10px;
+
+      color: #dce3f5;
+
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+
+    .action-row {
+      display: flex;
+
+      gap: 9px;
+    }
+
+
+    .action-row button {
+      flex: 1;
+    }
+
+
+    .edit-controls {
+      display: none;
+
+      margin-top: 15px;
+
+      animation:
+        slideUp
+        0.35s
+        cubic-bezier(.16, 1, .3, 1);
+    }
+
+
+    .edit-controls.show {
+      display: block;
+    }
+
+
+    /* =======================================================
+       ADD SITE AREA
+    ======================================================== */
+
+    .add-site-section {
+      display: none;
+
+      margin-top: 16px;
+
+      animation:
+        slideUp
+        0.35s
+        cubic-bezier(.16, 1, .3, 1);
+    }
+
+
+    .add-site-section.show {
+      display: block;
+    }
+
+
+    /* =======================================================
+       HIDDEN / COLLAPSIBLE SECTIONS
+    ======================================================== */
+
+    .hidden {
+      display: none !important;
+    }
+
+
+    .manual-section,
+    .extraction-section {
+      display: none;
+    }
+
+
+    .manual-section.show,
+    .extraction-section.show {
+      display: block;
+
+      animation:
+        slideUp
+        0.35s
+        cubic-bezier(.16, 1, .3, 1);
+    }
+
+
+    /* =======================================================
        MESSAGES
-    ========================================================= */
+    ======================================================== */
 
     .message {
-
       min-height: 20px;
 
       margin-top: 10px;
 
-      font-size: 13px;
-
-      font-weight: 600;
+      font-size: 12px;
 
       line-height: 1.5;
     }
 
 
     .message.success {
-
-      color:
-        var(--green);
+      color: var(--green);
     }
 
 
     .message.error {
-
-      color:
-        var(--red);
+      color: var(--red);
     }
 
 
-    /* =========================================================
-       SITE INFORMATION
-    ========================================================= */
-
-    .site-info {
-
-      display:
-        none;
+    .message.warning {
+      color: var(--yellow);
     }
 
 
-    .site-info.show {
-
-      display:
-        block;
-
-      animation:
-        slideUp
-        0.4s ease;
-    }
-
-
-    .info-grid {
-
-      display: grid;
-
-      grid-template-columns:
-        repeat(5, 1fr);
-
-      gap: 10px;
-    }
-
-
-    .info-box {
-
-      min-width:
-        0;
-
-      padding:
-        14px;
-
-      border-radius:
-        13px;
-
-      background:
-        rgba(4,10,27,0.70);
-
-      border:
-        1px solid
-        rgba(90,115,190,0.20);
-    }
-
-
-    .info-label {
-
-      color:
-        #8491b3;
-
-      font-size:
-        11px;
-
-      margin-bottom:
-        7px;
-    }
-
-
-    .info-value {
-
-      color:
-        white;
-
-      font-weight:
-        800;
-
-      font-size:
-        15px;
-
-      overflow-wrap:
-        anywhere;
-    }
-
-
-    /* =========================================================
-       SAVE REQUESTS
-    ========================================================= */
-
-    #saveRequestsList {
-
-      display:
-        flex;
-
-      flex-direction:
-        column;
-
-      gap:
-        12px;
-    }
-
-
-    .request-empty {
-
-      padding:
-        18px;
-
-      border-radius:
-        13px;
-
-      text-align:
-        center;
-
-      color:
-        var(--muted);
-
-      background:
-        rgba(4,10,27,0.55);
-
-      border:
-        1px solid
-        rgba(90,115,190,0.18);
-
-      font-size:
-        13px;
-    }
-
-
-    .request-card {
-
-      position:
-        relative;
-
-      padding:
-        16px;
-
-      border-radius:
-        15px;
-
-      background:
-        rgba(4,10,27,0.72);
-
-      border:
-        1px solid
-        rgba(91,126,255,0.25);
-    }
-
-
-    .request-top {
-
-      display:
-        flex;
-
-      align-items:
-        center;
-
-      justify-content:
-        space-between;
-
-      gap:
-        10px;
-
-      margin-bottom:
-        12px;
-    }
-
-
-    .request-site {
-
-      font-size:
-        17px;
-
-      font-weight:
-        800;
-
-      overflow-wrap:
-        anywhere;
-    }
-
-
-    .pending-badge {
-
-      flex:
-        0 0 auto;
-
-      padding:
-        5px 9px;
-
-      border-radius:
-        20px;
-
-      color:
-        #ffe18a;
-
-      background:
-        rgba(255,200,87,0.10);
-
-      border:
-        1px solid
-        rgba(255,200,87,0.25);
-
-      font-size:
-        10px;
-
-      font-weight:
-        800;
-    }
-
-
-    .request-details {
-
-      display:
-        grid;
-
-      grid-template-columns:
-        repeat(4, 1fr);
-
-      gap:
-        8px;
-
-      margin-bottom:
-        12px;
-    }
-
-
-    .request-value {
-
-      padding:
-        10px;
-
-      border-radius:
-        10px;
-
-      background:
-        rgba(10,17,42,0.75);
-    }
-
-
-    .request-label {
-
-      color:
-        #7785a8;
-
-      font-size:
-        10px;
-
-      margin-bottom:
-        4px;
-    }
-
-
-    .request-number {
-
-      color:
-        white;
-
-      font-size:
-        13px;
-
-      font-weight:
-        800;
-
-      overflow-wrap:
-        anywhere;
-    }
-
-
-    .request-time {
-
-      color:
-        #7785a8;
-
-      font-size:
-        11px;
-
-      margin-bottom:
-        10px;
-    }
-
-
-    .request-actions {
-
-      display:
-        grid;
-
-      grid-template-columns:
-        1fr 1fr;
-
-      gap:
-        10px;
-    }
-
-
-    .request-actions button {
-
-      margin-top:
-        0;
-    }
-
-
-    /* =========================================================
-       OCR PREVIEW
-    ========================================================= */
-
-    .preview {
-
-      display:
-        none;
-
-      margin-top:
-        15px;
-    }
-
-
-    .preview.show {
-
-      display:
-        block;
-
-      animation:
-        slideUp
-        0.35s ease;
-    }
-
-
-    .preview img {
-
-      width:
-        100%;
-
-      max-height:
-        360px;
-
-      object-fit:
-        contain;
-
-      display:
-        block;
-
-      border-radius:
-        13px;
-
-      border:
-        1px solid
-        rgba(73,130,255,0.30);
-
-      background:
-        #02040d;
-    }
-
-
-    .file-name {
-
-      margin-top:
-        8px;
-
-      color:
-        var(--muted);
-
-      font-size:
-        12px;
-
-      overflow-wrap:
-        anywhere;
-    }
-
-
-    /* =========================================================
+    /* =======================================================
        LOADING
-    ========================================================= */
+    ======================================================== */
 
     .loading {
+      display: none;
 
-      display:
-        none;
+      align-items: center;
+      justify-content: center;
 
-      margin-top:
-        12px;
+      gap: 9px;
 
-      padding:
-        12px;
+      padding: 18px;
 
-      text-align:
-        center;
+      color: var(--muted);
 
-      color:
-        var(--cyan);
-
-      border-radius:
-        11px;
-
-      background:
-        rgba(0,217,255,0.06);
-
-      border:
-        1px solid
-        rgba(0,217,255,0.15);
-
-      animation:
-        pulse
-        1.3s infinite;
+      font-size: 12px;
     }
 
 
     .loading.show {
-
-      display:
-        block;
+      display: flex;
     }
 
 
-    @keyframes pulse {
+    .spinner {
+      width: 18px;
+      height: 18px;
 
-      50% {
-        opacity:
-          0.45;
+      border-radius: 50%;
+
+      border:
+        2px solid
+        rgba(255, 255, 255, 0.12);
+
+      border-top-color:
+        var(--cyan);
+
+      animation:
+        spin
+        0.8s
+        linear
+        infinite;
+    }
+
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
       }
     }
 
 
-    /* =========================================================
-       WARNING
-    ========================================================= */
-
-    .warning {
-
-      margin-top:
-        13px;
-
-      padding:
-        12px 14px;
-
-      border-radius:
-        11px;
-
-      color:
-        #ffe18a;
-
-      background:
-        rgba(255,200,87,0.06);
-
-      border:
-        1px solid
-        rgba(255,200,87,0.20);
-
-      font-size:
-        12px;
-
-      line-height:
-        1.5;
-    }
-
-
-    /* =========================================================
-       HIDDEN SECTIONS
-    ========================================================= */
-
-    .manual-section,
-    .extraction-section {
-
-      display:
-        none;
-    }
-
-
-    .manual-section.show,
-    .extraction-section.show {
-
-      display:
-        block;
-
-      animation:
-        slideUp
-        0.4s ease;
-    }
-
-
-    /* =========================================================
-       ANIMATION
-    ========================================================= */
-
     @keyframes slideUp {
 
       from {
-
-        opacity:
-          0;
+        opacity: 0;
 
         transform:
           translateY(12px);
       }
 
       to {
-
-        opacity:
-          1;
+        opacity: 1;
 
         transform:
           translateY(0);
@@ -1646,99 +1229,67 @@ body.admin-locked > *:not(#adminGate) {
     }
 
 
-    /* =========================================================
-       FOOTER
-    ========================================================= */
+    /* =======================================================
+       RESPONSIVE
+    ======================================================== */
 
-    footer {
-
-      text-align:
-        center;
-
-      color:
-        #66718f;
-
-      font-size:
-        11px;
-
-      margin-top:
-        28px;
-    }
-
-
-    /* =========================================================
-       MOBILE
-    ========================================================= */
-
-    @media (max-width: 800px) {
-
-      .grid {
-
-        grid-template-columns:
-          1fr;
-      }
-
-
-      .full {
-
-        grid-column:
-          auto;
-      }
-
-
-      .info-grid {
-
-        grid-template-columns:
-          repeat(2, 1fr);
-      }
-
-
-      .request-details {
-
-        grid-template-columns:
-          repeat(2, 1fr);
-      }
-
-    }
-
-
-    @media (max-width: 480px) {
+    @media (min-width: 700px) {
 
       .container {
-
         padding:
-          18px 12px 35px;
+          28px
+          22px
+          60px;
+      }
+
+
+      .grid {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+
+      .card.full {
+        grid-column: 1 / -1;
+      }
+
+
+      .header {
+        padding: 20px 22px;
+      }
+
+    }
+
+
+    @media (max-width: 420px) {
+
+      .container {
+        padding:
+          12px
+          12px
+          40px;
       }
 
 
       .card {
+        padding: 15px;
+      }
 
+
+      .site-values {
+        gap: 5px;
+      }
+
+
+      .value-box {
         padding:
-          16px;
-
-        border-radius:
-          17px;
+          10px
+          5px;
       }
 
 
-      h1 {
-
-        font-size:
-          30px;
-      }
-
-
-      .request-top {
-
-        align-items:
-          flex-start;
-      }
-
-
-      .request-actions {
-
-        grid-template-columns:
-          1fr;
+      .value-box strong {
+        font-size: 12px;
       }
 
     }
@@ -1748,727 +1299,244 @@ body.admin-locked > *:not(#adminGate) {
 </head>
 
 
-<body>
+<body class="admin-locked">
 
 
-  <!-- =======================================================
-       BACKGROUND
+    <!-- =======================================================
+       ADMIN KEY GATE
   ======================================================== -->
 
-  <div class="particles">
+  <script>
+    (function () {
 
-    <span class="particle"></span>
-    <span class="particle"></span>
-    <span class="particle"></span>
-    <span class="particle"></span>
-    <span class="particle"></span>
-    <span class="particle"></span>
+      const gate =
+        document.getElementById("adminGate");
 
-  </div>
+      const keyInput =
+        document.getElementById("adminGateKey");
 
+      const unlockButton =
+        document.getElementById("adminGateButton");
 
-  <!-- ===========================
-  <!-- =========================================================
-     MAIN
-========================================================= -->
+      const message =
+        document.getElementById("adminGateMessage");
 
-<main class="container">
+      const lock =
+        document.getElementById("adminLock");
 
-  <!-- =======================================================
-       HEADER
-  ======================================================== -->
 
-  <header class="header">
+      /* =====================================================
+         ADMIN KEY UNLOCK
+      ====================================================== */
 
-    <div class="logo">
-      ⚡
-    </div>
+      async function unlockAdmin() {
 
-    <h1>
-      Generator Admin
-    </h1>
+        const key =
+          keyInput.value.trim();
 
-    <div class="subtitle">
-      Manage generator readings, save requests and AI extraction
-    </div>
 
-  </header>
+        if (!key) {
 
+          message.textContent =
+            "Please enter the Admin Key.";
 
-  <div class="grid">
+          message.className =
+            "error";
 
+          keyInput.focus();
 
-    <!-- =====================================================
-         ADMIN ACCESS
-    ====================================================== -->
+          return;
+        }
 
-    <section class="card">
 
-      <h2>
-        <span class="icon">🔐</span>
-        Admin Access
-      </h2>
+        unlockButton.disabled = true;
 
-      <label for="adminKey">
-        Admin Key
-      </label>
+        unlockButton.textContent =
+          "VERIFYING...";
 
-      <input
-        type="password"
-        id="adminKey"
-        placeholder="Enter admin key"
-        autocomplete="off"
-      >
+        message.textContent = "";
 
-      <div
-        id="authMessage"
-        class="message"
-      ></div>
+        message.className = "";
 
-    </section>
 
+        try {
 
-    <!-- =====================================================
-         AI CONTROL
-    ====================================================== -->
+          const response =
+            await fetch(
+              "/api/admin/save-requests",
+              {
+                method: "GET",
 
-    <section class="card">
+                headers: {
+                  "X-Admin-Key": key,
+                  "Accept": "application/json"
+                }
+              }
+            );
 
-      <h2>
-        <span class="icon">🤖</span>
-        AI Control
-      </h2>
 
-      <p class="muted">
-        Activate Cloudflare Llama AI for screenshot reading.
-      </p>
+          if (!response.ok) {
 
-      <button
-        type="button"
-        id="activateLlama"
-      >
-        🤖 ACTIVATE LLAMA AI
-      </button>
-
-      <div
-        id="llamaMessage"
-        class="message"
-      ></div>
-
-    </section>
-
-
-    <!-- =====================================================
-         SAVE REQUESTS
-    ====================================================== -->
-
-    <section class="card full">
-
-      <h2>
-        <span class="icon">🔔</span>
-        Save Requests
-
-        <span
-          id="requestCount"
-          style="
-            display:none;
-            margin-left:8px;
-            padding:3px 9px;
-            border-radius:20px;
-            background:#ef4444;
-            color:white;
-            font-size:12px;
-            font-weight:700;
-          "
-        >
-          0
-        </span>
-
-      </h2>
-
-      <div
-        id="requestMessage"
-        class="message"
-      >
-        Loading pending requests...
-      </div>
-
-      <div id="saveRequestsList"></div>
-
-      <button
-        type="button"
-        id="refreshRequests"
-        class="secondary"
-      >
-        🔄 REFRESH REQUESTS
-      </button>
-
-    </section>
-
-
-    <!-- =====================================================
-         SITE
-    ====================================================== -->
-
-    <section class="card">
-
-      <h2>
-        <span class="icon">📍</span>
-        Site
-      </h2>
-
-      <label for="siteId">
-        Site ID
-      </label>
-
-      <input
-        type="text"
-        id="siteId"
-        placeholder="Enter Site ID"
-        autocomplete="off"
-      >
-
-      <label for="model">
-        DG Model
-      </label>
-
-      <select id="model">
-
-        <option value="">
-          Select DG Model
-        </option>
-
-        <option value="eicher10">
-          Eicher 10 KVA
-        </option>
-
-        <option value="mahindra10">
-          Mahindra 10 KVA
-        </option>
-
-        <option value="eicher20">
-          Eicher 20 KVA
-        </option>
-
-        <option value="mahindra20">
-          Mahindra 20 KVA
-        </option>
-
-        <option value="koel20">
-          KOEL 20 KVA
-        </option>
-
-      </select>
-
-      <button
-        type="button"
-        id="loadSite"
-      >
-        🔍 LOAD SITE
-      </button>
-
-    </section>
-
-
-    <!-- =====================================================
-         CURRENT SITE INFORMATION
-    ====================================================== -->
-
-    <section class="card">
-
-      <h2>
-        <span class="icon">📊</span>
-        Current Site Information
-      </h2>
-
-      <div
-        id="siteInfo"
-        class="site-info"
-      >
-
-        <div>
-          <span>Site Name</span>
-          <strong id="siteName">—</strong>
-        </div>
-
-        <div>
-          <span>DG Model</span>
-          <strong id="siteModel">—</strong>
-        </div>
-
-        <div>
-          <span>Current HMR</span>
-          <strong id="siteHmr">—</strong>
-        </div>
-
-        <div>
-          <span>Current kWh</span>
-          <strong id="siteKwh">—</strong>
-        </div>
-
-        <div>
-          <span>Current Balance</span>
-          <strong id="siteBalance">—</strong>
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         EDIT SITE
-    ====================================================== -->
-
-    <section class="card full">
-
-      <h2>
-        <span class="icon">✏️</span>
-        Edit Site
-      </h2>
-
-      <label for="editSiteId">
-        Site ID
-      </label>
-
-      <input
-        type="text"
-        id="editSiteId"
-        placeholder="Site ID"
-      >
-
-      <label for="editSiteName">
-        Site Name
-      </label>
-
-      <input
-        type="text"
-        id="editSiteName"
-        placeholder="Site Name"
-      >
-
-      <label for="editModel">
-        DG Model
-      </label>
-
-      <select id="editModel">
-
-        <option value="">
-          Select DG Model
-        </option>
-
-        <option value="eicher10">
-          Eicher 10 KVA
-        </option>
-
-        <option value="mahindra10">
-          Mahindra 10 KVA
-        </option>
-
-        <option value="eicher20">
-          Eicher 20 KVA
-        </option>
-
-        <option value="mahindra20">
-          Mahindra 20 KVA
-        </option>
-
-        <option value="koel20">
-          KOEL 20 KVA
-        </option>
-
-      </select>
-
-      <label for="editHmr">
-        Current HMR
-      </label>
-
-      <input
-        type="number"
-        id="editHmr"
-        step="any"
-        placeholder="Current HMR"
-      >
-
-      <label for="editKwh">
-        Current kWh
-      </label>
-
-      <input
-        type="number"
-        id="editKwh"
-        step="any"
-        placeholder="Current kWh"
-      >
-
-      <label for="editBalance">
-        Current Balance After Filling
-      </label>
-
-      <input
-        type="number"
-        id="editBalance"
-        step="any"
-        placeholder="Current balance"
-      >
-
-      <button
-        type="button"
-        id="saveSiteEdit"
-      >
-        💾 SAVE SITE CHANGES
-      </button>
-
-      <div
-        id="editSiteMessage"
-        class="message"
-      ></div>
-
-    </section>
-
-
-    <!-- =====================================================
-         SCREENSHOT EXTRACTION
-    ====================================================== -->
-
-    <section class="card full">
-
-      <h2>
-        <span class="icon">📷</span>
-        Screenshot Extraction
-      </h2>
-
-      <label for="imageInput">
-        Generator Screenshot
-      </label>
-
-      <input
-        type="file"
-        id="imageInput"
-        accept="image/*"
-      >
-
-      <div
-        id="preview"
-        class="preview hidden"
-      >
-
-        <img
-          id="previewImage"
-          alt="Screenshot preview"
-        >
-
-        <div
-          id="fileName"
-          class="file-name"
-        ></div>
-
-      </div>
-
-      <button
-        type="button"
-        id="extractButton"
-      >
-        🤖 EXTRACT WITH AI
-      </button>
-
-      <div
-        id="extractLoading"
-        class="loading hidden"
-      >
-        Reading screenshot with AI...
-      </div>
-
-
-      <!-- ================================================
-           OCR CONFIRMATION
-      ================================================= -->
-
-      <div
-        id="extractionSection"
-        class="hidden"
-      >
-
-        <h3>
-          🔎 Extracted Information
-        </h3>
-
-        <label for="extractedModel">
-          DG Model
-        </label>
-
-        <input
-          type="text"
-          id="extractedModel"
-        >
-
-        <label for="extractedHmr">
-          Current HMR
-        </label>
-
-        <input
-          type="number"
-          id="extractedHmr"
-          step="any"
-        >
-
-        <label for="extractedKwh">
-          Current kWh
-        </label>
-
-        <input
-          type="number"
-          id="extractedKwh"
-          step="any"
-        >
-
-        <label for="extractedPreviousBalance">
-          Previous Balance
-        </label>
-
-        <input
-          type="number"
-          id="extractedPreviousBalance"
-          step="any"
-        >
-
-        <label for="extractedFuelFilled">
-          Fuel Filled
-        </label>
-
-        <input
-          type="number"
-          id="extractedFuelFilled"
-          step="any"
-        >
-
-        <label for="extractedBalance">
-          Current Balance
-        </label>
-
-        <input
-          type="number"
-          id="extractedBalance"
-          step="any"
-        >
-
-        <button
-          type="button"
-          id="saveExtracted"
-        >
-          💾 SAVE EXTRACTED DATA
-        </button>
-
-        <div
-          id="extractMessage"
-          class="message"
-        ></div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         MANUAL READING
-    ====================================================== -->
-
-    <section class="card full">
-
-      <h2>
-        <span class="icon">📝</span>
-        Manual Reading
-      </h2>
-
-      <button
-        type="button"
-        id="manualButton"
-        class="secondary"
-      >
-        ➕ ENTER MANUAL READING
-      </button>
-
-
-      <div
-        id="manualSection"
-        class="hidden"
-      >
-
-        <label for="currentHmr">
-          Current HMR
-        </label>
-
-        <input
-          type="number"
-          id="currentHmr"
-          step="any"
-          placeholder="Current HMR"
-        >
-
-        <label for="currentKwh">
-          Current kWh
-        </label>
-
-        <input
-          type="number"
-          id="currentKwh"
-          step="any"
-          placeholder="Current kWh"
-        >
-
-        <label for="currentBalance">
-          Current Balance After Filling
-        </label>
-
-        <input
-          type="number"
-          id="currentBalance"
-          step="any"
-          placeholder="Current balance"
-        >
-
-        <button
-          type="button"
-          id="updateSite"
-        >
-          💾 UPDATE SITE
-        </button>
-
-        <div
-          id="updateMessage"
-          class="message"
-        ></div>
-
-      </div>
-
-    </section>
-
-
-
-
-</main>
-<!-- =======================================================
-     ADMIN KEY GATE UNLOCK
-======================================================= -->
-
-<script>
-(function () {
-
-  const gate = document.getElementById("adminGate");
-  const keyInput = document.getElementById("adminGateKey");
-  const unlockButton = document.getElementById("adminGateButton");
-  const message = document.getElementById("adminGateMessage");
-  const lock = document.getElementById("adminLock");
-
-  async function unlockAdmin() {
-
-    const key = keyInput.value.trim();
-
-    if (!key) {
-      message.textContent = "Please enter the Admin Key.";
-      message.className = "error";
-      keyInput.focus();
-      return;
-    }
-
-    unlockButton.disabled = true;
-    unlockButton.textContent = "VERIFYING...";
-    message.textContent = "";
-
-    try {
-
-      const response = await fetch(
-        "/api/admin/save-requests",
-        {
-          method: "GET",
-          headers: {
-            "X-Admin-Key": key,
-            "Accept": "application/json"
+            throw new Error(
+              "Invalid Admin Key"
+            );
           }
+
+
+          const data =
+            await response.json();
+
+
+          if (!data.success) {
+
+            throw new Error(
+              data.error ||
+              "Invalid Admin Key"
+            );
+          }
+
+
+          /* ===============================================
+             ACCESS GRANTED
+          ================================================ */
+
+          message.textContent =
+            "Access granted.";
+
+          message.className =
+            "success";
+
+
+          lock.textContent =
+            "🔓";
+
+          lock.classList.add(
+            "unlocked"
+          );
+
+
+          sessionStorage.setItem(
+            "adminKey",
+            key
+          );
+
+
+          unlockButton.textContent =
+            "ACCESS GRANTED";
+
+
+          /* ===============================================
+             PREMIUM REVEAL
+          ================================================ */
+
+          setTimeout(
+            function () {
+
+              gate.classList.add(
+                "unlocking"
+              );
+
+              document.body.classList.remove(
+                "admin-locked"
+              );
+
+            },
+            450
+          );
+
+
+          setTimeout(
+            function () {
+
+              if (gate) {
+                gate.remove();
+              }
+
+            },
+            1100
+          );
+
+
+        } catch (error) {
+
+          console.error(error);
+
+
+          message.textContent =
+            "Invalid Admin Key.";
+
+          message.className =
+            "error";
+
+
+          unlockButton.disabled =
+            false;
+
+          unlockButton.textContent =
+            "🔓 UNLOCK ADMIN";
+
+
+          keyInput.select();
+
+        }
+
+      }
+
+
+      /* =====================================================
+         BUTTON
+      ====================================================== */
+
+      unlockButton.addEventListener(
+        "click",
+        unlockAdmin
+      );
+
+
+      /* =====================================================
+         ENTER KEY
+      ====================================================== */
+
+      keyInput.addEventListener(
+        "keydown",
+        function (event) {
+
+          if (
+            event.key === "Enter"
+          ) {
+
+            unlockAdmin();
+
+          }
+
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Invalid Admin Key");
-      }
 
-      const data = await response.json();
+      /* =====================================================
+         AUTO FOCUS
+      ====================================================== */
 
-      if (!data.success) {
-        throw new Error(
-          data.error || "Invalid Admin Key"
-        );
-      }
+      setTimeout(
+        function () {
 
-      message.textContent = "Access granted.";
-      message.className = "success";
+          keyInput.focus();
 
-      lock.textContent = "🔓";
-      lock.classList.add("unlocked");
-
-      sessionStorage.setItem(
-        "adminKey",
-        key
+        },
+        300
       );
 
-      unlockButton.textContent =
-        "ACCESS GRANTED";
-
-      setTimeout(function () {
-
-        gate.classList.add("unlocking");
-
-        document.body.classList.remove(
-          "admin-locked"
-        );
-
-      }, 450);
-
-      setTimeout(function () {
-
-        gate.remove();
-
-      }, 1100);
-
-    } catch (error) {
-
-      console.error(error);
-
-      message.textContent =
-        "Invalid Admin Key.";
-
-      message.className = "error";
-        unlockButton.disabled = false;
-        unlockButton.textContent = "🔓 UNLOCK ADMIN";
-
-  
-  keyInput.select();
+    })();
+  </script>
 
 
-      
-    }
-  }
+  <!-- =======================================================
+       ADMIN APPLICATION SCRIPT
+  ======================================================== -->
 
-  unlockButton.addEventListener(
-    "click",
-    unlockAdmin
-  );
+  <script src="/admin.js"></script>
 
-  keyInput.addEventListener(
-    "keydown",
-    function (event) {
 
-      if (event.key === "Enter") {
-        unlockAdmin();
-      }
-
-    }
-  );
-
-})();
-</script>
-
-<script src="/admin.js"></script>
 </body>
-</html>
 
+</html>
