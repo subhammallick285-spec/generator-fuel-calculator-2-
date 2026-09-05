@@ -1266,297 +1266,167 @@ if (
 
 }
 
+// ============================================================
+// SAVE DETAILS FOR FUTURE — REQUEST ADMIN APPROVAL
+// ============================================================
 
-    
+$("saveForFuture").addEventListener(
+  "click",
+  async () => {
 
+    const siteId =
+      siteIdInput.value.trim();
 
-    if (
-      A <= C
-    ) {
+    const model =
+      getCurrentModel();
 
-      $("error").textContent =
-        "Current HMR must be greater than Previous HMR.";
+    const currentHmr =
+      Number($("a").value);
 
+    const currentKwh =
+      Number($("b").value);
+
+    const E2Text =
+      $("e2").textContent
+        .replace(" L", "")
+        .trim();
+
+    const E2 =
+      Number(E2Text);
+
+    if (!siteId) {
+      $("saveMessage").textContent =
+        "Site ID is missing.";
       return;
-
     }
 
-
-    if (
-      B < D
-    ) {
-
-      $("error").textContent =
-        "Current kWh cannot be lower than Previous kWh.";
-
+    if (!model) {
+      $("saveMessage").textContent =
+        "DG Model is missing.";
       return;
-
     }
 
+    if (
+      !Number.isFinite(currentHmr) ||
+      !Number.isFinite(currentKwh)
+    ) {
+      $("saveMessage").textContent =
+        "Please enter valid current HMR and kWh readings.";
+      return;
+    }
 
-    // -------------------------
-    // E2
-    // -------------------------
+    if (!Number.isFinite(E2)) {
+      $("saveMessage").textContent =
+        "Please calculate E2 before requesting to save.";
+      return;
+    }
 
-    
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to request saving these details?\n\n" +
+        "The details will be sent to Admin for review and approval."
+      );
 
+    if (!confirmed) {
+      $("saveMessage").textContent =
+        "Save request cancelled.";
+      return;
+    }
 
-    $("e2").textContent =
-      E2.toFixed(2) + " L";
+    const button =
+      $("saveForFuture");
 
+    button.disabled = true;
 
-    $("currentBalanceAfterFillingBox")
-      .classList
-      .remove("hidden");
-
-
-    // -------------------------
-    // SEND TO WORKER
-    // -------------------------
+    $("saveMessage").textContent =
+      "Sending save request to Admin...";
 
     const payload = {
-
-      model:
-        selectedModel,
-
-      A:
-        A,
-
-      B:
-        B,
-
-      C:
-        C,
-
-      D:
-        D,
-
-      // IMPORTANT:
-      // Worker E = E1
-      E:
-        E1
-
+      site_id: siteId,
+      model: model,
+      current_hmr: currentHmr,
+      current_kwh: currentKwh,
+      current_balance: E2
     };
-
 
     try {
 
-      const res =
+      const response =
         await fetch(
-          "/api/calculate",
+          "/api/save-request",
           {
-            method:
-              "POST",
+            method: "POST",
 
             headers: {
-
               "Content-Type":
                 "application/json",
-
               "Accept":
                 "application/json"
-
             },
 
             body:
               JSON.stringify(payload)
-
           }
         );
 
-
       const responseText =
-        await res.text();
+        await response.text();
 
+      let data = {};
 
-      let data =
-        {};
-
-
-      if (
-        responseText.trim()
-      ) {
+      if (responseText.trim()) {
 
         try {
 
           data =
-            JSON.parse(
-              responseText
-            );
+            JSON.parse(responseText);
 
         } catch {
 
           throw new Error(
-            `Server returned invalid JSON (${res.status}).`
+            `Server returned invalid JSON (${response.status}).`
           );
 
         }
-
       }
 
-
-      if (!res.ok) {
+      if (!response.ok) {
 
         throw new Error(
           data.error ||
-          `Server Error (${res.status})`
+          `Server error (${response.status}).`
         );
 
       }
-
 
       if (!data.success) {
 
         throw new Error(
           data.error ||
-          "Calculation failed."
+          "Unable to send save request."
         );
 
       }
 
+      $("saveMessage").textContent =
+        "✓ Save request sent to Admin. Waiting for approval.";
 
-      // -------------------------
-      // SHOW Z
-      // -------------------------
+      button.textContent =
+        "Request Sent ✓";
 
-      $("z").textContent =
-        Number(data.Z)
-          .toFixed(4);
+      button.disabled =
+        true;
 
+    } catch (error) {
 
-      // -------------------------
-      // SHOW Y
-      // -------------------------
+      console.error(error);
 
-      $("y").textContent =
-        Number(data.Y)
-          .toFixed(4);
+      $("saveMessage").textContent =
+        error?.message ||
+        "Unable to send save request.";
 
-
-      // -------------------------
-      // SHOW X
-      // -------------------------
-
-      $("x").textContent =
-        Number(data.X)
-          .toFixed(4);
-
-
-      // -------------------------
-      // SHOW L
-      // -------------------------
-
-      $("l").textContent =
-        Number(data.L)
-          .toFixed(2) +
-        " L/hr";
-
-
-      // -------------------------
-      // SHOW S
-      // -------------------------
-
-      $("s").textContent =
-        Number(data.S)
-          .toFixed(2);
-
-
-      // -------------------------
-      // SHOW T
-      // -------------------------
-
-      $("result").textContent =
-        Number(data.T)
-          .toFixed(2);
-
-
-      $("t").textContent =
-        Number(data.T)
-          .toFixed(2);
-
-
-      // -------------------------
-      // CHART RANGE
-      // -------------------------
-
-      const range =
-        data.chart_range;
-
-
-      if (range) {
-
-        $("band").textContent =
-          `${data.model}: X = ` +
-          `${Number(data.X).toFixed(4)} ` +
-          `falls in ${range.from}–${range.to}. ` +
-          `Chart value L = ` +
-          `${Number(data.L).toFixed(2)} L/hr.`;
-
-      } else {
-
-        $("band").textContent =
-          `${data.model}: chart value L = ` +
-          `${Number(data.L).toFixed(2)} L/hr.`;
-
-      }
-
-
-      // -------------------------
-      // SHOW RESULT
-      // -------------------------
-
-      $("resultCard")
-        .classList
-        .remove("hidden");
-
-
-      // -------------------------
-      // SAVE BUTTON
-      // -------------------------
-
-      if (
-        !window.calculatorIncognito
-      ) {
-
-        $("saveForFuture")
-          .classList
-          .remove("hidden");
-
-      }
-
-
-      $("saveMessage")
-        .textContent =
-        "";
-
-
-      // -------------------------
-      // SCROLL
-      // -------------------------
-
-      $("resultCard")
-        .scrollIntoView({
-          behavior:
-            "smooth",
-
-          block:
-            "start"
-        });
-
-
-    } catch (err) {
-
-      console.error(err);
-
-
-      $("resultCard")
-        .classList
-        .add("hidden");
-
-
-      $("error").textContent =
-        err?.message ||
-        "Something went wrong.";
+      button.disabled =
+        false;
 
     }
 
