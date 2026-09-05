@@ -32,12 +32,14 @@ function clearMessage(element) {
 ========================================================= */
 
 function getAdminKey() {
-
   return (
-    $("adminKey")?.value.trim() || ""
+    sessionStorage.getItem("adminKey") ||
+    $("adminKey")?.value.trim() ||
+    ""
   );
 }
 
+  
 
 function adminHeaders(json = false) {
 
