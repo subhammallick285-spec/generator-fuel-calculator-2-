@@ -11,8 +11,307 @@
   >
 
   <title>Generator Admin</title>
+  /* =========================================================
+   ADMIN KEY GATE
+========================================================= */
+
+body.admin-locked {
+  overflow: hidden;
+}
+
+body.admin-locked > *:not(#adminGate) {
+  visibility: hidden;
+}
+
+#adminGate {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    radial-gradient(
+      circle at 50% 40%,
+      rgba(0,217,255,0.12),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #030512,
+      #080d25,
+      #050817
+    );
+
+  opacity: 1;
+  visibility: visible;
+
+  transition:
+    opacity 0.65s ease,
+    visibility 0.65s ease;
+}
+
+#adminGate.unlocking {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.admin-gate-box {
+  width: min(100%, 390px);
+
+  padding: 30px 22px 24px;
+
+  text-align: center;
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(20,29,68,0.94),
+      rgba(8,13,34,0.92)
+    );
+
+  border:
+    1px solid
+    rgba(91,126,255,0.35);
+
+  box-shadow:
+    0 25px 80px rgba(0,0,0,0.55),
+    0 0 45px rgba(0,217,255,0.10);
+
+  backdrop-filter: blur(22px);
+
+  animation:
+    adminGateEnter
+    0.75s
+    cubic-bezier(.16,1,.3,1);
+}
+
+.admin-lock {
+  width: 78px;
+  height: 78px;
+
+  margin: 0 auto 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 24px;
+
+  font-size: 34px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0,217,255,0.18),
+      rgba(155,53,255,0.28)
+    );
+
+  border:
+    1px solid
+    rgba(255,255,255,0.12);
+
+  box-shadow:
+    0 0 25px rgba(0,217,255,0.20),
+    0 0 55px rgba(155,53,255,0.12);
+
+  animation:
+    lockPulse
+    2.5s
+    ease-in-out
+    infinite;
+}
+
+.admin-lock.unlocked {
+  animation:
+    unlockPop
+    0.55s
+    cubic-bezier(.16,1,.3,1);
+}
+
+.admin-gate-title {
+  margin: 0;
+
+  font-size: 25px;
+  font-weight: 800;
+
+  color: white;
+}
+
+.admin-gate-subtitle {
+  margin: 8px 0 22px;
+
+  color: #9ca8c7;
+
+  font-size: 13px;
+}
+
+#adminGateKey {
+  width: 100%;
+
+  padding: 14px 15px;
+
+  border-radius: 12px;
+
+  border:
+    1px solid
+    rgba(110,130,190,0.30);
+
+  background:
+    rgba(3,7,20,0.80);
+
+  color: white;
+
+  font-size: 16px;
+
+  text-align: center;
+
+  letter-spacing: 2px;
+
+  outline: none;
+}
+
+#adminGateKey:focus {
+  border-color: #00d9ff;
+
+  box-shadow:
+    0 0 0 3px rgba(0,217,255,0.08),
+    0 0 22px rgba(0,217,255,0.15);
+}
+
+#adminGateButton {
+  margin-top: 14px;
+}
+
+#adminGateMessage {
+  min-height: 20px;
+
+  margin-top: 10px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#adminGateMessage.error {
+  color: #ff6478;
+}
+
+#adminGateMessage.success {
+  color: #00e6a8;
+}
+
+@keyframes adminGateEnter {
+
+  from {
+    opacity: 0;
+    transform:
+      translateY(25px)
+      scale(0.94);
+    filter: blur(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes lockPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 25px rgba(0,217,255,0.20),
+      0 0 55px rgba(155,53,255,0.12);
+  }
+
+  50% {
+    transform: scale(1.04);
+    box-shadow:
+      0 0 35px rgba(0,217,255,0.38),
+      0 0 70px rgba(155,53,255,0.22);
+  }
+}
+
+@keyframes unlockPop {
+
+  0% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.18);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
 
   <style>
+  </head>
+
+<body>
+
+<!-- =======================================================
+     ADMIN KEY GATE
+======================================================= -->
+
+<div id="adminGate">
+
+  <div class="admin-gate-box">
+
+    <div id="adminLock" class="admin-lock">
+      🔒
+    </div>
+
+    <h2 class="admin-gate-title">
+      Admin Access
+    </h2>
+
+    <p class="admin-gate-subtitle">
+      Enter your admin key to continue
+    </p>
+
+    <input
+      type="password"
+      id="adminGateKey"
+      placeholder="Admin Key"
+      autocomplete="off"
+      autocapitalize="none"
+      spellcheck="false"
+    >
+
+    <button
+      type="button"
+      id="adminGateButton"
+    >
+      🔓 UNLOCK ADMIN
+    </button>
+
+    <div id="adminGateMessage"></div>
+
+  </div>
+
+</div>
+
+<script>
+  document.body.classList.add("admin-locked");
+</script>
+
+  <div class="background">
+  </div>
 
     /* =========================================================
        RESET
