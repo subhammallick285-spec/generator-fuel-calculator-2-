@@ -1,68 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
   <meta charset="UTF-8">
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   >
 
   <meta
     name="theme-color"
-    content="#050817"
+    content="#050816"
   >
 
-  <title>Generator Admin</title>
+  <title>Generator Fuel Calculator — Admin</title>
 
-
-  <!-- =======================================================
-       ADMIN KEY GATE + MAIN PAGE CSS
-  ======================================================== -->
 
   <style>
 
-    :root {
-      --bg: #050817;
-      --bg2: #080d25;
-
-      --card: rgba(13, 20, 47, 0.82);
-      --card-strong: rgba(17, 25, 57, 0.94);
-
-      --border: rgba(110, 130, 190, 0.20);
-      --border-blue: rgba(0, 217, 255, 0.28);
-
-      --text: #ffffff;
-      --muted: #9ca8c7;
-
-      --cyan: #00d9ff;
-      --purple: #9b35ff;
-      --green: #00e6a8;
-      --red: #ff6478;
-      --yellow: #ffd166;
-
-      --shadow:
-        0 20px 60px rgba(0, 0, 0, 0.35);
-    }
-
+    /* =====================================================
+       BASE
+    ===================================================== */
 
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
-
 
     html {
-      min-height: 100%;
-      background: var(--bg);
+      scroll-behavior: smooth;
     }
-
 
     body {
       margin: 0;
       min-height: 100vh;
-
       font-family:
         Inter,
         system-ui,
@@ -71,56 +43,50 @@
         "Segoe UI",
         sans-serif;
 
-      color: var(--text);
+      color: #eef4ff;
 
       background:
         radial-gradient(
-          circle at 15% 10%,
-          rgba(0, 217, 255, 0.07),
+          circle at 20% 0%,
+          rgba(0, 217, 255, .10),
           transparent 30%
         ),
         radial-gradient(
-          circle at 85% 20%,
-          rgba(155, 53, 255, 0.08),
-          transparent 32%
+          circle at 100% 20%,
+          rgba(110, 70, 255, .10),
+          transparent 30%
         ),
-        var(--bg);
+        linear-gradient(
+          145deg,
+          #030512,
+          #070b1c 50%,
+          #030511
+        );
 
       overflow-x: hidden;
     }
 
 
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
-
-
-    button {
-      cursor: pointer;
-    }
-
-
-    /* =======================================================
-       ADMIN KEY LOCK
-    ======================================================== */
+    /* =====================================================
+       ADMIN LOCK
+    ===================================================== */
 
     body.admin-locked {
       overflow: hidden;
     }
-
 
     body.admin-locked > *:not(#adminGate) {
       visibility: hidden;
     }
 
 
+    /* =====================================================
+       ADMIN GATE
+    ===================================================== */
+
     #adminGate {
       position: fixed;
       inset: 0;
-
       z-index: 99999;
 
       display: flex;
@@ -131,8 +97,8 @@
 
       background:
         radial-gradient(
-          circle at 50% 40%,
-          rgba(0, 217, 255, 0.12),
+          circle at 50% 35%,
+          rgba(0, 217, 255, .12),
           transparent 35%
         ),
         linear-gradient(
@@ -146,10 +112,9 @@
       visibility: visible;
 
       transition:
-        opacity 0.65s ease,
-        visibility 0.65s ease;
+        opacity .65s ease,
+        visibility .65s ease;
     }
-
 
     #adminGate.unlocking {
       opacity: 0;
@@ -159,41 +124,54 @@
 
 
     .admin-gate-box {
-      width: min(100%, 390px);
+      width: 100%;
+      max-width: 390px;
 
-      padding: 30px 22px 24px;
+      padding: 34px 24px 28px;
 
       text-align: center;
 
-      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 26px;
 
       background:
         linear-gradient(
           145deg,
-          rgba(20, 29, 68, 0.94),
-          rgba(8, 13, 34, 0.92)
+          rgba(17,25,55,.92),
+          rgba(5,10,28,.94)
         );
 
-      border:
-        1px solid
-        rgba(91, 126, 255, 0.35);
-
       box-shadow:
-        0 25px 80px rgba(0, 0, 0, 0.55),
-        0 0 45px rgba(0, 217, 255, 0.10);
-
-      backdrop-filter: blur(22px);
+        0 30px 80px rgba(0,0,0,.55),
+        inset 0 1px 0 rgba(255,255,255,.06);
 
       animation:
-        adminGateEnter
-        0.75s
-        cubic-bezier(.16, 1, .3, 1);
+        gateBoxIn .7s cubic-bezier(.2,.8,.2,1);
+    }
+
+
+    @keyframes gateBoxIn {
+
+      from {
+        opacity: 0;
+        transform:
+          translateY(25px)
+          scale(.96);
+      }
+
+      to {
+        opacity: 1;
+        transform:
+          translateY(0)
+          scale(1);
+      }
+
     }
 
 
     .admin-lock {
-      width: 78px;
-      height: 78px;
+      width: 76px;
+      height: 76px;
 
       margin: 0 auto 18px;
 
@@ -201,1095 +179,1069 @@
       align-items: center;
       justify-content: center;
 
-      border-radius: 24px;
+      border-radius: 22px;
 
-      font-size: 34px;
+      font-size: 35px;
 
       background:
-        linear-gradient(
-          135deg,
-          rgba(0, 217, 255, 0.18),
-          rgba(155, 53, 255, 0.28)
-        );
+        rgba(0,217,255,.08);
 
       border:
-        1px solid
-        rgba(255, 255, 255, 0.12);
+        1px solid rgba(0,217,255,.25);
 
       box-shadow:
-        0 0 25px rgba(0, 217, 255, 0.20),
-        0 0 55px rgba(155, 53, 255, 0.12);
+        0 0 35px rgba(0,217,255,.10);
 
-      animation:
-        lockPulse
-        2.5s
-        ease-in-out
-        infinite;
+      transition:
+        transform .45s ease,
+        box-shadow .45s ease;
     }
 
-
     .admin-lock.unlocked {
-      animation:
-        unlockPop
-        0.55s
-        cubic-bezier(.16, 1, .3, 1);
+      transform: scale(1.12);
+
+      box-shadow:
+        0 0 45px rgba(0,255,180,.25);
     }
 
 
     .admin-gate-title {
       margin: 0;
 
-      font-size: 25px;
+      font-size: 27px;
       font-weight: 800;
-
-      color: white;
+      letter-spacing: -.5px;
     }
 
-
     .admin-gate-subtitle {
-      margin: 8px 0 22px;
+      margin: 8px 0 23px;
 
-      color: #9ca8c7;
-
-      font-size: 13px;
+      color: #91a0c0;
+      font-size: 14px;
     }
 
 
     #adminGateKey {
       width: 100%;
 
-      padding: 14px 15px;
+      padding: 15px 16px;
 
-      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
 
-      border:
-        1px solid
-        rgba(110, 130, 190, 0.30);
-
-      background:
-        rgba(3, 7, 20, 0.80);
+      outline: none;
 
       color: white;
+      background: rgba(255,255,255,.045);
 
       font-size: 16px;
 
-      text-align: center;
-
-      letter-spacing: 2px;
-
-      outline: none;
+      transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
     }
-
-
-    #adminGateKey::placeholder {
-      color: #687493;
-    }
-
 
     #adminGateKey:focus {
-      border-color: var(--cyan);
+      border-color: rgba(0,217,255,.55);
 
       box-shadow:
-        0 0 0 3px rgba(0, 217, 255, 0.08),
-        0 0 22px rgba(0, 217, 255, 0.15);
+        0 0 0 4px rgba(0,217,255,.08);
     }
 
 
     #adminGateButton {
       width: 100%;
 
-      margin-top: 14px;
+      margin-top: 13px;
+
+      padding: 15px;
+
+      border: 0;
+      border-radius: 14px;
+
+      color: white;
+
+      font-size: 14px;
+      font-weight: 800;
+
+      background:
+        linear-gradient(
+          135deg,
+          #087eff,
+          #00c9ff
+        );
+
+      box-shadow:
+        0 10px 28px rgba(0,150,255,.20);
+
+      cursor: pointer;
+
+      transition:
+        transform .2s ease,
+        opacity .2s ease;
+    }
+
+    #adminGateButton:active {
+      transform: scale(.98);
+    }
+
+    #adminGateButton:disabled {
+      opacity: .65;
+      cursor: wait;
     }
 
 
     #adminGateMessage {
       min-height: 20px;
+      margin-top: 13px;
 
-      margin-top: 10px;
-
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
     }
 
-
     #adminGateMessage.error {
-      color: var(--red);
+      color: #ff7182;
     }
-
 
     #adminGateMessage.success {
-      color: var(--green);
+      color: #55e6ad;
     }
 
 
-    @keyframes adminGateEnter {
-
-      from {
-        opacity: 0;
-
-        transform:
-          translateY(25px)
-          scale(0.94);
-
-        filter: blur(8px);
-      }
-
-      to {
-        opacity: 1;
-
-        transform:
-          translateY(0)
-          scale(1);
-
-        filter: blur(0);
-      }
-    }
-
-
-    @keyframes lockPulse {
-
-      0%,
-      100% {
-        transform: scale(1);
-
-        box-shadow:
-          0 0 25px rgba(0, 217, 255, 0.20),
-          0 0 55px rgba(155, 53, 255, 0.12);
-      }
-
-      50% {
-        transform: scale(1.04);
-
-        box-shadow:
-          0 0 35px rgba(0, 217, 255, 0.38),
-          0 0 70px rgba(155, 53, 255, 0.22);
-      }
-    }
-
-
-    @keyframes unlockPop {
-
-      0% {
-        transform: scale(1);
-      }
-
-      45% {
-        transform: scale(1.18);
-      }
-
-      100% {
-        transform: scale(1);
-      }
-    }
-
-
-    /* =======================================================
-       PAGE BACKGROUND
-    ======================================================== */
-
-    .background {
-      position: fixed;
-      inset: 0;
-
-      z-index: -1;
-
-      pointer-events: none;
-
-      overflow: hidden;
-    }
-
-
-    .background::before {
-      content: "";
-
-      position: absolute;
-
-      width: 420px;
-      height: 420px;
-
-      top: -180px;
-      left: -160px;
-
-      border-radius: 50%;
-
-      background:
-        radial-gradient(
-          circle,
-          rgba(0, 217, 255, 0.09),
-          transparent 70%
-        );
-
-      filter: blur(15px);
-    }
-
-
-    .background::after {
-      content: "";
-
-      position: absolute;
-
-      width: 460px;
-      height: 460px;
-
-      right: -200px;
-      bottom: -220px;
-
-      border-radius: 50%;
-
-      background:
-        radial-gradient(
-          circle,
-          rgba(155, 53, 255, 0.10),
-          transparent 70%
-        );
-
-      filter: blur(18px);
-    }
-
-
-    /* =======================================================
-       MAIN APP
-    ======================================================== */
+    /* =====================================================
+       APP
+    ===================================================== */
 
     .app {
       width: 100%;
-      min-height: 100vh;
-    }
-
-
-    .container {
-      width: min(100%, 1100px);
+      max-width: 720px;
 
       margin: 0 auto;
 
       padding:
-        18px
+        20px
         16px
-        50px;
+        60px;
     }
 
 
-    /* =======================================================
+    /* =====================================================
        HEADER
-    ======================================================== */
+    ===================================================== */
 
-    .header {
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 15px;
+
+      margin-bottom: 22px;
+    }
+
+
+    .brand {
+      display: flex;
+      align-items: center;
+
+      gap: 12px;
+    }
+
+
+    .brand-icon {
+      width: 45px;
+      height: 45px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 14px;
+
+      background:
+        rgba(0,217,255,.09);
+
+      border:
+        1px solid rgba(0,217,255,.20);
+
+      font-size: 22px;
+    }
+
+
+    .brand-title {
+      margin: 0;
+
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+
+    .brand-subtitle {
+      margin: 3px 0 0;
+
+      color: #71809f;
+
+      font-size: 11px;
+    }
+
+
+    /* =====================================================
+       NOTIFICATION BUTTON
+    ===================================================== */
+
+    .notification-button {
       position: relative;
+
+      width: 45px;
+      height: 45px;
+
+      flex: 0 0 45px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border:
+        1px solid rgba(255,255,255,.10);
+
+      border-radius: 14px;
+
+      color: white;
+
+      background:
+        rgba(255,255,255,.045);
+
+      font-size: 19px;
+
+      cursor: pointer;
+    }
+
+
+    #requestCount {
+      position: absolute;
+
+      top: -4px;
+      right: -4px;
+
+      min-width: 18px;
+      height: 18px;
+
+      padding: 0 5px;
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 99px;
+
+      color: white;
+
+      background: #ff435d;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      border: 2px solid #070b1c;
+    }
+
+
+    /* =====================================================
+       CARDS
+    ===================================================== */
+
+    .card {
+      margin-bottom: 16px;
+
+      padding: 19px;
+
+      border:
+        1px solid rgba(255,255,255,.08);
+
+      border-radius: 21px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(15,23,50,.90),
+          rgba(7,12,29,.88)
+        );
+
+      box-shadow:
+        0 14px 45px rgba(0,0,0,.18);
+    }
+
+
+    .card-title {
+      margin: 0 0 5px;
+
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .card-subtitle {
+      margin: 0 0 17px;
+
+      color: #7886a5;
+
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       FORM
+    ===================================================== */
+
+    label {
+      display: block;
+
+      margin: 0 0 7px;
+
+      color: #aab6d0;
+
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+
+    input,
+    select {
+
+      width: 100%;
+
+      padding: 13px 14px;
+
+      border:
+        1px solid rgba(255,255,255,.10);
+
+      border-radius: 13px;
+
+      outline: none;
+
+      color: white;
+
+      background:
+        rgba(255,255,255,.045);
+
+      font-size: 15px;
+
+      transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+    }
+
+
+    input:focus,
+    select:focus {
+
+      border-color:
+        rgba(0,217,255,.50);
+
+      box-shadow:
+        0 0 0 4px
+        rgba(0,217,255,.07);
+    }
+
+
+    select option {
+      background: #0a1024;
+      color: white;
+    }
+
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+
+    .button {
+
+      width: 100%;
+
+      min-height: 47px;
+
+      border: 0;
+
+      border-radius: 13px;
+
+      font-size: 13px;
+      font-weight: 800;
+
+      color: white;
+
+      cursor: pointer;
+
+      transition:
+        transform .15s ease,
+        opacity .2s ease;
+    }
+
+
+    .button:active {
+      transform: scale(.985);
+    }
+
+
+    .button:disabled {
+      opacity: .55;
+      cursor: wait;
+    }
+
+
+    .button-primary {
+
+      background:
+        linear-gradient(
+          135deg,
+          #087eff,
+          #00c9ff
+        );
+
+      box-shadow:
+        0 10px 25px
+        rgba(0,145,255,.15);
+    }
+
+
+    .button-secondary {
+
+      background:
+        rgba(255,255,255,.065);
+
+      border:
+        1px solid rgba(255,255,255,.08);
+    }
+
+
+    .button-success {
+
+      background:
+        linear-gradient(
+          135deg,
+          #0eb77b,
+          #28dba0
+        );
+    }
+
+
+    .button-danger {
+
+      background:
+        rgba(255,65,88,.10);
+
+      color: #ff7d8c;
+
+      border:
+        1px solid rgba(255,65,88,.18);
+    }
+
+
+    .button-purple {
+
+      background:
+        linear-gradient(
+          135deg,
+          #694cff,
+          #a56cff
+        );
+    }
+
+
+    .button-row {
+
+      display: grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap: 10px;
+    }
+
+
+    /* =====================================================
+       MESSAGES
+    ===================================================== */
+
+    .message {
+
+      min-height: 19px;
+
+      margin-top: 10px;
+
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+
+    .message.success {
+      color: #53dfaa;
+    }
+
+    .message.error {
+      color: #ff7182;
+    }
+
+
+    /* =====================================================
+       SITE INFO
+    ===================================================== */
+
+    #siteInfo {
+      display: none;
+    }
+
+    #siteInfo.show {
+      display: block;
+
+      animation:
+        sectionIn .35s ease;
+    }
+
+
+    .site-heading {
+
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+
+      gap: 15px;
+
+      margin-bottom: 17px;
+    }
+
+
+    .site-name {
+
+      margin: 0;
+
+      font-size: 21px;
+      font-weight: 850;
+    }
+
+
+    .site-id-small {
+
+      margin-top: 4px;
+
+      color: #73809c;
+
+      font-size: 11px;
+    }
+
+
+    .site-status {
+
+      padding: 6px 9px;
+
+      border-radius: 99px;
+
+      color: #56dfad;
+
+      background:
+        rgba(40,220,160,.08);
+
+      border:
+        1px solid rgba(40,220,160,.15);
+
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+
+    .site-grid {
+
+      display: grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap: 9px;
+    }
+
+
+    .site-stat {
+
+      padding: 13px;
+
+      border-radius: 14px;
+
+      background:
+        rgba(255,255,255,.035);
+
+      border:
+        1px solid rgba(255,255,255,.05);
+    }
+
+
+    .site-stat span {
+
+      display: block;
+
+      margin-bottom: 5px;
+
+      color: #6e7b98;
+
+      font-size: 10px;
+    }
+
+
+    .site-stat strong {
+
+      font-size: 14px;
+
+      color: #edf4ff;
+    }
+
+
+    /* =====================================================
+       SECTIONS
+    ===================================================== */
+
+    .collapsible-section {
+
+      display: none;
+
+      margin-top: 15px;
+    }
+
+
+    .collapsible-section.show {
+
+      display: block;
+
+      animation:
+        sectionIn .35s ease;
+    }
+
+
+    @keyframes sectionIn {
+
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+    }
+
+
+    .manual-section {
+
+      display: none;
+
+      margin-top: 13px;
+    }
+
+
+    .manual-section.show {
+
+      display: block;
+
+      animation:
+        sectionIn .35s ease;
+    }
+
+
+    /* =====================================================
+       IMAGE PREVIEW
+    ===================================================== */
+
+    #preview {
+      display: none;
+
+      margin-top: 13px;
+
+      padding: 11px;
+
+      border:
+        1px solid rgba(255,255,255,.08);
+
+      border-radius: 15px;
+
+      background:
+        rgba(255,255,255,.03);
+    }
+
+
+    #preview.show {
+      display: block;
+    }
+
+
+    #previewImage {
+
+      display: block;
+
+      width: 100%;
+      max-height: 280px;
+
+      object-fit: contain;
+
+      border-radius: 10px;
+
+      background: #02040b;
+    }
+
+
+    #fileName {
+
+      display: block;
+
+      margin-top: 8px;
+
+      color: #7e8ca8;
+
+      font-size: 11px;
+
+      word-break: break-all;
+    }
+
+
+    /* =====================================================
+       EXTRACTION
+    ===================================================== */
+
+    #extractionSection {
+      display: none;
+
+      margin-top: 15px;
+    }
+
+
+    #extractionSection.show {
+
+      display: block;
+
+      animation:
+        sectionIn .35s ease;
+    }
+
+
+    .extraction-title {
+
+      margin: 0 0 14px;
+
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+
+    /* =====================================================
+       REQUESTS
+    ===================================================== */
+
+    .request-header {
 
       display: flex;
 
       align-items: center;
       justify-content: space-between;
 
-      gap: 14px;
+      gap: 10px;
 
-      margin-bottom: 22px;
-
-      padding: 18px;
-
-      border-radius: 20px;
-
-      background:
-        linear-gradient(
-          145deg,
-          rgba(16, 25, 58, 0.90),
-          rgba(7, 12, 32, 0.82)
-        );
-
-      border:
-        1px solid
-        var(--border);
-
-      box-shadow: var(--shadow);
-
-      backdrop-filter: blur(18px);
+      margin-bottom: 15px;
     }
 
 
-    .brand {
-      min-width: 0;
-    }
-
-
-    .brand h1 {
-      margin: 0;
-
-      font-size: clamp(20px, 5vw, 28px);
-
-      font-weight: 850;
-
-      letter-spacing: -0.5px;
-    }
-
-
-    .brand p {
-      margin: 5px 0 0;
-
-      color: var(--muted);
-
-      font-size: 12px;
-    }
-
-
-    /* =======================================================
-       NOTIFICATION BELL
-    ======================================================== */
-
-    .notification-button {
-      position: relative;
-
-      flex: 0 0 auto;
-
-      width: 44px;
-      height: 44px;
+    .request-header-left {
 
       display: flex;
+
       align-items: center;
-      justify-content: center;
 
-      border-radius: 50%;
-
-      border:
-        1px solid
-        rgba(110, 130, 190, 0.28);
-
-      background:
-        rgba(7, 13, 32, 0.82);
-
-      color: white;
-
-      font-size: 19px;
-
-      transition:
-        transform 0.2s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+      gap: 8px;
     }
 
 
-    .notification-button:hover,
-    .notification-button:focus-visible {
-      transform: translateY(-1px);
+    .request-header-left h2 {
 
-      border-color:
-        rgba(0, 217, 255, 0.45);
+      margin: 0;
 
-      box-shadow:
-        0 0 20px
-        rgba(0, 217, 255, 0.12);
-
-      outline: none;
+      font-size: 17px;
     }
 
 
-    .notification-badge {
-      position: absolute;
-
-      top: -2px;
-      right: -1px;
-
-      min-width: 17px;
-      height: 17px;
+    .request-header-count {
 
       display: none;
 
-      align-items: center;
-      justify-content: center;
+      padding: 3px 7px;
 
-      padding: 0 4px;
-
-      border-radius: 50%;
-
-      background: var(--red);
+      border-radius: 99px;
 
       color: white;
+
+      background: #ff435d;
 
       font-size: 10px;
       font-weight: 800;
+    }
+
+
+    .refresh-button {
+
+      padding: 9px 11px;
 
       border:
-        2px solid
-        #080d25;
-    }
+        1px solid rgba(255,255,255,.08);
 
+      border-radius: 10px;
 
-    .notification-badge.show {
-      display: flex;
-    }
-
-
-    /* =======================================================
-       CARDS
-    ======================================================== */
-
-    .grid {
-      display: grid;
-
-      grid-template-columns: 1fr;
-
-      gap: 16px;
-    }
-
-
-    .card {
-      padding: 18px;
-
-      border-radius: 20px;
+      color: #b6c2da;
 
       background:
-        linear-gradient(
-          145deg,
-          rgba(16, 25, 58, 0.88),
-          rgba(7, 12, 32, 0.78)
-        );
+        rgba(255,255,255,.04);
 
-      border:
-        1px solid
-        var(--border);
-
-      box-shadow: var(--shadow);
-
-      backdrop-filter: blur(18px);
+      font-size: 10px;
+      font-weight: 700;
     }
 
 
-    .card.full {
-      width: 100%;
-    }
+    .request-card {
 
-
-    .card h2 {
-      display: flex;
-
-      align-items: center;
-
-      gap: 9px;
-
-      margin:
-        0
-        0
-        16px;
-
-      font-size: 17px;
-
-      font-weight: 800;
-    }
-
-
-    .icon {
-      width: 31px;
-      height: 31px;
-
-      display: inline-flex;
-
-      align-items: center;
-      justify-content: center;
-
-      flex: 0 0 auto;
-
-      border-radius: 9px;
-
-      background:
-        rgba(0, 217, 255, 0.10);
-
-      border:
-        1px solid
-        rgba(0, 217, 255, 0.14);
-
-      font-size: 15px;
-    }
-
-
-    /* =======================================================
-       FORM ELEMENTS
-    ======================================================== */
-
-    label {
-      display: block;
-
-      margin:
-        0
-        0
-        7px;
-
-      color: #c6cee4;
-
-      font-size: 12px;
-      font-weight: 650;
-    }
-
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-
-      min-height: 46px;
-
-      padding:
-        12px
-        13px;
-
-      border-radius: 12px;
-
-      border:
-        1px solid
-        rgba(110, 130, 190, 0.24);
-
-      background:
-        rgba(3, 7, 20, 0.72);
-
-      color: white;
-
-      outline: none;
-
-      transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background 0.2s ease;
-    }
-
-
-    input::placeholder,
-    textarea::placeholder {
-      color: #66718e;
-    }
-
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color:
-        rgba(0, 217, 255, 0.60);
-
-      box-shadow:
-        0 0 0 3px
-        rgba(0, 217, 255, 0.07);
-
-      background:
-        rgba(4, 9, 25, 0.90);
-    }
-
-
-    select {
-      appearance: auto;
-    }
-
-
-    .field {
-      margin-bottom: 14px;
-    }
-
-
-    .field:last-child {
-      margin-bottom: 0;
-    }
-
-
-    /* =======================================================
-       BUTTONS
-    ======================================================== */
-
-    button {
-      min-height: 46px;
-
-      padding:
-        11px
-        15px;
-
-      border-radius: 12px;
-
-      border: 1px solid transparent;
-
-      font-size: 13px;
-      font-weight: 750;
-
-      color: white;
-
-      background:
-        linear-gradient(
-          135deg,
-          #087dff,
-          #6b35ff
-        );
-
-      box-shadow:
-        0 10px 25px
-        rgba(40, 76, 255, 0.18);
-
-      transition:
-        transform 0.18s ease,
-        opacity 0.18s ease,
-        box-shadow 0.18s ease;
-    }
-
-
-    button:hover {
-      transform: translateY(-1px);
-
-      box-shadow:
-        0 13px 30px
-        rgba(40, 76, 255, 0.25);
-    }
-
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-
-    button:disabled {
-      opacity: 0.55;
-
-      cursor: not-allowed;
-
-      transform: none;
-    }
-
-
-    button.secondary {
-      width: 100%;
-
-      background:
-        rgba(8, 15, 38, 0.88);
-
-      border:
-        1px solid
-        rgba(110, 130, 190, 0.28);
-
-      box-shadow: none;
-    }
-
-
-    button.secondary:hover {
-      border-color:
-        rgba(0, 217, 255, 0.42);
-
-      box-shadow:
-        0 0 20px
-        rgba(0, 217, 255, 0.08);
-    }
-
-
-    button.danger {
-      background:
-        linear-gradient(
-          135deg,
-          #d83250,
-          #8e2440
-        );
-    }
-
-
-    button.success {
-      background:
-        linear-gradient(
-          135deg,
-          #00c994,
-          #008d82
-        );
-    }
-
-
-    /* =======================================================
-       SITE SEARCH
-    ======================================================== */
-
-    .search-row {
-      display: flex;
-
-      gap: 9px;
-    }
-
-
-    .search-row input {
-      flex: 1;
-      min-width: 0;
-    }
-
-
-    .search-row button {
-      flex: 0 0 auto;
-
-      width: 52px;
-
-      padding:
-        10px;
-    }
-
-
-    .search-hint {
-      margin-top: 8px;
-
-      color: #7884a3;
-
-      font-size: 11px;
-      line-height: 1.5;
-    }
-
-
-    /* =======================================================
-       SITE RESULT
-    ======================================================== */
-
-    .site-result {
-      display: none;
-
-      margin-top: 16px;
+      margin-top: 11px;
 
       padding: 15px;
 
-      border-radius: 15px;
+      border:
+        1px solid rgba(255,255,255,.08);
+
+      border-radius: 16px;
 
       background:
-        rgba(4, 9, 25, 0.62);
+        rgba(255,255,255,.025);
+    }
+
+
+    .request-top {
+
+      display: flex;
+
+      align-items: flex-start;
+      justify-content: space-between;
+
+      gap: 10px;
+
+      margin-bottom: 13px;
+    }
+
+
+    .request-site strong {
+
+      display: block;
+
+      font-size: 14px;
+    }
+
+
+    .request-site span {
+
+      display: block;
+
+      margin-top: 3px;
+
+      color: #6f7d9a;
+
+      font-size: 10px;
+    }
+
+
+    .pending-badge {
+
+      padding: 5px 8px;
+
+      border-radius: 99px;
+
+      color: #ffc85c;
+
+      background:
+        rgba(255,190,50,.08);
 
       border:
-        1px solid
-        rgba(110, 130, 190, 0.18);
+        1px solid rgba(255,190,50,.15);
 
-      animation:
-        slideUp
-        0.35s
-        cubic-bezier(.16, 1, .3, 1);
-    }
-
-
-    .site-result.show {
-      display: block;
-    }
-
-
-    .site-title {
-      margin: 0;
-
-      font-size: 18px;
+      font-size: 8px;
       font-weight: 800;
     }
 
 
-    .site-meta {
-      margin-top: 5px;
+    .request-details {
 
-      color: var(--muted);
-
-      font-size: 12px;
-    }
-
-
-    .site-values {
       display: grid;
 
       grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+        1fr 1fr;
 
       gap: 8px;
-
-      margin-top: 14px;
     }
 
 
-    .value-box {
-      min-width: 0;
+    .request-value {
 
-      padding: 11px 8px;
+      padding: 10px;
 
-      text-align: center;
-
-      border-radius: 12px;
+      border-radius: 11px;
 
       background:
-        rgba(17, 27, 60, 0.70);
-
-      border:
-        1px solid
-        rgba(110, 130, 190, 0.15);
+        rgba(255,255,255,.03);
     }
 
 
-    .value-box span {
+    .request-label {
+
       display: block;
 
       margin-bottom: 4px;
 
-      color: #7783a2;
+      color: #687692;
 
       font-size: 9px;
-
-      text-transform: uppercase;
-
-      letter-spacing: 0.4px;
     }
 
 
-    .value-box strong {
-      display: block;
-
-      overflow: hidden;
-
-      text-overflow: ellipsis;
-
-      white-space: nowrap;
-
-      font-size: 13px;
-    }
-
-
-    /* =======================================================
-       EDIT / ADD ACTION AREA
-    ======================================================== */
-
-    .site-question {
-      margin:
-        15px
-        0
-        10px;
-
-      color: #dce3f5;
-
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-
-    .action-row {
-      display: flex;
-
-      gap: 9px;
-    }
-
-
-    .action-row button {
-      flex: 1;
-    }
-
-
-    .edit-controls {
-      display: none;
-
-      margin-top: 15px;
-
-      animation:
-        slideUp
-        0.35s
-        cubic-bezier(.16, 1, .3, 1);
-    }
-
-
-    .edit-controls.show {
-      display: block;
-    }
-
-
-    /* =======================================================
-       ADD SITE AREA
-    ======================================================== */
-
-    .add-site-section {
-      display: none;
-
-      margin-top: 16px;
-
-      animation:
-        slideUp
-        0.35s
-        cubic-bezier(.16, 1, .3, 1);
-    }
-
-
-    .add-site-section.show {
-      display: block;
-    }
-
-
-    /* =======================================================
-       HIDDEN / COLLAPSIBLE SECTIONS
-    ======================================================== */
-
-    .hidden {
-      display: none !important;
-    }
-
-
-    .manual-section,
-    .extraction-section {
-      display: none;
-    }
-
-
-    .manual-section.show,
-    .extraction-section.show {
-      display: block;
-
-      animation:
-        slideUp
-        0.35s
-        cubic-bezier(.16, 1, .3, 1);
-    }
-
-
-    /* =======================================================
-       MESSAGES
-    ======================================================== */
-
-    .message {
-      min-height: 20px;
-
-      margin-top: 10px;
-
-      font-size: 12px;
-
-      line-height: 1.5;
-    }
-
-
-    .message.success {
-      color: var(--green);
-    }
-
-
-    .message.error {
-      color: var(--red);
-    }
-
-
-    .message.warning {
-      color: var(--yellow);
-    }
-
-
-    /* =======================================================
-       LOADING
-    ======================================================== */
-
-    .loading {
-      display: none;
-
-      align-items: center;
-      justify-content: center;
-
-      gap: 9px;
-
-      padding: 18px;
-
-      color: var(--muted);
+    .request-value strong {
 
       font-size: 12px;
     }
 
 
-    .loading.show {
-      display: flex;
+    .request-time {
+
+      margin-top: 11px;
+
+      color: #687692;
+
+      font-size: 9px;
     }
 
 
-    .spinner {
-      width: 18px;
-      height: 18px;
+    .request-actions {
 
-      border-radius: 50%;
+      display: grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap: 8px;
+
+      margin-top: 13px;
+    }
+
+
+    .approve-button,
+    .reject-button {
+
+      min-height: 40px;
+
+      border: 0;
+
+      border-radius: 10px;
+
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+
+    .approve-button {
+
+      color: #5ce0ad;
+
+      background:
+        rgba(40,220,160,.08);
 
       border:
-        2px solid
-        rgba(255, 255, 255, 0.12);
-
-      border-top-color:
-        var(--cyan);
-
-      animation:
-        spin
-        0.8s
-        linear
-        infinite;
+        1px solid rgba(40,220,160,.13);
     }
 
 
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+    .reject-button {
+
+      color: #ff7888;
+
+      background:
+        rgba(255,65,88,.07);
+
+      border:
+        1px solid rgba(255,65,88,.12);
     }
 
 
-    @keyframes slideUp {
+    .request-empty {
 
-      from {
-        opacity: 0;
+      padding: 30px 15px;
 
-        transform:
-          translateY(12px);
-      }
+      text-align: center;
 
-      to {
-        opacity: 1;
+      border:
+        1px dashed rgba(255,255,255,.08);
 
-        transform:
-          translateY(0);
-      }
+      border-radius: 16px;
     }
 
 
-    /* =======================================================
-       RESPONSIVE
-    ======================================================== */
+    .request-empty strong {
 
-    @media (min-width: 700px) {
+      display: block;
 
-      .container {
-        padding:
-          28px
-          22px
-          60px;
-      }
+      margin-top: 9px;
 
-
-      .grid {
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
-      }
-
-
-      .card.full {
-        grid-column: 1 / -1;
-      }
-
-
-      .header {
-        padding: 20px 22px;
-      }
-
+      font-size: 13px;
     }
 
 
-    @media (max-width: 420px) {
+    .request-empty span {
 
-      .container {
-        padding:
-          12px
-          12px
-          40px;
+      display: block;
+
+      margin-top: 5px;
+
+      color: #687692;
+
+      font-size: 10px;
+
+      line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       FOOTER
+    ===================================================== */
+
+    .footer {
+
+      padding: 10px 0 0;
+
+      text-align: center;
+
+      color: #4d5a74;
+
+      font-size: 10px;
+    }
+
+
+    /* =====================================================
+       MOBILE
+    ===================================================== */
+
+    @media (max-width: 430px) {
+
+      .app {
+        padding-left: 13px;
+        padding-right: 13px;
       }
-
 
       .card {
-        padding: 15px;
+        padding: 16px;
+        border-radius: 18px;
       }
 
-
-      .site-values {
-        gap: 5px;
-      }
-
-
-      .value-box {
-        padding:
-          10px
-          5px;
-      }
-
-
-      .value-box strong {
-        font-size: 12px;
+      .site-grid,
+      .request-details {
+        gap: 7px;
       }
 
     }
@@ -1299,198 +1251,1216 @@
 </head>
 
 
-
-
-
-          
-
-
-
 <body class="admin-locked">
+
+
+  <!-- =====================================================
+       ADMIN KEY GATE
+  ===================================================== -->
+
   <div id="adminGate">
-  <div class="admin-gate-box">
 
-    <div id="adminLock" class="admin-lock">🔒</div>
+    <div class="admin-gate-box">
 
-    <h2 class="admin-gate-title">
-      Admin Access
-    </h2>
+      <div id="adminLock" class="admin-lock">
+        🔒
+      </div>
 
-    <p class="admin-gate-subtitle">
-      Enter your admin key to continue
-    </p>
+      <h2 class="admin-gate-title">
+        Admin Access
+      </h2>
 
-    <input
-      type="password"
-      id="adminGateKey"
-      placeholder="Admin Key"
-      autocomplete="off"
-      autocapitalize="none"
-      spellcheck="false"
+      <p class="admin-gate-subtitle">
+        Enter your admin key to continue
+      </p>
+
+      <input
+        type="password"
+        id="adminGateKey"
+        placeholder="Admin Key"
+        autocomplete="off"
+        autocapitalize="none"
+        spellcheck="false"
+      >
+
+      <button
+        type="button"
+        id="adminGateButton"
+      >
+        🔓 UNLOCK ADMIN
+      </button>
+
+      <div id="adminGateMessage"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       MAIN ADMIN APP
+  ===================================================== -->
+
+  <main class="app">
+
+
+    <!-- ===================================================
+         HEADER
+    =================================================== -->
+
+    <header class="admin-header">
+
+      <div class="brand">
+
+        <div class="brand-icon">
+          ⚡
+        </div>
+
+        <div>
+
+          <h1 class="brand-title">
+            Generator Admin
+          </h1>
+
+          <p class="brand-subtitle">
+            Fuel Calculator Control Panel
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="notification-button"
+        id="notificationButton"
+        aria-label="Notifications"
+      >
+
+        🔔
+
+        <span id="requestCount">
+          0
+        </span>
+
+      </button>
+
+    </header>
+
+    <!-- ===================================================
+         SITE SEARCH
+    =================================================== -->
+
+    <section class="card" id="siteSearchCard">
+
+      <h2 class="card-title">
+        Find Site
+      </h2>
+
+      <p class="card-subtitle">
+        Search a saved Site ID to view or manage its latest data.
+      </p>
+
+
+      <div class="form-group">
+
+        <label for="siteId">
+          Site ID
+        </label>
+
+        <input
+          type="text"
+          id="siteId"
+          placeholder="Enter Site ID"
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+        >
+
+      </div>
+
+
+      <!-- Hidden compatibility field used by admin.js -->
+
+      <input
+        type="password"
+        id="adminKey"
+        style="display:none"
+        autocomplete="off"
+      >
+
+
+      <button
+        type="button"
+        class="button button-primary"
+        id="loadSite"
+      >
+        🔄 LOAD EXISTING SITE
+      </button>
+
+
+      <div
+        id="authMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         SITE INFORMATION
+    =================================================== -->
+
+    <section
+      class="card"
+      id="siteInfo"
     >
 
-    <button type="button" id="adminGateButton">
-      🔓 UNLOCK ADMIN
-    </button>
+      <div class="site-heading">
 
-    <div id="adminGateMessage"></div>
+        <div>
 
-  </div>
-  </div>
+          <h2
+            class="site-name"
+            id="siteName"
+          >
+            —
+          </h2>
 
-<!-- =======================================================
-     ADMIN KEY GATE SCRIPT
-======================================================== -->
+          <div
+            class="site-id-small"
+            id="siteIdDisplay"
+          >
+            Saved Site
+          </div>
 
-<script>
-(function () {
+        </div>
 
-  const gate = document.getElementById("adminGate");
-  const keyInput = document.getElementById("adminGateKey");
-  const unlockButton = document.getElementById("adminGateButton");
-  const message = document.getElementById("adminGateMessage");
-  const lock = document.getElementById("adminLock");
+        <span class="site-status">
+          SAVED
+        </span>
 
-  if (!gate || !keyInput || !unlockButton || !message || !lock) {
-    console.error("Admin gate elements not found.");
-    return;
-  }
+      </div>
 
-  async function unlockAdmin() {
 
-    const key = keyInput.value.trim();
+      <div class="site-grid">
 
-    if (!key) {
-      message.textContent = "Please enter the Admin Key.";
-      message.className = "error";
-      keyInput.focus();
-      return;
-    }
+        <div class="site-stat">
 
-    unlockButton.disabled = true;
-    unlockButton.textContent = "VERIFYING...";
-    message.textContent = "";
-    message.className = "";
+          <span>
+            DG Model
+          </span>
 
-    try {
+          <strong id="siteModel">
+            —
+          </strong>
 
-      const response = await fetch("/api/admin/save-requests", {
-        method: "GET",
-        headers: {
-          "X-Admin-Key": key,
-          "Accept": "application/json"
-        },
-        cache: "no-store"
-      });
+        </div>
 
-      const responseText = await response.text();
 
-      let data = {};
+        <div class="site-stat">
 
-      if (responseText.trim()) {
+          <span>
+            Current HMR
+          </span>
+
+          <strong id="siteHmr">
+            —
+          </strong>
+
+        </div>
+
+
+        <div class="site-stat">
+
+          <span>
+            Current kWh
+          </span>
+
+          <strong id="siteKwh">
+            —
+          </strong>
+
+        </div>
+
+
+        <div class="site-stat">
+
+          <span>
+            Balance
+          </span>
+
+          <strong id="siteBalance">
+            —
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         EDIT SITE
+    =================================================== -->
+
+    <section class="card">
+
+      <h2 class="card-title">
+        Edit Site
+      </h2>
+
+      <p class="card-subtitle">
+        Modify saved site information and readings.
+      </p>
+
+
+      <div class="form-group">
+
+        <label for="editSiteId">
+          Site ID
+        </label>
+
+        <input
+          type="text"
+          id="editSiteId"
+          placeholder="Site ID"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="editSiteName">
+          Site Name
+        </label>
+
+        <input
+          type="text"
+          id="editSiteName"
+          placeholder="Site Name"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="editModel">
+          Generator Model
+        </label>
+
+        <select id="editModel">
+
+          <option value="">
+            Select Generator Model
+          </option>
+
+          <option value="eicher10">
+            Eicher 10 KVA
+          </option>
+
+          <option value="mahindra10">
+            Mahindra 10 KVA
+          </option>
+
+          <option value="eicher20">
+            Eicher 20 KVA
+          </option>
+
+          <option value="mahindra20">
+            Mahindra 20 KVA
+          </option>
+
+          <option value="koel20">
+            KOEL 20 KVA
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="editHmr">
+          Current HMR
+        </label>
+
+        <input
+          type="number"
+          id="editHmr"
+          step="any"
+          placeholder="Current HMR"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="editKwh">
+          Current kWh
+        </label>
+
+        <input
+          type="number"
+          id="editKwh"
+          step="any"
+          placeholder="Current kWh"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="editBalance">
+          Current Balance
+        </label>
+
+        <input
+          type="number"
+          id="editBalance"
+          step="any"
+          placeholder="Current Balance"
+        >
+
+      </div>
+
+
+      <button
+        type="button"
+        class="button button-primary"
+        id="saveSiteEdit"
+      >
+        💾 SAVE SITE CHANGES
+      </button>
+
+
+      <div
+        id="editSiteMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         MANUAL READING
+    =================================================== -->
+
+    <section class="card">
+
+      <h2 class="card-title">
+        Manual Reading
+      </h2>
+
+      <p class="card-subtitle">
+        Enter the latest generator readings manually.
+      </p>
+
+
+      <div class="form-group">
+
+        <label for="model">
+          Generator Model
+        </label>
+
+        <select id="model">
+
+          <option value="">
+            Select Generator Model
+          </option>
+
+          <option value="eicher10">
+            Eicher 10 KVA
+          </option>
+
+          <option value="mahindra10">
+            Mahindra 10 KVA
+          </option>
+
+          <option value="eicher20">
+            Eicher 20 KVA
+          </option>
+
+          <option value="mahindra20">
+            Mahindra 20 KVA
+          </option>
+
+          <option value="koel20">
+            KOEL 20 KVA
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="currentHmr">
+          Current HMR
+        </label>
+
+        <input
+          type="number"
+          id="currentHmr"
+          step="any"
+          placeholder="Current HMR"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="currentKwh">
+          Current kWh
+        </label>
+
+        <input
+          type="number"
+          id="currentKwh"
+          step="any"
+          placeholder="Current kWh"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="currentBalance">
+          Current Balance
+        </label>
+
+        <input
+          type="number"
+          id="currentBalance"
+          step="any"
+          placeholder="Current Balance"
+        >
+
+      </div>
+
+
+      <button
+        type="button"
+        class="button button-success"
+        id="updateSite"
+      >
+        💾 SAVE MANUAL READING
+      </button>
+
+
+      <div
+        id="updateMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         LLAMA AI / SCREENSHOT EXTRACTION
+    =================================================== -->
+
+    <section class="card">
+
+      <h2 class="card-title">
+        Screenshot Extraction
+      </h2>
+
+      <p class="card-subtitle">
+        Use Llama AI to read generator readings from a screenshot.
+      </p>
+
+
+      <button
+        type="button"
+        class="button button-purple"
+        id="activateLlama"
+      >
+        🤖 ACTIVATE LLAMA AI
+      </button>
+
+
+      <div
+        id="llamaMessage"
+        class="message"
+      ></div>
+
+
+      <div
+        class="form-group"
+        style="margin-top:15px;"
+      >
+
+        <label for="imageInput">
+          Generator Screenshot
+        </label>
+
+        <input
+          type="file"
+          id="imageInput"
+          accept="image/*"
+        >
+
+      </div>
+
+
+      <div id="preview">
+
+        <img
+          id="previewImage"
+          alt="Screenshot preview"
+        >
+
+        <span id="fileName"></span>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="button button-primary"
+        id="extractButton"
+      >
+        ✨ EXTRACT DETAILS
+      </button>
+
+
+      <div
+        id="extractLoading"
+        class="message"
+      >
+        AI extraction in progress...
+      </div>
+
+
+      <!-- ===============================================
+           EXTRACTED DATA
+      ================================================ -->
+
+      <div id="extractionSection">
+
+        <h3 class="extraction-title">
+          Review Extracted Details
+        </h3>
+
+
+        <div class="form-group">
+
+          <label for="extractedModel">
+            Generator Model
+          </label>
+
+          <select id="extractedModel">
+
+            <option value="">
+              Select Generator Model
+            </option>
+
+            <option value="eicher10">
+              Eicher 10 KVA
+            </option>
+
+            <option value="mahindra10">
+              Mahindra 10 KVA
+            </option>
+
+            <option value="eicher20">
+              Eicher 20 KVA
+            </option>
+
+            <option value="mahindra20">
+              Mahindra 20 KVA
+            </option>
+
+            <option value="koel20">
+              KOEL 20 KVA
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="extractedHmr">
+            Current HMR
+          </label>
+
+          <input
+            type="number"
+            id="extractedHmr"
+            step="any"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="extractedKwh">
+            Current kWh
+          </label>
+
+          <input
+            type="number"
+            id="extractedKwh"
+            step="any"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="extractedPreviousBalance">
+            Previous Balance
+          </label>
+
+          <input
+            type="number"
+            id="extractedPreviousBalance"
+            step="any"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="extractedFuelFilled">
+            Fuel Filled
+          </label>
+
+          <input
+            type="number"
+            id="extractedFuelFilled"
+            step="any"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="extractedBalance">
+            Current Balance
+          </label>
+
+          <input
+            type="number"
+            id="extractedBalance"
+            step="any"
+          >
+
+        </div>
+
+
+        <button
+          type="button"
+          class="button button-success"
+          id="saveExtracted"
+        >
+          ✅ CONFIRM & SAVE
+        </button>
+
+
+        <div
+          id="extractMessage"
+          class="message"
+        ></div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         MANUAL TOGGLE COMPATIBILITY
+    =================================================== -->
+
+    <section class="card">
+
+      <button
+        type="button"
+        class="button button-secondary"
+        id="manualButton"
+      >
+        ＋ ENTER MANUAL READING
+      </button>
+
+
+      <div
+        id="manualSection"
+        class="manual-section"
+      >
+
+        <p
+          class="card-subtitle"
+          style="margin-top:14px;margin-bottom:0;"
+        >
+          Manual reading controls are available above.
+        </p>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         SAVE REQUESTS
+    =================================================== -->
+
+    <section
+      class="card"
+      id="notificationsSection"
+    >
+
+      <div class="request-header">
+
+        <div class="request-header-left">
+
+          <h2>
+            Save Requests
+          </h2>
+
+          <span
+            id="requestCount"
+            class="request-header-count"
+          >
+            0
+          </span>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="refresh-button"
+          id="refreshRequests"
+        >
+          🔄 REFRESH
+        </button>
+
+      </div>
+
+
+      <div
+        id="requestMessage"
+        class="message"
+      ></div>
+
+
+      <div id="saveRequestsList"></div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         FOOTER
+    =================================================== -->
+
+    <div class="footer">
+      Generator Fuel Calculator • Admin Control Panel
+    </div>
+
+
+  </main>
+
+
+
+  <!-- =====================================================
+       ADMIN KEY GATE SCRIPT
+       ===================================================== -->
+
+  <script>
+
+    (function () {
+
+      const gate =
+        document.getElementById("adminGate");
+
+      const keyInput =
+        document.getElementById("adminGateKey");
+
+      const unlockButton =
+        document.getElementById("adminGateButton");
+
+      const gateMessage =
+        document.getElementById("adminGateMessage");
+
+      const lock =
+        document.getElementById("adminLock");
+
+
+      if (
+        !gate ||
+        !keyInput ||
+        !unlockButton ||
+        !gateMessage ||
+        !lock
+      ) {
+
+        console.error(
+          "Admin gate elements not found."
+        );
+
+        return;
+      }
+
+
+      async function unlockAdmin() {
+
+        const key =
+          keyInput.value.trim();
+
+
+        if (!key) {
+
+          gateMessage.textContent =
+            "Please enter the Admin Key.";
+
+          gateMessage.className =
+            "error";
+
+          keyInput.focus();
+
+          return;
+
+        }
+
+
+        unlockButton.disabled =
+          true;
+
+        unlockButton.textContent =
+          "VERIFYING...";
+
+
+        gateMessage.textContent =
+          "";
+
+        gateMessage.className =
+          "";
+
+
         try {
-          data = JSON.parse(responseText);
+
+          const response =
+            await fetch(
+              "/api/admin/save-requests",
+              {
+                method: "GET",
+
+                headers: {
+                  "X-Admin-Key": key,
+                  "Accept": "application/json"
+                },
+
+                cache: "no-store"
+              }
+            );
+
+
+          const responseText =
+            await response.text();
+
+
+          let data = {};
+
+
+          if (
+            responseText.trim()
+          ) {
+
+            try {
+
+              data =
+                JSON.parse(responseText);
+
+            } catch {
+
+              throw new Error(
+                "Server returned invalid response."
+              );
+
+            }
+
+          }
+
+
+          if (
+            !response.ok ||
+            !data.success
+          ) {
+
+            throw new Error(
+              data.error ||
+              "Invalid Admin Key."
+            );
+
+          }
+
+
+          sessionStorage.setItem(
+            "adminKey",
+            key
+          );
+
+
+          const hiddenAdminKey =
+            document.getElementById(
+              "adminKey"
+            );
+
+
+          if (hiddenAdminKey) {
+
+            hiddenAdminKey.value =
+              key;
+
+          }
+
+
+          gateMessage.textContent =
+            "Access granted.";
+
+          gateMessage.className =
+            "success";
+
+
+          lock.textContent =
+            "🔓";
+
+          lock.classList.add(
+            "unlocked"
+          );
+
+
+          unlockButton.textContent =
+            "ACCESS GRANTED";
+
+
+          setTimeout(
+            function () {
+
+              document.body
+                .classList
+                .remove("admin-locked");
+
+              gate
+                .classList
+                .add("unlocking");
+
+
+              document
+                .querySelectorAll(
+                  "body > *"
+                )
+                .forEach(
+                  function (element) {
+
+                    if (
+                      element.id !==
+                      "adminGate"
+                    ) {
+
+                      element.style.visibility =
+                        "visible";
+
+                    }
+
+                  }
+                );
+
+            },
+            450
+          );
+
+
+          setTimeout(
+            function () {
+
+              gate.remove();
+
+            },
+            1100
+          );
+
+
         } catch (error) {
-          throw new Error("Server returned invalid response.");
-        }
-      }
 
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Invalid Admin Key."
-        );
-      }
+          console.error(error);
 
-      if (!data.success) {
-        throw new Error(
-          data.error || "Invalid Admin Key."
-        );
-      }
 
-      /* ===============================================
-         ACCESS GRANTED
-      ================================================ */
+          gateMessage.textContent =
+            "Invalid Admin Key.";
 
-      message.textContent = "Access granted.";
-      message.className = "success";
+          gateMessage.className =
+            "error";
 
-      lock.textContent = "🔓";
-      lock.classList.add("unlocked");
 
-      sessionStorage.setItem("adminKey", key);
+          unlockButton.disabled =
+            false;
 
-      unlockButton.textContent = "ACCESS GRANTED";
+          unlockButton.textContent =
+            "🔓 UNLOCK ADMIN";
 
-      /* ===============================================
-         PREMIUM REVEAL
-      ================================================ */
 
-      setTimeout(function () {
-  document.body.classList.remove("admin-locked");
-  gate.classList.add("unlocking");
-  
-  document.querySelectorAll("body > *").forEach(function (element) {
-    if (element.id !== "adminGate") {
-      element.style.visibility = "visible";
-    }
-  });
-}, 450);
-      setTimeout(function () {
+          keyInput.select();
 
-        if (gate) {
-          gate.remove();
         }
 
-      }, 1100);
-
-    } catch (error) {
-
-      console.error(error);
-
-      message.textContent = "Invalid Admin Key.";
-      message.className = "error";
-
-      unlockButton.disabled = false;
-      unlockButton.textContent = "🔓 UNLOCK ADMIN";
-
-      keyInput.select();
-    }
-  }
-
-  /* ===============================================
-     UNLOCK BUTTON
-  ================================================ */
-
-  unlockButton.addEventListener(
-    "click",
-    unlockAdmin
-  );
-
-  /* ===============================================
-     ENTER KEY
-  ================================================ */
-
-  keyInput.addEventListener(
-    "keydown",
-    function (event) {
-
-      if (event.key === "Enter") {
-        unlockAdmin();
       }
 
-    }
-  );
 
-})();
-</script>
+      unlockButton.addEventListener(
+        "click",
+        unlockAdmin
+      );
 
-<script src="/admin.js"></script>
 
-</body>
-</html>
-    
+      keyInput.addEventListener(
+        "keydown",
+        function (event) {
 
-<script src="/admin.js"></script>
+          if (
+            event.key === "Enter"
+          ) {
+
+            event.preventDefault();
+
+            unlockAdmin();
+
+          }
+
+        }
+      );
+
+
+      setTimeout(
+        function () {
+
+          keyInput.focus();
+
+        },
+        250
+      );
+
+    })();
+
+  </script>
+
+
+
+  <!-- =====================================================
+       ADMIN JAVASCRIPT
+       ===================================================== -->
+
+  <script src="/admin.js"></script>
+
+
+
+  <!-- =====================================================
+       NOTIFICATION BUTTON
+       ===================================================== -->
+
+  <script>
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+        const notificationButton =
+          document.getElementById(
+            "notificationButton"
+          );
+
+        const notificationsSection =
+          document.getElementById(
+            "notificationsSection"
+          );
+
+
+        if (
+          notificationButton &&
+          notificationsSection
+        ) {
+
+          notificationButton.addEventListener(
+            "click",
+            function () {
+
+              notificationsSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+              });
+
+            }
+          );
+
+        }
+
+
+        const extractLoading =
+          document.getElementById(
+            "extractLoading"
+          );
+
+
+        if (extractLoading) {
+
+          extractLoading.style.display =
+            "none";
+
+        }
+
+
+        const savedKey =
+          sessionStorage.getItem(
+            "adminKey"
+          );
+
+
+        const hiddenAdminKey =
+          document.getElementById(
+            "adminKey"
+          );
+
+
+        if (
+          savedKey &&
+          hiddenAdminKey
+        ) {
+
+          hiddenAdminKey.value =
+            savedKey;
+
+        }
+
+      }
+    );
+
+  </script>
+
 
 </body>
 </html>
