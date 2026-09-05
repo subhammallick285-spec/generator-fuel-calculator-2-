@@ -1855,9 +1855,13 @@ $("saveForFuture").addEventListener(
         "✓ Save request sent to Admin. Waiting for approval.";
 
 
-      button.textContent =
-        "Request Sent ✓";
+      async () => {
 
+    const button =
+      $("saveForFuture");
+
+    const siteId =
+      siteIdInput.value.trim();
 
       button.disabled =
         true;
