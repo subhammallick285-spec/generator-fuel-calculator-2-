@@ -1299,235 +1299,10 @@
 </head>
 
 
-<body class="admin-locked">
 
 
-    <!-- =======================================================
-       ADMIN KEY GATE
-  ======================================================== -->
 
-  <script>
-    (function () {
-
-      const gate =
-        document.getElementById("adminGate");
-
-      const keyInput =
-        document.getElementById("adminGateKey");
-
-      const unlockButton =
-        document.getElementById("adminGateButton");
-
-      const message =
-        document.getElementById("adminGateMessage");
-
-      const lock =
-        document.getElementById("adminLock");
-
-
-      /* =====================================================
-         ADMIN KEY UNLOCK
-      ====================================================== */
-
-      async function unlockAdmin() {
-
-        const key =
-          keyInput.value.trim();
-
-
-        if (!key) {
-
-          message.textContent =
-            "Please enter the Admin Key.";
-
-          message.className =
-            "error";
-
-          keyInput.focus();
-
-          return;
-        }
-
-
-        unlockButton.disabled = true;
-
-        unlockButton.textContent =
-          "VERIFYING...";
-
-        message.textContent = "";
-
-        message.className = "";
-
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/admin/save-requests",
-              {
-                method: "GET",
-
-                headers: {
-                  "X-Admin-Key": key,
-                  "Accept": "application/json"
-                }
-              }
-            );
-
-
-          if (!response.ok) {
-
-            throw new Error(
-              "Invalid Admin Key"
-            );
-          }
-
-
-          const data =
-            await response.json();
-
-
-          if (!data.success) {
-
-            throw new Error(
-              data.error ||
-              "Invalid Admin Key"
-            );
-          }
-
-
-          /* ===============================================
-             ACCESS GRANTED
-          ================================================ */
-
-          message.textContent =
-            "Access granted.";
-
-          message.className =
-            "success";
-
-
-          lock.textContent =
-            "🔓";
-
-          lock.classList.add(
-            "unlocked"
-          );
-
-
-          sessionStorage.setItem(
-            "adminKey",
-            key
-          );
-
-
-          unlockButton.textContent =
-            "ACCESS GRANTED";
-
-
-          /* ===============================================
-             PREMIUM REVEAL
-          ================================================ */
-
-          setTimeout(
-            function () {
-
-              gate.classList.add(
-                "unlocking"
-              );
-
-              document.body.classList.remove(
-                "admin-locked"
-              );
-
-            },
-            450
-          );
-
-
-          setTimeout(
-            function () {
-
-              if (gate) {
-                gate.remove();
-              }
-
-            },
-            1100
-          );
-
-
-        } catch (error) {
-
-          console.error(error);
-
-
-          message.textContent =
-            "Invalid Admin Key.";
-
-          message.className =
-            "error";
-
-
-          unlockButton.disabled =
-            false;
-
-          unlockButton.textContent =
-            "🔓 UNLOCK ADMIN";
-
-
-          keyInput.select();
-
-        }
-
-      }
-
-
-      /* =====================================================
-         BUTTON
-      ====================================================== */
-
-      unlockButton.addEventListener(
-        "click",
-        unlockAdmin
-      );
-
-
-      /* =====================================================
-         ENTER KEY
-      ====================================================== */
-
-      keyInput.addEventListener(
-        "keydown",
-        function (event) {
-
-          if (
-            event.key === "Enter"
-          ) {
-
-            unlockAdmin();
-
-          }
-
-        }
-      );
-
-
-      /* =====================================================
-         AUTO FOCUS
-      ====================================================== */
-
-      setTimeout(
-        function () {
-
-          keyInput.focus();
-
-        },
-        300
-      );
-
-    })();
-  </script>
+          
 
 
   <!-- =======================================================
@@ -1746,6 +1521,131 @@
 
 })();
 </script>
+<body class="admin-locked">
+  <div id="adminGate">
+  <div class="admin-gate-box">
+
+    <div id="adminLock" class="admin-lock">🔒</div>
+
+    <h2 class="admin-gate-title">
+      Admin Access
+    </h2>
+
+    <p class="admin-gate-subtitle">
+      Enter your admin key to continue
+    </p>
+
+    <input
+      type="password"
+      id="adminGateKey"
+      placeholder="Admin Key"
+      autocomplete="off"
+      autocapitalize="none"
+      spellcheck="false"
+    >
+
+    <button type="button" id="adminGateButton">
+      🔓 UNLOCK ADMIN
+    </button>
+
+    <div id="adminGateMessage"></div>
+
+  </div>
+  </div>
+
+
+    <!-- =======================================================
+       ADMIN KEY GATE
+  ======================================================== -->
+
+  <script>
+    (function () {
+
+      const gate =
+        document.getElementById("adminGate");
+
+      const keyInput =
+        document.getElementById("adminGateKey");
+
+      const unlockButton =
+        document.getElementById("adminGateButton");
+
+      const message =
+        document.getElementById("adminGateMessage");
+
+      const lock =
+        document.getElementById("adminLock");
+
+
+      /* =====================================================
+         ADMIN KEY UNLOCK
+      ====================================================== */
+
+      async function unlockAdmin() {
+
+        const key =
+          keyInput.value.trim();
+
+
+        if (!key) {
+
+          message.textContent =
+            "Please enter the Admin Key.";
+
+          message.className =
+            "error";
+
+          keyInput.focus();
+
+          return;
+        }
+
+
+        unlockButton.disabled = true;
+
+        unlockButton.textContent =
+          "VERIFYING...";
+
+        message.textContent = "";
+
+        message.className = "";
+
+
+        try {
+
+          const response =
+            await fetch(
+              "/api/admin/save-requests",
+              {
+                method: "GET",
+
+                headers: {
+                  "X-Admin-Key": key,
+                  "Accept": "application/json"
+                }
+              }
+            );
+
+
+          if (!response.ok) {
+
+            throw new Error(
+              "Invalid Admin Key"
+            );
+          }
+
+
+          const data =
+            await response.json();
+
+
+          if (!data.success) {
+
+            throw new Error(
+              data.error ||
+              "Invalid Admin Key"
+            );
+          }
 
 <script src="/admin.js"></script>
 
