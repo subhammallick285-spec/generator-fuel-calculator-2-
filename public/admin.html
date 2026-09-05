@@ -1426,13 +1426,15 @@
       ================================================ */
 
       setTimeout(function () {
-
-        gate.classList.add("unlocking");
-
-        document.body.classList.remove("admin-locked");
-
-      }, 450);
-
+  document.body.classList.remove("admin-locked");
+  gate.classList.add("unlocking");
+  
+  document.querySelectorAll("body > *").forEach(function (element) {
+    if (element.id !== "adminGate") {
+      element.style.visibility = "visible";
+    }
+  });
+}, 450);
       setTimeout(function () {
 
         if (gate) {
