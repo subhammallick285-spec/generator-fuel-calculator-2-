@@ -1206,65 +1206,7 @@ $("clear").addEventListener(
 );
 
 
-// ============================================================
-// SAVE DETAILS FOR FUTURE
-// ============================================================
 
-$("saveForFuture").addEventListener(
-  "click",
-  async () => {
-
-    $("saveMessage").textContent =
-      "Saving site details...";
-
-
-    const siteId =
-      siteIdInput.value.trim();
-
-
-    const model =
-      getCurrentModel();
-
-
-    const currentHmr =
-      Number(
-        $("a").value
-      );
-
-
-    const currentKwh =
-      Number(
-        $("b").value
-      );
-
-
-    // IMPORTANT:
-    // E2 is saved as current_balance.
-    // On the next visit it will be
-    // loaded into E1.
-    const E2 =
-      Number(
-        $("e2")
-          .textContent
-          .replace(" L", "")
-      );
-
-// -------------------------
-// VALIDATION
-// -------------------------
-
-if (
-  !Number.isFinite(currentHmr) ||
-  !Number.isFinite(currentKwh) ||
-  !Number.isFinite(E2)
-) {
-
-  $("error").textContent =
-    "Please enter valid HMR, kWh and balance values.";
-
-  return;
-
-}
 
 // ============================================================
 // SAVE DETAILS FOR FUTURE — REQUEST ADMIN APPROVAL
@@ -1286,68 +1228,15 @@ $("saveForFuture").addEventListener(
     const currentKwh =
       Number($("b").value);
 
-    const E2Text =
-      $("e2").textContent
-        .replace(" L", "")
-        .trim();
-
     const E2 =
-      Number(E2Text);
-
-    if (!siteId) {
-      $("saveMessage").textContent =
-        "Site ID is missing.";
-      return;
-    }
-
-    if (!model) {
-      $("saveMessage").textContent =
-        "DG Model is missing.";
-      return;
-    }
-
-    if (
-      !Number.isFinite(currentHmr) ||
-      !Number.isFinite(currentKwh)
-    ) {
-      $("saveMessage").textContent =
-        "Please enter valid current HMR and kWh readings.";
-      return;
-    }
-
-    if (!Number.isFinite(E2)) {
-      $("saveMessage").textContent =
-        "Please calculate E2 before requesting to save.";
-      return;
-    }
-
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to request saving these details?\n\n" +
-        "The details will be sent to Admin for review and approval."
+      Number(
+        $("e2").textContent
+          .replace(" L", "")
+          .trim()
       );
-
-    if (!confirmed) {
-      $("saveMessage").textContent =
-        "Save request cancelled.";
-      return;
-    }
-
-    const button =
-      $("saveForFuture");
-
-    button.disabled = true;
 
     $("saveMessage").textContent =
       "Sending save request to Admin...";
-
-    const payload = {
-      site_id: siteId,
-      model: model,
-      current_hmr: currentHmr,
-      current_kwh: currentKwh,
-      current_balance: E2
-    };
 
     try {
 
@@ -1364,58 +1253,22 @@ $("saveForFuture").addEventListener(
                 "application/json"
             },
 
-            body:
-              JSON.stringify(payload)
+            body: JSON.stringify({
+              site_id: siteId,
+              model: model,
+              current_hmr: currentHmr,
+              current_kwh: currentKwh,
+              current_balance: E2
+            })
           }
         );
 
-      const responseText =
-        await response.text();
-
-      let data = {};
-
-      if (responseText.trim()) {
-
-        try {
-
-          data =
-            JSON.parse(responseText);
-
-        } catch {
-
-          throw new Error(
-            `Server returned invalid JSON (${response.status}).`
-          );
-
-        }
-      }
-
-      if (!response.ok) {
-
-        throw new Error(
-          data.error ||
-          `Server error (${response.status}).`
-        );
-
-      }
-
-      if (!data.success) {
-
-        throw new Error(
-          data.error ||
-          "Unable to send save request."
-        );
-
-      }
+      const data =
+        await response.json();
 
       $("saveMessage").textContent =
-        "✓ Save request sent to Admin. Waiting for approval.";
-
-      button.textContent =
-        "Request Sent ✓";
-
-      button.disabled =
-        true;
+        data.message ||
+        "Save request sent.";
 
     } catch (error) {
 
@@ -1425,323 +1278,11 @@ $("saveForFuture").addEventListener(
         error?.message ||
         "Unable to send save request.";
 
-      button.disabled =
-        false;
-
     }
 
   }
 );
 
-
-// ============================================================
-// CLEAR
-// ============================================================
-
-$("clear").addEventListener(
-  "click",
-  () => {
-
-    $("a").value =
-      "";
-
-    $("b").value =
-      "";
-
-    $("c").value =
-      "";
-
-    $("d").value =
-      "";
-
-    $("e1").value =
-      "";
-
-    $("q1").value =
-      "";
-
-    $("q2").value =
-      "";
-
-    $("manualModel").value =
-      "";
-
-
-    resetE2();
-
-    resetResult();
-
-
-    $("saveForFuture")
-      .classList
-      .add("hidden");
-
-
-    $("error").textContent =
-      "";
-
-    $("saveMessage").textContent =
-      "";
-
-
-    $("a").focus();
-
-  }
-);
-
-
-
-// ============================================================
-// SAVE DETAILS FOR FUTURE — REQUEST ADMIN APPROVAL
-// ============================================================
-
-$("saveForFuture").addEventListener(
-  "click",
-  async () => {
-
-    const siteId =
-      siteIdInput.value.trim();
-
-    const model =
-      getCurrentModel();
-
-    const currentHmr =
-      Number($("a").value);
-
-    const currentKwh =
-      Number($("b").value);
-
-    const E2Text =
-      $("e2").textContent
-        .replace(" L", "")
-        .trim();
-
-    const E2 =
-      Number(E2Text);
-
-
-    // -------------------------
-    // VALIDATION
-    // -------------------------
-
-    if (!siteId) {
-
-      $("saveMessage").textContent =
-        "Site ID is missing.";
-
-      return;
-
-    }
-
-
-    if (!model) {
-
-      $("saveMessage").textContent =
-        "DG Model is missing.";
-
-      return;
-
-    }
-
-
-    if (
-      !Number.isFinite(currentHmr) ||
-      !Number.isFinite(currentKwh)
-    ) {
-
-      $("saveMessage").textContent =
-        "Please enter valid current HMR and kWh readings.";
-
-      return;
-
-    }
-
-
-    if (!Number.isFinite(E2)) {
-
-      $("saveMessage").textContent =
-        "Please calculate E2 before requesting to save.";
-
-      return;
-
-    }
-
-
-    // -------------------------
-    // CONFIRMATION
-    // -------------------------
-
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to request saving these details?\n\n" +
-        "The details will be sent to Admin for review and approval."
-      );
-
-
-    if (!confirmed) {
-
-      $("saveMessage").textContent =
-        "Save request cancelled.";
-
-      return;
-
-    }
-
-
-    // -------------------------
-    // DISABLE BUTTON
-    // -------------------------
-
-    const button =
-      $("saveForFuture");
-
-    button.disabled =
-      true;
-
-    $("saveMessage").textContent =
-      "Sending save request to Admin...";
-
-
-    // -------------------------
-    // REQUEST PAYLOAD
-    // -------------------------
-
-    const payload = {
-
-      site_id:
-        siteId,
-
-      model:
-        model,
-
-      current_hmr:
-        currentHmr,
-
-      current_kwh:
-        currentKwh,
-
-      // E2 becomes the
-      // future E1 after approval.
-      current_balance:
-        E2
-
-    };
-
-
-    try {
-
-      const response =
-        await fetch(
-          "/api/save-request",
-          {
-            method:
-              "POST",
-
-            headers: {
-
-              "Content-Type":
-                "application/json",
-
-              "Accept":
-                "application/json"
-
-            },
-
-            body:
-              JSON.stringify(payload)
-
-          }
-        );
-
-
-      const responseText =
-        await response.text();
-
-
-      let data =
-        {};
-
-
-      if (
-        responseText.trim()
-      ) {
-
-        try {
-
-          data =
-            JSON.parse(
-              responseText
-            );
-
-        } catch {
-
-          throw new Error(
-            `Server returned invalid JSON (${response.status}).`
-          );
-
-        }
-
-      }
-
-
-      if (!response.ok) {
-
-        throw new Error(
-          data.error ||
-          `Server error (${response.status}).`
-        );
-
-      }
-
-
-      if (!data.success) {
-
-        throw new Error(
-          data.error ||
-          "Unable to send save request."
-        );
-
-      }
-
-
-      // -------------------------
-      // SUCCESS
-      // -------------------------
-
-      $("saveMessage").textContent =
-        "✓ Save request sent to Admin. Waiting for approval.";
-
-
-      async () => {
-
-    const button =
-      $("saveForFuture");
-
-    const siteId =
-      siteIdInput.value.trim();
-
-      button.disabled =
-        true;
-
-
-    } catch (error) {
-
-      console.error(error);
-
-
-      $("saveMessage").textContent =
-        error?.message ||
-        "Unable to send save request.";
-
-
-      button.disabled =
-        false;
-
-    }
-
-  }
-);
-      
 
 // ============================================================
 // LOAD LAST SITE ID
@@ -1756,7 +1297,6 @@ window.addEventListener(
         "lastSiteId"
       );
 
-
     if (lastSite) {
 
       siteIdInput.value =
@@ -1766,5 +1306,3 @@ window.addEventListener(
 
   }
 );
-
-     
