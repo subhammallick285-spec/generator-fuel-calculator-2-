@@ -1789,120 +1789,127 @@
 
 
     <!-- ===================================================
-         MANUAL READING
-    =================================================== -->
+     MANUAL READING
+=================================================== -->
 
-    <section class="card">
+<section
+  class="card"
+  id="manualSection"
+  style="display:none;"
+>
 
-      <h2 class="card-title">
-        Manual Reading
-      </h2>
+  <h2 class="card-title">
+    Manual Reading
+  </h2>
 
-      <p class="card-subtitle">
-        Enter the latest generator readings manually.
-      </p>
-
-
-      <div class="form-group">
-
-        <label for="model">
-          Generator Model
-        </label>
-
-        <select id="model">
-
-          <option value="">
-            Select Generator Model
-          </option>
-
-          <option value="eicher10">
-            Eicher 10 KVA
-          </option>
-
-          <option value="mahindra10">
-            Mahindra 10 KVA
-          </option>
-
-          <option value="eicher20">
-            Eicher 20 KVA
-          </option>
-
-          <option value="mahindra20">
-            Mahindra 20 KVA
-          </option>
-
-          <option value="koel20">
-            KOEL 20 KVA
-          </option>
-
-        </select>
-
-      </div>
+  <p class="card-subtitle">
+    Enter the latest generator readings manually.
+  </p>
 
 
-      <div class="form-group">
+  <div class="form-group">
 
-        <label for="currentHmr">
-          Current HMR
-        </label>
+    <label for="model">
+      Generator Model
+    </label>
 
-        <input
-          type="number"
-          id="currentHmr"
-          step="any"
-          placeholder="Current HMR"
-        >
+    <select id="model">
 
-      </div>
+      <option value="">
+        Select Generator Model
+      </option>
 
+      <option value="eicher10">
+        Eicher 10 KVA
+      </option>
 
-      <div class="form-group">
+      <option value="mahindra10">
+        Mahindra 10 KVA
+      </option>
 
-        <label for="currentKwh">
-          Current kWh
-        </label>
+      <option value="eicher20">
+        Eicher 20 KVA
+      </option>
 
-        <input
-          type="number"
-          id="currentKwh"
-          step="any"
-          placeholder="Current kWh"
-        >
+      <option value="mahindra20">
+        Mahindra 20 KVA
+      </option>
 
-      </div>
+      <option value="koel20">
+        KOEL 20 KVA
+      </option>
 
+    </select>
 
-      <div class="form-group">
-
-        <label for="currentBalance">
-          Current Balance
-        </label>
-
-        <input
-          type="number"
-          id="currentBalance"
-          step="any"
-          placeholder="Current Balance"
-        >
-
-      </div>
+  </div>
 
 
-      <button
-        type="button"
-        class="button button-success"
-        id="updateSite"
-      >
-        💾 SAVE MANUAL READING
-      </button>
+  <div class="form-group">
+
+    <label for="currentHmr">
+      Current HMR
+    </label>
+
+    <input
+      type="number"
+      id="currentHmr"
+      step="any"
+      inputmode="decimal"
+      placeholder="Current HMR"
+    >
+
+  </div>
 
 
-      <div
-        id="updateMessage"
-        class="message"
-      ></div>
+  <div class="form-group">
 
-    </section>
+    <label for="currentKwh">
+      Current kWh
+    </label>
+
+    <input
+      type="number"
+      id="currentKwh"
+      step="any"
+      inputmode="decimal"
+      placeholder="Current kWh"
+    >
+
+  </div>
+
+
+  <div class="form-group">
+
+    <label for="currentBalance">
+      Current Balance
+    </label>
+
+    <input
+      type="number"
+      id="currentBalance"
+      step="any"
+      inputmode="decimal"
+      placeholder="Current Balance"
+    >
+
+  </div>
+
+
+  <button
+    type="button"
+    class="button button-success"
+    id="updateSite"
+  >
+    💾 SAVE MANUAL READING
+  </button>
+
+
+  <div
+    id="updateMessage"
+    class="message"
+  ></div>
+
+</section>
 
 
 
