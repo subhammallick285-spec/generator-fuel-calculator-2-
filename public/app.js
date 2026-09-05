@@ -917,29 +917,13 @@ $("calculate").addEventListener(
     // -------------------------
 
     const payload = {
-
-      model:
-        selectedModel,
-
-      A:
-        A,
-
-      B:
-        B,
-
-      C:
-        C,
-
-      D:
-        D,
-
-      // IMPORTANT:
-      // Worker E = E1
-      E:
-        E1
-
-    };
-
+  model: selectedModel,
+  current_hmr: A,
+  current_kwh: B,
+  previous_hmr: C,
+  previous_kwh: D,
+  previous_balance: E1
+};
 
     try {
 
