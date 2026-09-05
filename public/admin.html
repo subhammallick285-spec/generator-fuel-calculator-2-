@@ -2347,12 +2347,131 @@ body.admin-locked > *:not(#adminGate) {
     </section>
 
 
-  </div>
+
 
 </main>
+<!-- =======================================================
+     ADMIN KEY GATE UNLOCK
+======================================================= -->
 
+<script>
+(function () {
+
+  const gate = document.getElementById("adminGate");
+  const keyInput = document.getElementById("adminGateKey");
+  const unlockButton = document.getElementById("adminGateButton");
+  const message = document.getElementById("adminGateMessage");
+  const lock = document.getElementById("adminLock");
+
+  async function unlockAdmin() {
+
+    const key = keyInput.value.trim();
+
+    if (!key) {
+      message.textContent = "Please enter the Admin Key.";
+      message.className = "error";
+      keyInput.focus();
+      return;
+    }
+
+    unlockButton.disabled = true;
+    unlockButton.textContent = "VERIFYING...";
+    message.textContent = "";
+
+    try {
+
+      const response = await fetch(
+        "/api/admin/save-requests",
+        {
+          method: "GET",
+          headers: {
+            "X-Admin-Key": key,
+            "Accept": "application/json"
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Invalid Admin Key");
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(
+          data.error || "Invalid Admin Key"
+        );
+      }
+
+      message.textContent = "Access granted.";
+      message.className = "success";
+
+      lock.textContent = "🔓";
+      lock.classList.add("unlocked");
+
+      sessionStorage.setItem(
+        "adminKey",
+        key
+      );
+
+      unlockButton.textContent =
+        "ACCESS GRANTED";
+
+      setTimeout(function () {
+
+        gate.classList.add("unlocking");
+
+        document.body.classList.remove(
+          "admin-locked"
+        );
+
+      }, 450);
+
+      setTimeout(function () {
+
+        gate.remove();
+
+      }, 1100);
+
+    } catch (error) {
+
+      console.error(error);
+
+      message.textContent =
+        "Invalid Admin Key.";
+
+      message.className = "error";
+        unlockButton.disabled = false;
+        unlockButton.textContent = "🔓 UNLOCK ADMIN";
+
+  
+  keyInput.select();
+
+
+      
+    }
+  }
+
+  unlockButton.addEventListener(
+    "click",
+    unlockAdmin
+  );
+
+  keyInput.addEventListener(
+    "keydown",
+    function (event) {
+
+      if (event.key === "Enter") {
+        unlockAdmin();
+      }
+
+    }
+  );
+
+})();
+</script>
 
 <script src="/admin.js"></script>
-
 </body>
 </html>
+
