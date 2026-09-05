@@ -1074,7 +1074,7 @@ $("calculate").addEventListener(
         $("band").textContent =
           `${data.model}: X = ` +
           `${Number(data.X).toFixed(4)} ` +
-          `falls in ${range.from}–${range.to}. ` +
+          `falls in ${range.min}–${range.max}. ` +
           `Chart value L = ` +
           `${Number(data.L).toFixed(2)} L/hr.`;
 
