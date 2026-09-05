@@ -1576,76 +1576,144 @@
       const lock =
         document.getElementById("adminLock");
 
+  <!-- =======================================================
+     ADMIN KEY GATE SCRIPT
+======================================================== -->
 
-      /* =====================================================
-         ADMIN KEY UNLOCK
-      ====================================================== */
+<script>
+(function () {
 
-      async function unlockAdmin() {
+  const gate = document.getElementById("adminGate");
+  const keyInput = document.getElementById("adminGateKey");
+  const unlockButton = document.getElementById("adminGateButton");
+  const message = document.getElementById("adminGateMessage");
+  const lock = document.getElementById("adminLock");
 
-        const key =
-          keyInput.value.trim();
+  async function unlockAdmin() {
 
+    const key = keyInput.value.trim();
 
-        if (!key) {
+    if (!key) {
+      message.textContent = "Please enter the Admin Key.";
+      message.className = "error";
+      keyInput.focus();
+      return;
+    }
 
-          message.textContent =
-            "Please enter the Admin Key.";
+    unlockButton.disabled = true;
+    unlockButton.textContent = "VERIFYING...";
+    message.textContent = "";
+    message.className = "";
 
-          message.className =
-            "error";
+    try {
 
-          keyInput.focus();
+      const response = await fetch("/api/admin/save-requests", {
+        method: "GET",
+        headers: {
+          "X-Admin-Key": key,
+          "Accept": "application/json"
+        },
+        cache: "no-store"
+      });
 
-          return;
+      const responseText = await response.text();
+
+      let data = {};
+
+      if (responseText.trim()) {
+        try {
+          data = JSON.parse(responseText);
+        } catch (error) {
+          throw new Error("Server returned invalid response.");
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Invalid Admin Key."
+        );
+      }
+
+      if (!data.success) {
+        throw new Error(
+          data.error || "Invalid Admin Key."
+        );
+      }
+
+      /* ===============================================
+         ACCESS GRANTED
+      ================================================ */
+
+      message.textContent = "Access granted.";
+      message.className = "success";
+
+      lock.textContent = "🔓";
+      lock.classList.add("unlocked");
+
+      sessionStorage.setItem("adminKey", key);
+
+      unlockButton.textContent = "ACCESS GRANTED";
+
+      /* ===============================================
+         PREMIUM REVEAL
+      ================================================ */
+
+      setTimeout(function () {
+
+        gate.classList.add("unlocking");
+
+        document.body.classList.remove("admin-locked");
+
+      }, 450);
+
+      setTimeout(function () {
+
+        if (gate) {
+          gate.remove();
         }
 
+      }, 1100);
 
-        unlockButton.disabled = true;
+    } catch (error) {
 
-        unlockButton.textContent =
-          "VERIFYING...";
+      console.error(error);
 
-        message.textContent = "";
+      message.textContent = "Invalid Admin Key.";
+      message.className = "error";
 
-        message.className = "";
+      unlockButton.disabled = false;
+      unlockButton.textContent = "🔓 UNLOCK ADMIN";
 
+      keyInput.select();
+    }
+  }
 
-        try {
+  /* ===============================================
+     UNLOCK BUTTON
+  ================================================ */
 
-          const response =
-            await fetch(
-              "/api/admin/save-requests",
-              {
-                method: "GET",
+  unlockButton.addEventListener(
+    "click",
+    unlockAdmin
+  );
 
-                headers: {
-                  "X-Admin-Key": key,
-                  "Accept": "application/json"
-                }
-              }
-            );
+  /* ===============================================
+     ENTER KEY
+  ================================================ */
 
+  keyInput.addEventListener(
+    "keydown",
+    function (event) {
 
-          if (!response.ok) {
+      if (event.key === "Enter") {
+        unlockAdmin();
+      }
 
-            throw new Error(
-              "Invalid Admin Key"
-            );
-          }
+    }
+  );
 
-
-          const data =
-            await response.json();
-
-
-          if (!data.success) {
-
-            throw new Error(
-              data.error ||
-              "Invalid Admin Key"
-            );
-          }
+})();
+</script>
 
 <script src="/admin.js"></script>
 
