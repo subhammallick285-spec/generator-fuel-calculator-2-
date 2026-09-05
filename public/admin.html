@@ -1408,6 +1408,141 @@
 
     </section>
 
+    <!-- ===================================================
+     SITE INFORMATION
+=================================================== -->
+
+<section class="card" id="siteInfo" style="display:none;">
+
+  <h2 class="card-title">Site Information</h2>
+  <p class="card-subtitle">
+    Latest saved information for this site.
+  </p>
+
+  <div class="info-grid">
+
+    <div class="info-item">
+      <span class="info-label">Site Name</span>
+      <strong id="siteName">—</strong>
+    </div>
+
+    <div class="info-item">
+      <span class="info-label">Generator Model</span>
+      <strong id="siteModel">—</strong>
+    </div>
+
+    <div class="info-item">
+      <span class="info-label">Current HMR</span>
+      <strong id="siteHmr">—</strong>
+    </div>
+
+    <div class="info-item">
+      <span class="info-label">Current kWh</span>
+      <strong id="siteKwh">—</strong>
+    </div>
+
+    <div class="info-item">
+      <span class="info-label">Current Balance</span>
+      <strong id="siteBalance">—</strong>
+    </div>
+
+  </div>
+
+  <button
+    type="button"
+    class="button button-secondary"
+    id="editSiteButton">
+    ✏️ EDIT SITE
+  </button>
+
+</section>
+
+
+<!-- ===================================================
+     EDIT SITE
+=================================================== -->
+
+<section class="card" id="editSiteSection" style="display:none;">
+
+  <h2 class="card-title">Edit Site</h2>
+
+  <p class="card-subtitle">
+    Update the saved information for this site.
+  </p>
+
+  <div class="form-group">
+    <label for="editSiteId">Site ID</label>
+    <input
+      type="text"
+      id="editSiteId"
+      autocomplete="off"
+      autocapitalize="characters"
+      spellcheck="false">
+  </div>
+
+  <div class="form-group">
+    <label for="editSiteName">Site Name</label>
+    <input
+      type="text"
+      id="editSiteName"
+      placeholder="Enter Site Name"
+      autocomplete="off">
+  </div>
+
+  <div class="form-group">
+    <label for="editModel">Generator Model</label>
+
+    <select id="editModel">
+      <option value="">Select Generator Model</option>
+      <option value="eicher10">Eicher 10 KVA</option>
+      <option value="mahindra10">Mahindra 10 KVA</option>
+      <option value="eicher20">Eicher 20 KVA</option>
+      <option value="mahindra20">Mahindra 20 KVA</option>
+      <option value="koel20">KOEL 20 KVA</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="editHmr">Current HMR</label>
+    <input
+      type="number"
+      id="editHmr"
+      step="any"
+      inputmode="decimal"
+      placeholder="Enter Current HMR">
+  </div>
+
+  <div class="form-group">
+    <label for="editKwh">Current kWh</label>
+    <input
+      type="number"
+      id="editKwh"
+      step="any"
+      inputmode="decimal"
+      placeholder="Enter Current kWh">
+  </div>
+
+  <div class="form-group">
+    <label for="editBalance">Current Balance</label>
+    <input
+      type="number"
+      id="editBalance"
+      step="any"
+      inputmode="decimal"
+      placeholder="Enter Current Balance">
+  </div>
+
+  <button
+    type="button"
+    class="button button-primary"
+    id="saveSiteEdit">
+    💾 SAVE SITE CHANGES
+  </button>
+
+  <div id="editSiteMessage" class="message"></div>
+
+</section>
+
 
 
     <!-- ===================================================
