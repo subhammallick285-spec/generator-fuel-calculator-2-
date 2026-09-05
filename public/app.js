@@ -1250,36 +1250,24 @@ $("saveForFuture").addEventListener(
       );
 
 // -------------------------
-    // VALIDATION
-    // -------------------------
+// VALIDATION
+// -------------------------
 
-    if (
-      !Number.isFinite(A) ||
-      !Number.isFinite(B) ||
-      !Number.isFinite(C) ||
-      !Number.isFinite(D)
-    ) {
+if (
+  !Number.isFinite(currentHmr) ||
+  !Number.isFinite(currentKwh) ||
+  !Number.isFinite(E2)
+) {
 
-      $("error").textContent =
-        "Please enter valid HMR and kWh readings.";
+  $("error").textContent =
+    "Please enter valid HMR, kWh and balance values.";
 
-      return;
+  return;
 
-    }
+}
 
 
-    if (
-      !Number.isFinite(E1) ||
-      !Number.isFinite(Q1) ||
-      !Number.isFinite(Q2)
-    ) {
-
-      $("error").textContent =
-        "Please enter valid E1, Q1 and Q2 values.";
-
-      return;
-
-    }
+    
 
 
     if (
@@ -1310,8 +1298,7 @@ $("saveForFuture").addEventListener(
     // E2
     // -------------------------
 
-    const E2 =
-      Q1 + Q2;
+    
 
 
     $("e2").textContent =
