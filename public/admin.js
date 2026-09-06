@@ -738,7 +738,6 @@ $("imageInput")
   }
 );
 
-
 /* =========================================================
    MANUAL READING TOGGLE
 ========================================================= */
@@ -751,30 +750,59 @@ $("manualButton")
     const section =
       $("manualSection");
 
+    const button =
+      $("manualButton");
+
 
     if (!section) return;
 
 
-    section.classList.toggle(
+    const isOpen =
+      section.style.display === "block";
+
+
+    if (isOpen) {
+
+      section.style.display =
+        "none";
+
+      section.classList.remove(
+        "show"
+      );
+
+      if (button) {
+        button.textContent =
+          "＋ ENTER MANUAL READING";
+      }
+
+      return;
+    }
+
+
+    section.style.display =
+      "block";
+
+    section.classList.add(
       "show"
     );
 
 
-    if (
-      section.classList.contains(
-        "show"
-      )
-    ) {
-
-      section.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+    if (button) {
+      button.textContent =
+        "− HIDE MANUAL READING";
     }
+
+
+    section.scrollIntoView({
+      behavior:
+        "smooth",
+
+      block:
+        "start"
+    });
 
   }
 );
-
 
 /* =========================================================
    EXTRACT DETAILS FROM IMAGE
