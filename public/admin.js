@@ -117,9 +117,23 @@ function showSite(site) {
 
   if (!site) return;
 
-  $("siteInfo")
-    ?.classList
-    .add("show");
+
+  /* ============================================
+     SITE INFORMATION
+  ============================================ */
+
+  const siteInfo =
+    $("siteInfo");
+
+  if (siteInfo) {
+
+    siteInfo.style.display =
+      "block";
+
+    siteInfo.classList.add(
+      "show"
+    );
+  }
 
 
   $("siteName").textContent =
@@ -127,7 +141,7 @@ function showSite(site) {
 
 
   $("siteModel").textContent =
-    site.model ?? "—";
+    formatModel(site.model);
 
 
   $("siteHmr").textContent =
@@ -142,65 +156,12 @@ function showSite(site) {
     site.current_balance ?? "—";
 
 
-  if (site.model) {
+  /* ============================================
+     SAVE CURRENT SITE ID
+  ============================================ */
 
-    $("model").value =
-      site.model;
-
-    $("editModel").value =
-      site.model;
-
-    $("extractedModel").value =
-      site.model;
-  }
-
-
-  if (
-    site.current_hmr !== null &&
-    site.current_hmr !== undefined
-  ) {
-
-    $("currentHmr").value =
-      site.current_hmr;
-
-    $("editHmr").value =
-      site.current_hmr;
-
-    $("extractedHmr").value =
-      site.current_hmr;
-  }
-
-
-  if (
-    site.current_kwh !== null &&
-    site.current_kwh !== undefined
-  ) {
-
-    $("currentKwh").value =
-      site.current_kwh;
-
-    $("editKwh").value =
-      site.current_kwh;
-
-    $("extractedKwh").value =
-      site.current_kwh;
-  }
-
-
-  if (
-    site.current_balance !== null &&
-    site.current_balance !== undefined
-  ) {
-
-    $("currentBalance").value =
-      site.current_balance;
-
-    $("editBalance").value =
-      site.current_balance;
-
-    $("extractedBalance").value =
-      site.current_balance;
-  }
+  $("siteId").value =
+    site.site_id || "";
 
 
   $("editSiteId").value =
@@ -209,8 +170,168 @@ function showSite(site) {
 
   $("editSiteName").value =
     site.site_name || "";
-}
 
+
+  /* ============================================
+     FILL MANUAL READING
+  ============================================ */
+
+  if (site.model) {
+
+    const model =
+      $("model");
+
+    const editModel =
+      $("editModel");
+
+    const extractedModel =
+      $("extractedModel");
+
+
+    if (model) {
+      model.value =
+        site.model;
+    }
+
+
+    if (editModel) {
+      editModel.value =
+        site.model;
+    }
+
+
+    if (extractedModel) {
+      extractedModel.value =
+        site.model;
+    }
+  }
+
+
+  /* ============================================
+     FILL HMR
+  ============================================ */
+
+  if (
+    site.current_hmr !== null &&
+    site.current_hmr !== undefined
+  ) {
+
+    if ($("currentHmr")) {
+      $("currentHmr").value =
+        site.current_hmr;
+    }
+
+
+    if ($("editHmr")) {
+      $("editHmr").value =
+        site.current_hmr;
+    }
+
+
+    if ($("extractedHmr")) {
+      $("extractedHmr").value =
+        site.current_hmr;
+    }
+  }
+
+
+  /* ============================================
+     FILL kWh
+  ============================================ */
+
+  if (
+    site.current_kwh !== null &&
+    site.current_kwh !== undefined
+  ) {
+
+    if ($("currentKwh")) {
+      $("currentKwh").value =
+        site.current_kwh;
+    }
+
+
+    if ($("editKwh")) {
+      $("editKwh").value =
+        site.current_kwh;
+    }
+
+
+    if ($("extractedKwh")) {
+      $("extractedKwh").value =
+        site.current_kwh;
+    }
+  }
+
+
+  /* ============================================
+     FILL BALANCE
+  ============================================ */
+
+  if (
+    site.current_balance !== null &&
+    site.current_balance !== undefined
+  ) {
+
+    if ($("currentBalance")) {
+      $("currentBalance").value =
+        site.current_balance;
+    }
+
+
+    if ($("editBalance")) {
+      $("editBalance").value =
+        site.current_balance;
+    }
+
+
+    if ($("extractedBalance")) {
+      $("extractedBalance").value =
+        site.current_balance;
+    }
+  }
+
+
+  /* ============================================
+     KEEP EDIT / EXTRACTION / MANUAL HIDDEN
+  ============================================ */
+
+  const editSection =
+    $("editSiteSection");
+
+  const extractionCard =
+    $("extractionCard");
+
+  const manualSection =
+    $("manualSection");
+
+  const manualToggle =
+    $("manualReadingToggle");
+
+
+  if (editSection) {
+    editSection.style.display =
+      "none";
+  }
+
+
+  if (extractionCard) {
+    extractionCard.style.display =
+      "none";
+  }
+
+
+  if (manualSection) {
+    manualSection.classList.remove(
+      "show"
+    );
+  }
+
+
+  if (manualToggle) {
+    manualToggle.style.display =
+      "none";
+  }
+}
 
 /* =========================================================
    LOAD EXISTING SITE
@@ -228,7 +349,7 @@ $("loadSite")
 
     const siteId =
       $("siteId")
-        .value
+        ?.value
         .trim();
 
 
@@ -264,10 +385,11 @@ $("loadSite")
       $("loadSite");
 
 
-    button.disabled = true;
+    button.disabled =
+      true;
 
     button.textContent =
-      "Loading...";
+      "LOADING...";
 
 
     try {
@@ -278,9 +400,116 @@ $("loadSite")
           encodeURIComponent(siteId),
           {
             method: "GET",
-            headers: adminHeaders()
+
+            headers:
+              adminHeaders(),
+
+            cache:
+              "no-store"
           }
         );
+
+
+      /* ==========================================
+         SITE NOT FOUND
+      ========================================== */
+
+      if (response.status === 404) {
+
+        const addSite =
+          window.confirm(
+            "Site not found.\n\nDo you want to add this site?"
+          );
+
+
+        if (addSite) {
+
+          message(
+            $("authMessage"),
+            "You can now enter the new site's information.",
+            "success"
+          );
+
+
+          /* Show Edit Site as Add Site form */
+
+          const editSection =
+            $("editSiteSection");
+
+
+          if (editSection) {
+
+            editSection.style.display =
+              "block";
+
+            editSection.classList.add(
+              "show"
+            );
+          }
+
+
+          $("editSiteId").value =
+            siteId;
+
+
+          $("editSiteName").value =
+            "";
+
+
+          $("editModel").value =
+            "";
+
+
+          $("editHmr").value =
+            "";
+
+
+          $("editKwh").value =
+            "";
+
+
+          $("editBalance").value =
+            "";
+
+
+          /* Keep extraction hidden for now */
+
+          const extractionCard =
+            $("extractionCard");
+
+
+          if (extractionCard) {
+
+            extractionCard.style.display =
+              "none";
+          }
+
+
+          const manualSection =
+            $("manualSection");
+
+
+          if (manualSection) {
+
+            manualSection.classList.remove(
+              "show"
+            );
+          }
+
+
+        } else {
+
+          message(
+            $("authMessage"),
+            "Site not found.",
+            ""
+          );
+
+        }
+
+
+        return;
+      }
 
 
       const data =
@@ -306,19 +535,71 @@ $("loadSite")
       }
 
 
+      /* ==========================================
+         EXISTING SITE FOUND
+      ========================================== */
+
       showSite(
         data.site
       );
 
 
-      message(
-        $("authMessage"),
-        "Site loaded successfully.",
-        "success"
-      );
+      const edit =
+        window.confirm(
+          "Site found.\n\nDo you want to edit this site?"
+        );
+
+
+      if (edit) {
+
+        const editSection =
+          $("editSiteSection");
+
+
+        if (editSection) {
+
+          editSection.style.display =
+            "block";
+
+          editSection.classList.add(
+            "show"
+          );
+
+
+          editSection.scrollIntoView({
+            behavior:
+              "smooth",
+
+            block:
+              "start"
+          });
+        }
+
+
+        message(
+          $("authMessage"),
+          "Edit Site opened.",
+          "success"
+        );
+
+      } else {
+
+        message(
+          $("authMessage"),
+          "Site loaded successfully.",
+          "success"
+        );
+
+      }
 
 
     } catch (error) {
+
+      console.error(
+        "Load site error:",
+        error
+      );
+
 
       message(
         $("authMessage"),
@@ -339,7 +620,6 @@ $("loadSite")
 
   }
 );
-
 
 /* =========================================================
    IMAGE SELECTION
