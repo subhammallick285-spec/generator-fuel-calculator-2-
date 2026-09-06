@@ -552,28 +552,60 @@ $("loadSite")
 
       if (edit) {
 
-        const editSection =
-          $("editSiteSection");
+  const editSection =
+    $("editSiteSection");
+
+  const extractionCard =
+    $("extractionCard");
 
 
-        if (editSection) {
+  /* SHOW EDIT SITE */
 
-          editSection.style.display =
-            "block";
+  if (editSection) {
 
-          editSection.classList.add(
-            "show"
-          );
+    editSection.style.display =
+      "block";
+
+    editSection.classList.add(
+      "show"
+    );
+  }
 
 
-          editSection.scrollIntoView({
-            behavior:
-              "smooth",
+  /* SHOW SCREENSHOT EXTRACTION */
 
-            block:
-              "start"
-          });
-        }
+  if (extractionCard) {
+
+    extractionCard.style.display =
+      "block";
+
+    extractionCard.classList.add(
+      "show"
+    );
+  }
+
+
+  /* SCROLL TO EDIT SITE */
+
+  if (editSection) {
+
+    editSection.scrollIntoView({
+      behavior:
+        "smooth",
+
+      block:
+        "start"
+    });
+  }
+
+
+  message(
+    $("authMessage"),
+    "Edit Site opened.",
+    "success"
+  );
+
+      }
 
 
         message(
