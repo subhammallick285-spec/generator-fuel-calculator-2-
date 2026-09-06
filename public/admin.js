@@ -481,8 +481,10 @@ $("loadSite")
           if (extractionCard) {
 
             extractionCard.style.display =
-              "none";
-          }
+               "block";
+             extractionCard.classList.add(
+                "show"
+                                         );}
 
 
           const manualSection =
