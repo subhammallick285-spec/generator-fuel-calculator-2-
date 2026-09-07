@@ -1042,7 +1042,7 @@ async function reviewSaveRequest(request, env) {
           current_balance,
           status
         FROM save_requests
-        WHERE id = ?
+        WHERE LOWER(site_id) = LOWER(?)
         LIMIT 1
       `)
       .bind(id)
