@@ -545,39 +545,6 @@ $("loadSite")
 
 
       /* ==========================================
-         SITE NOT FOUND
-      ========================================== */
-
-      if (response.status === 404) {
-
-        const addSite =
-          window.confirm(
-            "Site not found.\n\nDo you want to add this site?"
-          );
-
-
-        if (addSite) {
-
-          message(
-            $("authMessage"),
-            "You can now enter the new site's information.",
-            "success"
-          );
-
-
-          /* Show Edit Site as Add Site form */
-
-          const editSection =
-            $("editSiteSection");
-
-
-          if (editSection) {
-
-            editSection.style.display =
-              "block";
-
-
-      /* ==========================================
          EXISTING SITE FOUND
       ========================================== */
 
