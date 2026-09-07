@@ -599,7 +599,7 @@ async function saveCalculatorSite(request, env) {
       await env.DB.prepare(`
         SELECT id
         FROM sites
-        WHERE site_id = ?
+        WHERE LOWER(site_id) = LOWER(?)
         LIMIT 1
       `)
       .bind(siteId)
