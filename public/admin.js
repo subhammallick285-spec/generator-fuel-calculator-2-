@@ -346,51 +346,37 @@ $("loadSite")
       $("authMessage")
     );
 
-
     const siteId =
       $("siteId")
         ?.value
         .trim();
 
-
     if (!siteId) {
-
       message(
         $("authMessage"),
         "Please enter a Site ID.",
         "error"
       );
-
       return;
     }
-
 
     const adminKey =
       getAdminKey();
 
-
     if (!adminKey) {
-
       message(
         $("authMessage"),
         "Please enter the Admin Key.",
         "error"
       );
-
       return;
     }
-
 
     const button =
       $("loadSite");
 
-
-    button.disabled =
-      true;
-
-    button.textContent =
-      "LOADING...";
-
+    button.disabled = true;
+    button.textContent = "LOADING...";
 
     try {
 
@@ -400,14 +386,161 @@ $("loadSite")
           encodeURIComponent(siteId),
           {
             method: "GET",
-
             headers:
               adminHeaders(),
-
             cache:
               "no-store"
           }
         );
+
+      if (response.status === 404) {
+
+        const addSite =
+          window.confirm(
+            "Site not found.\n\nDo you want to add this site?"
+          );
+
+        if (addSite) {
+
+          message(
+            $("authMessage"),
+            "You can now enter the new site's information.",
+            "success"
+          );
+
+          const editSection =
+            $("editSiteSection");
+
+          if (editSection) {
+            editSection.style.display = "block";
+            editSection.classList.add("show");
+          }
+
+          $("editSiteId").value = siteId;
+          $("editSiteName").value = "";
+          $("editModel").value = "";
+          $("editHmr").value = "";
+          $("editKwh").value = "";
+          $("editBalance").value = "";
+
+          const extractionCard =
+            $("extractionCard");
+
+          if (extractionCard) {
+            extractionCard.style.display = "block";
+            extractionCard.classList.add("show");
+          }
+
+          const manualSection =
+            $("manualSection");
+
+          if (manualSection) {
+            manualSection.style.display = "none";
+            manualSection.classList.remove("show");
+          }
+
+        } else {
+
+          message(
+            $("authMessage"),
+            "Site not found.",
+            ""
+          );
+        }
+
+        return;
+      }
+
+      const data =
+        await readJsonResponse(
+          response
+        );
+
+      if (!data.success) {
+        throw new Error(
+          data.error ||
+          "Unable to load site."
+        );
+      }
+
+      if (!data.site) {
+        throw new Error(
+          "Site data was not returned."
+        );
+      }
+
+      showSite(
+        data.site
+      );
+
+      const edit =
+        window.confirm(
+          "Site found.\n\nDo you want to edit this site?"
+        );
+
+      if (edit) {
+
+        const editSection =
+          $("editSiteSection");
+
+        const extractionCard =
+          $("extractionCard");
+
+        if (editSection) {
+          editSection.style.display = "block";
+          editSection.classList.add("show");
+        }
+
+        if (extractionCard) {
+          extractionCard.style.display = "block";
+          extractionCard.classList.add("show");
+        }
+
+        if (editSection) {
+          editSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }
+
+        message(
+          $("authMessage"),
+          "Edit Site opened.",
+          "success"
+        );
+
+      } else {
+
+        message(
+          $("authMessage"),
+          "Site loaded successfully.",
+          "success"
+        );
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Load site error:",
+        error
+      );
+
+      message(
+        $("authMessage"),
+        error?.message ||
+        "Unable to load site.",
+        "error"
+      );
+
+    } finally {
+
+      button.disabled = false;
+
+      button.textContent =
+        "🔄 LOAD EXISTING SITE";
+    }
+  }
+);
 
 
       /* ==========================================
