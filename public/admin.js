@@ -1,7 +1,5 @@
 const $ = (id) => document.getElementById(id);
 console.log("ADMIN JS STARTED");
-alert("ADMIN JS IS RUNNING");
-
 /* =========================================================
    MESSAGE HELPERS
 ========================================================= */
