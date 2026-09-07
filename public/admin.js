@@ -739,6 +739,57 @@ $("imageInput")
 
   }
 );
+/* =========================================================
+   EDIT SITE BUTTON
+========================================================= */
+
+$("editSiteButton")
+?.addEventListener(
+  "click",
+  () => {
+
+    const editSection =
+      $("editSiteSection");
+
+    const extractionCard =
+      $("extractionCard");
+
+    if (editSection) {
+
+      editSection.style.display =
+        "block";
+
+      editSection.classList.add(
+        "show"
+      );
+    }
+
+    if (extractionCard) {
+
+      extractionCard.style.display =
+        "block";
+
+      extractionCard.classList.add(
+        "show"
+      );
+    }
+
+    if (editSection) {
+
+      editSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+
+    message(
+      $("authMessage"),
+      "Edit Site opened.",
+      "success"
+    );
+
+  }
+);
 
 /* =========================================================
    MANUAL READING TOGGLE
