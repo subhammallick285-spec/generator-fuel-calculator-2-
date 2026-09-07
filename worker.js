@@ -448,7 +448,7 @@ async function getSite(request, env) {
           screenshot_url,
           data_source
         FROM sites
-        WHERE site_id = ?
+        WHERE LOWER(site_id) = LOWER(?)
         LIMIT 1
       `)
       .bind(siteId)
