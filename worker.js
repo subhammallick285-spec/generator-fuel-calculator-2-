@@ -1742,82 +1742,84 @@ Rules:
 
 async function agreeLlama(request, env) {
 
-const auth =
-checkAdminKey(request, env);
+  const auth =
+    checkAdminKey(request, env);
 
-if (!auth.ok) {
-return auth.response;
-}
+  if (!auth.ok) {
+    return auth.response;
+  }
 
-try {
+  try {
 
-const response =
-await fetch(
-https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/models/accept,
-{
-method: "POST",
+    const response =
+      await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/models/accept`,
+        {
+          method: "POST",
 
-headers: {    
-    "Content-Type":    
-      "application/json",    
+          headers: {
+            "Content-Type":
+              "application/json",
 
-    "Authorization":    
-      `Bearer ${env.CLOUDFLARE_API_TOKEN}`    
-  },    
+            "Authorization":
+              `Bearer ${env.CLOUDFLARE_API_TOKEN}`
+          },
 
-  body: JSON.stringify({    
-    model:    
-      "@cf/meta/llama-3.2-11b-vision-instruct"    
-  })    
+          body: JSON.stringify({
+            model:
+              "@cf/meta/llama-3.2-11b-vision-instruct"
+          })
+        }
+      );
 
-}
+    const data =
+      await response.json();
 
-);
+    if (!response.ok) {
 
-const data =
-await response.json();
+      return json(
+        {
+          success: false,
 
-if (!response.ok) {
+          error:
+            data?.errors?.[0]?.message ||
+            "Unable to activate Llama AI.",
 
-return json(
-{
-success: false,
-error:
-data?.errors?.[0]?.message ||
-"Unable to activate Llama AI.",
-cloudflare: data
-},
-response.status
-);
+          cloudflare:
+            data
+        },
+        response.status
+      );
+    }
 
-}
+    return json({
+      success: true,
 
-return json({
-success: true,
-message:
-"Llama AI activated successfully.",
-cloudflare: data
-});
+      message:
+        "Llama AI activated successfully.",
 
-} catch (error) {
+      cloudflare:
+        data
+    });
 
-console.error(
-"agreeLlama error:",
-error
-);
+  } catch (error) {
 
-return json(
-{
-success: false,
-error:
-error?.message ||
-"Unable to activate Llama AI."
-},
-500
-);
+    console.error(
+      "agreeLlama error:",
+      error
+    );
 
-}
+    return json(
+      {
+        success: false,
 
+        error:
+          error?.message ||
+          "Unable to activate Llama AI."
+      },
+      500
+    );
+  }
 }
 
 // ============================================================
