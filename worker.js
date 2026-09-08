@@ -1946,11 +1946,7 @@ async function updateSite(request, env) {
 
 }
 
-// ============================================================
-// AGREE / ACTIVATE LLAMA
-// ============================================================
 
-async function agreeLlama(request, env) {
 
 // ============================================================
 // AGREE / ACTIVATE LLAMA
