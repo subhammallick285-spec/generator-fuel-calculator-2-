@@ -1124,100 +1124,287 @@ $("updateSite")
     try {
 
       const response =
-        await fetch(
-          "/api/admin/update-site",
-          {
-            method: "POST",
+/* =========================================================
+   SAVE MANUAL READING
+   FIXED VERSION
+========================================================= */
 
-            headers:
-              adminHeaders(true),
+async function updateSite() {
 
-            body:
-              JSON.stringify({
+  clearMessage(
+    $("updateMessage")
+  );
 
-                site_id:
-                  siteId,
+  const adminKey =
+    getAdminKey();
 
-                model:
-                  model,
+  const siteId =
+    $("siteId")?.value
+      ?.trim() || "";
 
-                current_hmr:
-                  hmr,
+  const model =
+    $("model")?.value || "";
 
-                current_kwh:
-                  kwh,
+  const hmrText =
+    $("currentHmr")?.value
+      ?.trim() || "";
 
-                current_balance:
-                  balance,
+  const kwhText =
+    $("currentKwh")?.value
+      ?.trim() || "";
 
-                data_source:
-                  "admin"
-              })
-          }
-        );
-
-
-      const data =
-        await readJsonResponse(
-          response
-        );
+  const balanceText =
+    $("currentBalance")?.value
+      ?.trim() || "";
 
 
-      if (!data.success) {
+  const hmr =
+    Number(hmrText);
 
-        throw new Error(
-          data.error ||
-          "Site update failed."
-        );
-      }
+  const kwh =
+    Number(kwhText);
+
+  const balance =
+    Number(balanceText);
 
 
-      message(
-        $("updateMessage"),
-        "Site updated successfully.",
-        "success"
+  /* -------------------------
+     VALIDATION
+  ------------------------- */
+
+  if (!adminKey) {
+
+    message(
+      $("updateMessage"),
+      "Please enter the Admin Key.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  if (!siteId) {
+
+    message(
+      $("updateMessage"),
+      "Site ID is required.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  if (!model) {
+
+    message(
+      $("updateMessage"),
+      "Please select a generator model.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  if (
+    !Number.isFinite(hmr) ||
+    !Number.isFinite(kwh) ||
+    !Number.isFinite(balance)
+  ) {
+
+    message(
+      $("updateMessage"),
+      "Please enter valid HMR, kWh and Balance.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const button =
+    $("updateSite");
+
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "SAVING...";
+
+  }
+
+
+  try {
+
+    message(
+      $("updateMessage"),
+      "Saving reading...",
+      ""
+    );
+
+
+    const response =
+      await fetch(
+        "/api/admin/update-site",
+        {
+          method: "POST",
+
+          headers:
+            adminHeaders(true),
+
+          body:
+            JSON.stringify({
+
+              site_id:
+                siteId,
+
+              model:
+                model,
+
+              current_hmr:
+                hmr,
+
+              current_kwh:
+                kwh,
+
+              current_balance:
+                balance,
+
+              data_source:
+                "admin"
+
+            })
+        }
       );
 
 
-      $("siteInfo")
-        ?.classList
-        .add("show");
+    const data =
+      await readJsonResponse(
+        response
+      );
 
 
+    if (!response.ok) {
+
+      throw new Error(
+        data?.error ||
+        `Server error (${response.status})`
+      );
+
+    }
+
+
+    if (!data?.success) {
+
+      throw new Error(
+        data?.error ||
+        "Site update failed."
+      );
+
+    }
+
+
+    /* -------------------------
+       SUCCESS
+    ------------------------- */
+
+    message(
+      $("updateMessage"),
+      "✅ Site updated successfully.",
+      "success"
+    );
+
+
+    $("siteInfo")
+      ?.classList
+      .add("show");
+
+
+    if ($("siteModel"))
       $("siteModel").textContent =
         model;
 
+
+    if ($("siteHmr"))
       $("siteHmr").textContent =
         hmr;
 
+
+    if ($("siteKwh"))
       $("siteKwh").textContent =
         kwh;
 
+
+    if ($("siteBalance"))
       $("siteBalance").textContent =
         balance;
 
 
-    } catch (error) {
+  } catch (error) {
 
-      message(
-        $("updateMessage"),
+    console.error(
+      "updateSite error:",
+      error
+    );
+
+
+    message(
+      $("updateMessage"),
+
+      "❌ " +
+      (
         error?.message ||
-        "Site update failed.",
-        "error"
-      );
+        "Site update failed."
+      ),
+
+      "error"
+    );
 
 
-    } finally {
+  } finally {
+
+    if (button) {
 
       button.disabled =
         false;
 
       button.textContent =
         "💾 SAVE MANUAL READING";
+
     }
 
   }
-);
+
+}
+
+
+/* =========================================================
+   MAKE FUNCTION AVAILABLE TO HTML
+========================================================= */
+
+window.updateSite =
+  updateSite;
+
+
+/* =========================================================
+   ALSO SUPPORT NORMAL BUTTON CLICK
+   No duplicate listener if HTML uses onclick.
+========================================================= */
+
+$("updateSite")
+  ?.addEventListener(
+    "click",
+    function () {
+
+      updateSite();
+
+    }
+  );
 
 
 /* =========================================================
