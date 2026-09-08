@@ -2339,6 +2339,80 @@
   <!-- =====================================================
        ADMIN JAVASCRIPT
        ===================================================== -->
+  <script>
+window.addEventListener("error", function (event) {
+
+  let box = document.getElementById("adminJsError");
+
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "adminJsError";
+
+    box.style.cssText = `
+      position:fixed;
+      left:10px;
+      right:10px;
+      bottom:10px;
+      z-index:999999;
+      background:#b00020;
+      color:white;
+      padding:16px;
+      border-radius:12px;
+      font-family:monospace;
+      font-size:13px;
+      white-space:pre-wrap;
+      box-shadow:0 4px 20px rgba(0,0,0,.4);
+    `;
+
+    document.body.appendChild(box);
+  }
+
+  box.textContent =
+    "ADMIN JAVASCRIPT ERROR\n\n" +
+    (event.message || "Unknown error") +
+    "\n\nFile: " +
+    (event.filename || "unknown") +
+    "\nLine: " +
+    (event.lineno || "?") +
+    "\nColumn: " +
+    (event.colno || "?");
+});
+
+
+window.addEventListener("unhandledrejection", function (event) {
+
+  let box = document.getElementById("adminJsError");
+
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "adminJsError";
+
+    box.style.cssText = `
+      position:fixed;
+      left:10px;
+      right:10px;
+      bottom:10px;
+      z-index:999999;
+      background:#b00020;
+      color:white;
+      padding:16px;
+      border-radius:12px;
+      font-family:monospace;
+      font-size:13px;
+      white-space:pre-wrap;
+      box-shadow:0 4px 20px rgba(0,0,0,.4);
+    `;
+
+    document.body.appendChild(box);
+  }
+
+  box.textContent =
+    "ADMIN JAVASCRIPT PROMISE ERROR\n\n" +
+    String(event.reason);
+});
+</script>
+
+<script src="/admin.js?v=2"></script>
 
   <script src="/admin.js?v=2"></script>
 
