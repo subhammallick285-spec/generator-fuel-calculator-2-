@@ -1031,22 +1031,22 @@ async function reviewSaveRequest(request, env) {
 
 
     const requestResult =
-      await env.DB.prepare(`
-        SELECT
-          id,
-          site_id,
-          site_name,
-          model,
-          current_hmr,
-          current_kwh,
-          current_balance,
-          status
-        FROM save_requests
-        WHERE LOWER(site_id) = LOWER(?)
-        LIMIT 1
-      `)
-      .bind(id)
-      .first();
+  await env.DB.prepare(`
+    SELECT
+      id,
+      site_id,
+      site_name,
+      model,
+      current_hmr,
+      current_kwh,
+      current_balance,
+      status
+    FROM save_requests
+    WHERE id = ?
+    LIMIT 1
+  `)
+  .bind(id)
+  .first();
 
 
     if (!requestResult) {
