@@ -2778,5 +2778,3 @@ setInterval(
   20000
 );
 console.log("ADMIN JS FINISHED");
-
-});
