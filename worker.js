@@ -1743,6 +1743,10 @@ Rules:
 
 async function agreeLlama(request, env) {
 
+  // ----------------------------------------------------------
+  // ADMIN AUTHENTICATION
+  // ----------------------------------------------------------
+
   const auth =
     checkAdminKey(request, env);
 
@@ -1753,25 +1757,28 @@ async function agreeLlama(request, env) {
 
   try {
 
+    // --------------------------------------------------------
+    // CLOUDFLARE WORKERS AI
+    // LLAMA 3.2 11B VISION INSTRUCT
+    // --------------------------------------------------------
+
     const response =
       await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/models/accept`,
+        `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/@cf/meta/llama-3.2-11b-vision-instruct`,
         {
           method: "POST",
 
           headers: {
-            "Content-Type":
-              "application/json",
-
             "Authorization":
-              `Bearer ${env.CLOUDFLARE_API_TOKEN}`
+              `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+
+            "Content-Type":
+              "application/json"
           },
 
           body: JSON.stringify({
-            model:
-              "@cf/meta/llama-3.2-11b-vision-instruct"
+            prompt: "agree"
           })
-
         }
       );
 
@@ -1780,27 +1787,47 @@ async function agreeLlama(request, env) {
       await response.json();
 
 
-    if (!response.ok) {
+    // --------------------------------------------------------
+    // CLOUDFLARE ERROR
+    // --------------------------------------------------------
+
+    if (!response.ok || data?.success === false) {
+
+      console.error(
+        "Llama activation failed:",
+        data
+      );
 
       return json(
         {
           success: false,
+
           error:
             data?.errors?.[0]?.message ||
             "Unable to activate Llama AI.",
-          cloudflare: data
+
+          cloudflare:
+            data
         },
-        response.status
+
+        response.status || 500
       );
 
     }
 
 
+    // --------------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------------
+
     return json({
       success: true,
+
       message:
         "Llama AI activated successfully.",
-      cloudflare: data
+
+      cloudflare:
+        data
     });
 
 
@@ -1811,20 +1838,22 @@ async function agreeLlama(request, env) {
       error
     );
 
+
     return json(
       {
         success: false,
+
         error:
           error?.message ||
           "Unable to activate Llama AI."
       },
+
       500
     );
 
   }
 
 }
-
 
 // ============================================================
 // DEBUG CONFIGURATION
