@@ -1737,6 +1737,222 @@ Rules:
 }
 
 // ============================================================
+// ADMIN UPDATE SITE
+// ============================================================
+
+async function updateSite(request, env) {
+
+  const auth =
+    checkAdminKey(request, env);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
+  if (!env.DB) {
+    return json(
+      {
+        success: false,
+        error: "Database is not configured."
+      },
+      500
+    );
+  }
+
+  try {
+
+    if (request.method !== "POST") {
+      return json(
+        {
+          success: false,
+          error: "POST required."
+        },
+        405
+      );
+    }
+
+    const body =
+      await request.json();
+
+    const siteId =
+      String(body.siteId || "").trim();
+
+    const siteName =
+      String(body.siteName || "").trim();
+
+    const model =
+      String(body.model || "").trim();
+
+    const currentHmr =
+      Number(body.currentHmr);
+
+    const currentKwh =
+      Number(body.currentKwh);
+
+    const currentBalance =
+      Number(body.currentBalance);
+
+    if (!siteId) {
+      return json(
+        {
+          success: false,
+          error: "Site ID is required."
+        },
+        400
+      );
+    }
+
+    if (!model) {
+      return json(
+        {
+          success: false,
+          error: "Generator model is required."
+        },
+        400
+      );
+    }
+
+    if (
+      !Number.isFinite(currentHmr) ||
+      !Number.isFinite(currentKwh) ||
+      !Number.isFinite(currentBalance)
+    ) {
+      return json(
+        {
+          success: false,
+          error:
+            "HMR, kWh and balance must be valid numbers."
+        },
+        400
+      );
+    }
+
+    const now =
+      new Date().toISOString();
+
+    const existing =
+      await env.DB.prepare(`
+        SELECT id
+        FROM sites
+        WHERE LOWER(site_id) = LOWER(?)
+        LIMIT 1
+      `)
+      .bind(siteId)
+      .first();
+
+    const statements = [];
+
+    if (existing) {
+
+      statements.push(
+        env.DB.prepare(`
+          UPDATE sites
+          SET
+            site_name = ?,
+            model = ?,
+            current_hmr = ?,
+            current_kwh = ?,
+            current_balance = ?,
+            last_updated = ?,
+            data_source = 'admin'
+          WHERE id = ?
+        `)
+        .bind(
+          siteName,
+          model,
+          currentHmr,
+          currentKwh,
+          currentBalance,
+          now,
+          existing.id
+        )
+      );
+
+    } else {
+
+      statements.push(
+        env.DB.prepare(`
+          INSERT INTO sites (
+            site_id,
+            site_name,
+            model,
+            current_hmr,
+            current_kwh,
+            current_balance,
+            last_updated,
+            data_source
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'admin')
+        `)
+        .bind(
+          siteId,
+          siteName,
+          model,
+          currentHmr,
+          currentKwh,
+          currentBalance,
+          now
+        )
+      );
+
+    }
+
+    statements.push(
+      env.DB.prepare(`
+        INSERT INTO readings (
+          site_id,
+          hmr,
+          kwh,
+          balance,
+          reading_date,
+          source
+        )
+        VALUES (?, ?, ?, ?, ?, 'admin')
+      `)
+      .bind(
+        siteId,
+        currentHmr,
+        currentKwh,
+        currentBalance,
+        now
+      )
+    );
+
+    await env.DB.batch(statements);
+
+    return json({
+      success: true,
+      message: "Site updated successfully."
+    });
+
+  } catch (error) {
+
+    console.error(
+      "updateSite error:",
+      error
+    );
+
+    return json(
+      {
+        success: false,
+        error:
+          error?.message ||
+          "Unable to update site."
+      },
+      500
+    );
+
+  }
+
+}
+
+// ============================================================
+// AGREE / ACTIVATE LLAMA
+// ============================================================
+
+async function agreeLlama(request, env) {
+
+// ============================================================
 // AGREE / ACTIVATE LLAMA
 // ============================================================
 
