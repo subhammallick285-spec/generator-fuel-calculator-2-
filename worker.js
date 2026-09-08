@@ -1736,122 +1736,87 @@ Rules:
 
 }
 
-
 // ============================================================
 // AGREE / ACTIVATE LLAMA
 // ============================================================
 
 async function agreeLlama(request, env) {
 
-  // ----------------------------------------------------------
-  // ADMIN AUTHENTICATION
-  // ----------------------------------------------------------
+const auth =
+checkAdminKey(request, env);
 
-  const auth =
-    checkAdminKey(request, env);
+if (!auth.ok) {
+return auth.response;
+}
 
-  if (!auth.ok) {
-    return auth.response;
-  }
+try {
 
+const response =
+await fetch(
+https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/models/accept,
+{
+method: "POST",
 
-  try {
+headers: {    
+    "Content-Type":    
+      "application/json",    
 
-    // --------------------------------------------------------
-    // CLOUDFLARE WORKERS AI
-    // LLAMA 3.2 11B VISION INSTRUCT
-    // --------------------------------------------------------
+    "Authorization":    
+      `Bearer ${env.CLOUDFLARE_API_TOKEN}`    
+  },    
 
-    const response =
-      await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/@cf/meta/llama-3.2-11b-vision-instruct`,
-        {
-          method: "POST",
+  body: JSON.stringify({    
+    model:    
+      "@cf/meta/llama-3.2-11b-vision-instruct"    
+  })    
 
-          headers: {
-            "Authorization":
-              `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+}
 
-            "Content-Type":
-              "application/json"
-          },
+);
 
-          body: JSON.stringify({
-            prompt: "agree"
-          })
-        }
-      );
+const data =
+await response.json();
 
+if (!response.ok) {
 
-    const data =
-      await response.json();
+return json(
+{
+success: false,
+error:
+data?.errors?.[0]?.message ||
+"Unable to activate Llama AI.",
+cloudflare: data
+},
+response.status
+);
 
+}
 
-    // --------------------------------------------------------
-    // CLOUDFLARE ERROR
-    // --------------------------------------------------------
+return json({
+success: true,
+message:
+"Llama AI activated successfully.",
+cloudflare: data
+});
 
-    if (!response.ok || data?.success === false) {
+} catch (error) {
 
-      console.error(
-        "Llama activation failed:",
-        data
-      );
+console.error(
+"agreeLlama error:",
+error
+);
 
-      return json(
-        {
-          success: false,
+return json(
+{
+success: false,
+error:
+error?.message ||
+"Unable to activate Llama AI."
+},
+500
+);
 
-          error:
-            data?.errors?.[0]?.message ||
-            "Unable to activate Llama AI.",
-
-          cloudflare:
-            data
-        },
-
-        response.status || 500
-      );
-
-    }
-
-
-    // --------------------------------------------------------
-    // SUCCESS
-    // --------------------------------------------------------
-
-    return json({
-      success: true,
-
-      message:
-        "Llama AI activated successfully.",
-
-      cloudflare:
-        data
-    });
-
-
-  } catch (error) {
-
-    console.error(
-      "agreeLlama error:",
-      error
-    );
-
-
-    return json(
-      {
-        success: false,
-
-        error:
-          error?.message ||
-          "Unable to activate Llama AI."
-      },
-
-      500
-    );
-
-  }
+}
 
 }
 
