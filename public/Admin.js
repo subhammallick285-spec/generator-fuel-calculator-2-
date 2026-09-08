@@ -1,367 +1,666 @@
 /* =========================================================
-   GENERATOR FUEL CALCULATOR — ADMIN.JS
+   GENERATOR FUEL CALCULATOR
+   ADMIN.JS
    CLEAN REBUILD
-========================================================= */
+   ========================================================= */
 
 (() => {
+
   "use strict";
 
+  /* ---------------------------------------------------------
+     DUPLICATE LOAD PROTECTION
+     --------------------------------------------------------- */
+
   if (window.__GENERATOR_ADMIN_JS_LOADED__) {
-    console.warn("ADMIN JS already loaded; duplicate load ignored.");
+    console.warn(
+      "ADMIN.JS already loaded."
+    );
     return;
   }
 
   window.__GENERATOR_ADMIN_JS_LOADED__ = true;
 
-  console.log("ADMIN JS STARTED");
 
-  const $ = (id) => document.getElementById(id);
+  /* ---------------------------------------------------------
+     SHORT DOM HELPER
+     --------------------------------------------------------- */
 
-  /* =========================================================
-     MESSAGE HELPERS
-  ========================================================= */
+  const $ = (id) => {
+    return document.getElementById(id);
+  };
 
-  function message(element, text, type = "") {
-    if (!element) return;
 
-    element.textContent = text || "";
+  /* ---------------------------------------------------------
+     ADMIN KEY
+     --------------------------------------------------------- */
+
+  function getAdminKey() {
+
+    try {
+
+      const stored =
+        sessionStorage.getItem(
+          "adminKey"
+        );
+
+      if (stored) {
+        return stored.trim();
+      }
+
+    } catch (error) {
+
+      console.warn(
+        "Unable to read sessionStorage.",
+        error
+      );
+
+    }
+
+
+    const input =
+      $("adminKey");
+
+    if (
+      input &&
+      typeof input.value === "string"
+    ) {
+
+      return input.value.trim();
+
+    }
+
+
+    return "";
+
+  }
+
+
+  /* ---------------------------------------------------------
+     REQUEST HEADERS
+     --------------------------------------------------------- */
+
+  function getHeaders(
+    json = false
+  ) {
+
+    const result = {
+      "Accept":
+        "application/json",
+      "X-Admin-Key":
+        getAdminKey()
+    };
+
+
+    if (json) {
+
+      result[
+        "Content-Type"
+      ] =
+        "application/json";
+
+    }
+
+
+    return result;
+
+  }
+
+
+  /* ---------------------------------------------------------
+     MESSAGE HELPER
+     --------------------------------------------------------- */
+
+  function setMessage(
+    element,
+    text,
+    type = ""
+  ) {
+
+    if (!element) {
+      return;
+    }
+
+
+    element.textContent =
+      text || "";
+
 
     element.className =
       type
         ? `message ${type}`
         : "message";
+
   }
 
-  function clearMessage(element) {
-    message(element, "");
-  }
 
-  /* =========================================================
-     ADMIN KEY
-  ========================================================= */
+  function clearMessage(
+    element
+  ) {
 
-  function getAdminKey() {
-    return (
-      sessionStorage.getItem("adminKey") ||
-      $("adminKey")?.value?.trim() ||
+    setMessage(
+      element,
       ""
     );
+
   }
 
-  function headers(json = false) {
-    const result = {
-      Accept: "application/json",
-      "X-Admin-Key": getAdminKey()
-    };
 
-    if (json) {
-      result["Content-Type"] = "application/json";
+  /* ---------------------------------------------------------
+     SHOW / HIDE
+     --------------------------------------------------------- */
+
+  function show(
+    element
+  ) {
+
+    if (!element) {
+      return;
     }
 
-    return result;
+
+    element.style.display =
+      "block";
+
+
+    if (
+      element.classList
+    ) {
+
+      element.classList.add(
+        "show"
+      );
+
+    }
+
   }
 
-  /* =========================================================
-     RESPONSE HELPER
-  ========================================================= */
 
-  async function readJson(response) {
-    const text = await response.text();
+  function hide(
+    element
+  ) {
+
+    if (!element) {
+      return;
+    }
+
+
+    element.style.display =
+      "none";
+
+
+    if (
+      element.classList
+    ) {
+
+      element.classList.remove(
+        "show"
+      );
+
+    }
+
+  }
+
+
+  /* ---------------------------------------------------------
+     SAFE JSON RESPONSE
+     --------------------------------------------------------- */
+
+  async function parseResponse(
+    response
+  ) {
+
+    const text =
+      await response.text();
+
 
     let data = {};
 
-    if (text.trim()) {
+
+    if (
+      text &&
+      text.trim()
+    ) {
+
       try {
-        data = JSON.parse(text);
-      } catch {
+
+        data =
+          JSON.parse(text);
+
+      } catch (error) {
+
         throw new Error(
           `Server returned invalid JSON (${response.status}).`
         );
+
       }
+
     }
 
-    if (!response.ok || data.success === false) {
+
+    if (!response.ok) {
+
       throw new Error(
         data.error ||
+        data.message ||
         `Server error (${response.status}).`
       );
+
     }
 
+
+    if (
+      data &&
+      data.success === false
+    ) {
+
+      throw new Error(
+        data.error ||
+        data.message ||
+        "Request failed."
+      );
+
+    }
+
+
     return data;
+
   }
 
-  async function requestJSON(url, options = {}) {
-    const response = await fetch(
-      url,
-      {
-        cache: "no-store",
-        ...options
-      }
+
+  /* ---------------------------------------------------------
+     FETCH HELPER
+     --------------------------------------------------------- */
+
+  async function request(
+    url,
+    options = {}
+  ) {
+
+    const response =
+      await fetch(
+        url,
+        {
+          cache:
+            "no-store",
+          ...options
+        }
+      );
+
+
+    return parseResponse(
+      response
     );
 
-    return readJson(response);
   }
+
 
   /* =========================================================
      MODEL FORMAT
-  ========================================================= */
+     ========================================================= */
 
-  function formatModel(model) {
-    const names = {
-      eicher10: "Eicher 10 KVA",
-      mahindra10: "Mahindra 10 KVA",
-      eicher20: "Eicher 20 KVA",
-      mahindra20: "Mahindra 20 KVA",
-      koel20: "KOEL 20 KVA"
+  function formatModel(
+    model
+  ) {
+
+    const models = {
+
+      eicher10:
+        "Eicher 10 KVA",
+
+      mahindra10:
+        "Mahindra 10 KVA",
+
+      eicher20:
+        "Eicher 20 KVA",
+
+      mahindra20:
+        "Mahindra 20 KVA",
+
+      koel20:
+        "KOEL 20 KVA"
+
     };
 
+
     return (
-      names[model] ||
+      models[model] ||
       model ||
       "—"
     );
+
   }
+
 
   /* =========================================================
-     VISIBILITY
-  ========================================================= */
+     SITE INFORMATION
+     ========================================================= */
 
-  function show(element) {
-    if (!element) return;
+  function fillSite(
+    site
+  ) {
 
-    element.style.display = "block";
-
-    if (element.classList) {
-      element.classList.add("show");
+    if (!site) {
+      return;
     }
-  }
 
-  function hide(element) {
-    if (!element) return;
-
-    element.style.display = "none";
-
-    if (element.classList) {
-      element.classList.remove("show");
-    }
-  }
-
-  /* =========================================================
-     SITE DISPLAY
-  ========================================================= */
-
-  function fillSite(site) {
-    if (!site) return;
 
     if ($("siteName")) {
+
       $("siteName").textContent =
-        site.site_name || "—";
+        site.site_name ||
+        "—";
+
     }
 
+
     if ($("siteIdDisplay")) {
+
       $("siteIdDisplay").textContent =
         site.site_id
           ? `Site ID: ${site.site_id}`
           : "Saved Site";
+
     }
+
 
     if ($("siteModel")) {
+
       $("siteModel").textContent =
-        formatModel(site.model);
+        formatModel(
+          site.model
+        );
+
     }
+
 
     if ($("siteHmr")) {
+
       $("siteHmr").textContent =
-        site.current_hmr ?? "—";
+        site.current_hmr ??
+        "—";
+
     }
+
 
     if ($("siteKwh")) {
+
       $("siteKwh").textContent =
-        site.current_kwh ?? "—";
+        site.current_kwh ??
+        "—";
+
     }
+
 
     if ($("siteBalance")) {
+
       $("siteBalance").textContent =
-        site.current_balance ?? "—";
+        site.current_balance ??
+        "—";
+
     }
+
 
     if ($("siteId")) {
+
       $("siteId").value =
-        site.site_id || "";
+        site.site_id ||
+        "";
+
     }
+
 
     if ($("editSiteId")) {
+
       $("editSiteId").value =
-        site.site_id || "";
+        site.site_id ||
+        "";
+
     }
+
 
     if ($("editSiteName")) {
+
       $("editSiteName").value =
-        site.site_name || "";
+        site.site_name ||
+        "";
+
     }
+
 
     if ($("editModel")) {
+
       $("editModel").value =
-        site.model || "";
+        site.model ||
+        "";
+
     }
+
 
     if ($("editHmr")) {
+
       $("editHmr").value =
-        site.current_hmr ?? "";
+        site.current_hmr ??
+        "";
+
     }
+
 
     if ($("editKwh")) {
+
       $("editKwh").value =
-        site.current_kwh ?? "";
+        site.current_kwh ??
+        "";
+
     }
+
 
     if ($("editBalance")) {
+
       $("editBalance").value =
-        site.current_balance ?? "";
+        site.current_balance ??
+        "";
+
     }
+
 
     if ($("model")) {
+
       $("model").value =
-        site.model || "";
+        site.model ||
+        "";
+
     }
 
-    show($("siteInfo"));
+
+    show(
+      $("siteInfo")
+    );
+
   }
 
+
   /* =========================================================
-     LOAD EXISTING SITE
-  ========================================================= */
+     LOAD SITE
+     ========================================================= */
 
   async function loadSite() {
+
+    const siteInput =
+      $("siteId");
+
+
     const siteId =
-      $("siteId")?.value?.trim() ||
-      "";
+      siteInput &&
+      typeof siteInput.value ===
+        "string"
+        ? siteInput.value.trim()
+        : "";
+
 
     if (!siteId) {
-      message(
+
+      setMessage(
         $("authMessage"),
         "Please enter a Site ID.",
         "error"
       );
+
       return;
+
     }
 
+
     if (!getAdminKey()) {
-      message(
+
+      setMessage(
         $("authMessage"),
         "Please unlock the Admin panel first.",
         "error"
       );
+
       return;
+
     }
+
 
     const button =
       $("loadSite");
 
+
     if (button) {
-      button.disabled = true;
+
+      button.disabled =
+        true;
+
       button.textContent =
         "LOADING...";
+
     }
+
 
     clearMessage(
       $("authMessage")
     );
 
+
     try {
+
       const data =
-        await requestJSON(
+        await request(
           `/api/site?site_id=${encodeURIComponent(siteId)}`,
           {
-            method: "GET",
-            headers: headers()
+            method:
+              "GET",
+            headers:
+              getHeaders()
           }
         );
 
-      if (!data.site) {
+
+      if (
+        !data ||
+        !data.site
+      ) {
+
         throw new Error(
           "Site data was not returned."
         );
+
       }
 
-      fillSite(data.site);
 
-      const edit =
-        window.confirm(
-          "Site found.\n\nDo you want to edit this site?"
-        );
+      fillSite(
+        data.site
+      );
 
-      if (edit) {
-        openEdit();
 
-        message(
-          $("authMessage"),
-          "Edit Site opened.",
-          "success"
-        );
-      } else {
-        message(
-          $("authMessage"),
-          "Site loaded successfully.",
-          "success"
-        );
-      }
+      setMessage(
+        $("authMessage"),
+        "Site loaded successfully.",
+        "success"
+      );
+
+
+      /*
+       * Open the edit section only
+       * when the user explicitly clicks
+       * EDIT SITE.
+       */
 
     } catch (error) {
 
-      if (
-        error?.message?.includes("404")
-      ) {
-        message(
-          $("authMessage"),
-          "Site not found.",
-          "error"
-        );
-      } else {
-        message(
-          $("authMessage"),
-          error?.message ||
-            "Unable to load site.",
-          "error"
-        );
-      }
-
       console.error(
-        "Load site error:",
+        "LOAD SITE ERROR:",
         error
+      );
+
+
+      setMessage(
+        $("authMessage"),
+        error &&
+        error.message
+          ? error.message
+          : "Unable to load site.",
+        "error"
       );
 
     } finally {
 
       if (button) {
-        button.disabled = false;
+
+        button.disabled =
+          false;
+
         button.textContent =
           "🔄 LOAD EXISTING SITE";
+
       }
+
     }
+
   }
+
 
   /* =========================================================
-     EDIT SITE
-  ========================================================= */
+     OPEN EDIT SITE
+     ========================================================= */
 
   function openEdit() {
-    show(
-      $("editSiteSection")
-    );
 
-    if ($("extractionCard")) {
-      show(
-        $("extractionCard")
+    const section =
+      $("editSiteSection");
+
+
+    if (!section) {
+
+      console.warn(
+        "editSiteSection not found."
       );
+
+      return;
+
     }
 
-    $("editSiteSection")
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+
+    show(
+      section
+    );
+
+
+    section.scrollIntoView({
+      behavior:
+        "smooth",
+      block:
+        "start"
+    });
+
   }
+
+
+  /* =========================================================
+     SAVE EDITED SITE
+     ========================================================= */
 
   async function saveSiteEdit() {
 
@@ -370,464 +669,686 @@
       $("siteId")?.value?.trim() ||
       "";
 
+
     const siteName =
       $("editSiteName")?.value?.trim() ||
       siteId;
 
+
     const model =
       $("editModel")?.value ||
       "";
+
 
     const hmr =
       Number(
         $("editHmr")?.value
       );
 
+
     const kwh =
       Number(
         $("editKwh")?.value
       );
+
 
     const balance =
       Number(
         $("editBalance")?.value
       );
 
+
     if (!siteId) {
-      message(
+
+      setMessage(
         $("editSiteMessage"),
         "Site ID is required.",
         "error"
       );
+
       return;
+
     }
 
+
     if (!model) {
-      message(
+
+      setMessage(
         $("editSiteMessage"),
         "Please select a generator model.",
         "error"
       );
+
       return;
+
     }
+
 
     if (
       !Number.isFinite(hmr) ||
       !Number.isFinite(kwh) ||
       !Number.isFinite(balance)
     ) {
-      message(
+
+      setMessage(
         $("editSiteMessage"),
         "Please enter valid HMR, kWh and Balance.",
         "error"
       );
+
       return;
+
     }
+
+
+    if (!getAdminKey()) {
+
+      setMessage(
+        $("editSiteMessage"),
+        "Please unlock the Admin panel first.",
+        "error"
+      );
+
+      return;
+
+    }
+
 
     const button =
       $("saveSiteEdit");
 
+
     if (button) {
-      button.disabled = true;
+
+      button.disabled =
+        true;
+
       button.textContent =
         "SAVING...";
+
     }
+
 
     clearMessage(
       $("editSiteMessage")
     );
 
+
     try {
 
       const data =
-        await requestJSON(
+        await request(
           "/api/admin/update-site",
           {
-            method: "POST",
-            headers: headers(true),
-            body: JSON.stringify({
-              site_id: siteId,
-              site_name: siteName,
-              model,
-              current_hmr: hmr,
-              current_kwh: kwh,
-              current_balance: balance
-            })
+            method:
+              "POST",
+
+            headers:
+              getHeaders(true),
+
+            body:
+              JSON.stringify({
+
+                site_id:
+                  siteId,
+
+                site_name:
+                  siteName,
+
+                model:
+                  model,
+
+                current_hmr:
+                  hmr,
+
+                current_kwh:
+                  kwh,
+
+                current_balance:
+                  balance
+
+              })
+
           }
         );
 
-      message(
+
+      setMessage(
         $("editSiteMessage"),
         data.message ||
-          "Site updated successfully.",
+        "Site updated successfully.",
         "success"
       );
 
-      await loadSiteSilently(
+
+      await refreshSite(
         siteId
       );
 
+
     } catch (error) {
 
-      message(
-        $("editSiteMessage"),
-        error?.message ||
-          "Unable to save site changes.",
-        "error"
+      console.error(
+        "SAVE SITE ERROR:",
+        error
       );
 
-      console.error(
-        "Save site edit error:",
-        error
+
+      setMessage(
+        $("editSiteMessage"),
+        error &&
+        error.message
+          ? error.message
+          : "Unable to save site changes.",
+        "error"
       );
 
     } finally {
 
       if (button) {
-        button.disabled = false;
+
+        button.disabled =
+          false;
+
         button.textContent =
           "💾 SAVE SITE CHANGES";
+
       }
+
     }
+
   }
 
-  async function loadSiteSilently(
+
+  /* =========================================================
+     REFRESH SITE WITHOUT UI MESSAGE
+     ========================================================= */
+
+  async function refreshSite(
     siteId
   ) {
+
+    if (!siteId) {
+      return;
+    }
+
 
     try {
 
       const data =
-        await requestJSON(
+        await request(
           `/api/site?site_id=${encodeURIComponent(siteId)}`,
           {
-            method: "GET",
-            headers: headers()
+            method:
+              "GET",
+            headers:
+              getHeaders()
           }
         );
 
+
       if (data.site) {
+
         fillSite(
           data.site
         );
+
       }
 
     } catch (error) {
 
       console.error(
-        "Silent site refresh failed:",
+        "SITE REFRESH ERROR:",
         error
       );
+
     }
+
   }
+
 
   /* =========================================================
      LLAMA ACTIVATION
-  ========================================================= */
+     ========================================================= */
 
   async function activateLlama() {
 
-    const button =
-      $("activateLlama");
-
     if (!getAdminKey()) {
-      message(
+
+      setMessage(
         $("llamaMessage"),
         "Please unlock the Admin panel first.",
         "error"
       );
+
       return;
+
     }
 
+
+    const button =
+      $("activateLlama");
+
+
     if (button) {
-      button.disabled = true;
+
+      button.disabled =
+        true;
+
       button.textContent =
         "ACTIVATING...";
+
     }
+
 
     clearMessage(
       $("llamaMessage")
     );
 
+
     try {
 
       const data =
-        await requestJSON(
+        await request(
           "/api/admin/agree-llama",
           {
-            method: "POST",
-            headers: headers(true),
-            body: JSON.stringify({})
+            method:
+              "POST",
+
+            headers:
+              getHeaders(true),
+
+            body:
+              JSON.stringify({})
           }
         );
 
-      message(
+
+      setMessage(
         $("llamaMessage"),
         data.message ||
-          "Llama AI activated successfully.",
+        "Llama AI activated successfully.",
         "success"
       );
 
+
       if (button) {
+
         button.textContent =
           "✅ LLAMA AI ACTIVATED";
+
       }
+
 
     } catch (error) {
 
-      message(
+      console.error(
+        "LLAMA ERROR:",
+        error
+      );
+
+
+      setMessage(
         $("llamaMessage"),
-        error?.message ||
-          "Unable to activate Llama AI.",
+        error &&
+        error.message
+          ? error.message
+          : "Unable to activate Llama AI.",
         "error"
       );
 
+
       if (button) {
-        button.disabled = false;
+
+        button.disabled =
+          false;
+
         button.textContent =
           "🤖 ACTIVATE LLAMA AI";
+
       }
 
-      console.error(
-        "Llama activation error:",
-        error
-      );
     }
+
   }
 
+
   /* =========================================================
-     IMAGE PREVIEW
-  ========================================================= */
+     IMAGE SELECTION / PREVIEW
+     ========================================================= */
 
   function handleImageSelection() {
 
+    const input =
+      $("imageInput");
+
+
     const file =
-      $("imageInput")
-        ?.files?.[0];
+      input?.files?.[0];
+
 
     if (!file) {
-      $("preview")
-        ?.classList
-        .remove("show");
+
+      hide(
+        $("preview")
+      );
+
       return;
+
     }
 
+
     if (
+      !file.type ||
       !file.type.startsWith(
         "image/"
       )
     ) {
 
-      message(
+      setMessage(
         $("llamaMessage"),
         "Please select an image file.",
         "error"
       );
 
-      if ($("imageInput")) {
-        $("imageInput").value =
+
+      if (input) {
+
+        input.value =
           "";
+
       }
 
+
       return;
+
     }
+
 
     const reader =
       new FileReader();
 
-    reader.onload = (
-      event
-    ) => {
 
-      if ($("previewImage")) {
-        $("previewImage").src =
-          event.target.result;
-      }
+    reader.onload =
+      function (event) {
 
-      if ($("fileName")) {
-        $("fileName").textContent =
-          file.name;
-      }
+        if (
+          $("previewImage")
+        ) {
 
-      $("preview")
-        ?.classList
-        .add("show");
-    };
+          $("previewImage").src =
+            event.target.result;
 
-    reader.onerror = () => {
+        }
 
-      message(
-        $("llamaMessage"),
-        "Unable to read the selected image.",
-        "error"
-      );
-    };
+
+        if (
+          $("fileName")
+        ) {
+
+          $("fileName").textContent =
+            file.name;
+
+        }
+
+
+        show(
+          $("preview")
+        );
+
+      };
+
+
+    reader.onerror =
+      function () {
+
+        setMessage(
+          $("llamaMessage"),
+          "Unable to read the selected image.",
+          "error"
+        );
+
+      };
+
 
     reader.readAsDataURL(
       file
     );
+
   }
 
+
   /* =========================================================
-     EXTRACT IMAGE
-  ========================================================= */
+     IMAGE EXTRACTION
+     ========================================================= */
 
   async function extractImage() {
 
+    const input =
+      $("imageInput");
+
+
     const file =
-      $("imageInput")
-        ?.files?.[0];
+      input?.files?.[0];
+
 
     const siteId =
-      $("siteId")
-        ?.value?.trim() ||
+      $("siteId")?.value?.trim() ||
       "";
 
+
     if (!getAdminKey()) {
-      message(
+
+      setMessage(
         $("llamaMessage"),
         "Please unlock the Admin panel first.",
         "error"
       );
+
       return;
+
     }
 
+
     if (!siteId) {
-      message(
+
+      setMessage(
         $("llamaMessage"),
         "Please enter the Site ID first.",
         "error"
       );
+
       return;
+
     }
 
+
     if (!file) {
-      message(
+
+      setMessage(
         $("llamaMessage"),
         "Please upload a generator screenshot first.",
         "error"
       );
+
       return;
+
     }
+
 
     const button =
       $("extractButton");
 
+
     if (button) {
-      button.disabled = true;
+
+      button.disabled =
+        true;
+
       button.textContent =
         "EXTRACTING...";
+
     }
+
 
     show(
       $("extractLoading")
     );
+
 
     try {
 
       const form =
         new FormData();
 
+
       form.append(
         "image",
         file
       );
+
 
       form.append(
         "site_id",
         siteId
       );
 
+
       const data =
-        await requestJSON(
+        await request(
           "/api/admin/extract-image",
           {
-            method: "POST",
+            method:
+              "POST",
+
             headers: {
-              Accept:
+              "Accept":
                 "application/json",
+
               "X-Admin-Key":
                 getAdminKey()
             },
-            body: form
+
+            body:
+              form
           }
         );
+
 
       const extracted =
         data.data ||
         data.extracted ||
         data;
 
+
       if (
-        extracted.model != null
+        extracted &&
+        extracted.model != null &&
+        $("extractedModel")
       ) {
+
         $("extractedModel").value =
           extracted.model;
+
       }
 
+
       if (
-        extracted.current_hmr != null
+        extracted &&
+        extracted.current_hmr != null &&
+        $("extractedHmr")
       ) {
+
         $("extractedHmr").value =
           extracted.current_hmr;
+
       }
 
+
       if (
-        extracted.current_kwh != null
+        extracted &&
+        extracted.current_kwh != null &&
+        $("extractedKwh")
       ) {
+
         $("extractedKwh").value =
           extracted.current_kwh;
+
       }
 
+
       if (
-        extracted.previous_balance != null
+        extracted &&
+        extracted.previous_balance != null &&
+        $("extractedPreviousBalance")
       ) {
+
         $("extractedPreviousBalance").value =
           extracted.previous_balance;
+
       }
 
+
       if (
-        extracted.fuel_filled != null
+        extracted &&
+        extracted.fuel_filled != null &&
+        $("extractedFuelFilled")
       ) {
+
         $("extractedFuelFilled").value =
           extracted.fuel_filled;
+
       }
 
+
       if (
-        extracted.current_balance != null
+        extracted &&
+        extracted.current_balance != null &&
+        $("extractedBalance")
       ) {
+
         $("extractedBalance").value =
           extracted.current_balance;
+
       }
+
 
       show(
         $("extractionSection")
       );
 
+
       $("extractionSection")
         ?.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
+          behavior:
+            "smooth",
+          block:
+            "start"
         });
 
-      message(
+
+      setMessage(
         $("extractMessage"),
         "Details extracted. Review every field before saving.",
         "success"
       );
 
+
     } catch (error) {
 
-      message(
-        $("extractMessage"),
-        error?.message ||
-          "Image extraction failed.",
-        "error"
+      console.error(
+        "IMAGE EXTRACTION ERROR:",
+        error
       );
 
-      console.error(
-        "Image extraction error:",
-        error
+
+      setMessage(
+        $("extractMessage"),
+        error &&
+        error.message
+          ? error.message
+          : "Image extraction failed.",
+        "error"
       );
 
     } finally {
@@ -836,196 +1357,301 @@
         $("extractLoading")
       );
 
+
       if (button) {
-        button.disabled = false;
+
+        button.disabled =
+          false;
+
         button.textContent =
           "✨ EXTRACT DETAILS";
+
       }
+
     }
+
   }
 
-  /* =========================================================
+
+    /* =========================================================
      SAVE EXTRACTED DATA
-  ========================================================= */
+     ========================================================= */
 
   async function saveExtracted() {
 
     const siteId =
-      $("siteId")
-        ?.value?.trim() ||
+      $("siteId")?.value?.trim() ||
       "";
 
+
     const model =
-      $("extractedModel")
-        ?.value ||
+      $("extractedModel")?.value ||
       "";
+
 
     const hmr =
       Number(
-        $("extractedHmr")
-          ?.value
+        $("extractedHmr")?.value
       );
+
 
     const kwh =
       Number(
-        $("extractedKwh")
-          ?.value
+        $("extractedKwh")?.value
       );
+
 
     const balance =
       Number(
-        $("extractedBalance")
-          ?.value
+        $("extractedBalance")?.value
       );
 
+
     if (!siteId) {
-      message(
+
+      setMessage(
         $("extractMessage"),
         "Site ID is required.",
         "error"
       );
+
       return;
+
     }
 
+
     if (!model) {
-      message(
+
+      setMessage(
         $("extractMessage"),
-        "Please select/confirm the generator model.",
+        "Please confirm the generator model.",
         "error"
       );
+
       return;
+
     }
+
 
     if (
       !Number.isFinite(hmr) ||
       !Number.isFinite(kwh) ||
       !Number.isFinite(balance)
     ) {
-      message(
+
+      setMessage(
         $("extractMessage"),
         "Please confirm valid HMR, kWh and Current Balance.",
         "error"
       );
+
       return;
+
     }
+
+
+    if (!getAdminKey()) {
+
+      setMessage(
+        $("extractMessage"),
+        "Please unlock the Admin panel first.",
+        "error"
+      );
+
+      return;
+
+    }
+
 
     const button =
       $("saveExtracted");
 
+
     if (button) {
-      button.disabled = true;
+
+      button.disabled =
+        true;
+
       button.textContent =
         "SAVING...";
+
     }
+
 
     try {
 
+      const siteName =
+        $("editSiteName")
+          ?.value
+          ?.trim() ||
+
+        $("siteName")
+          ?.textContent
+          ?.trim() ||
+
+        siteId;
+
+
       const data =
-        await requestJSON(
+        await request(
           "/api/admin/update-site",
           {
-            method: "POST",
-            headers: headers(true),
-            body: JSON.stringify({
-              site_id: siteId,
-              site_name:
-                $("editSiteName")
-                  ?.value?.trim() ||
-                $("siteName")
-                  ?.textContent?.trim() ||
-                siteId,
-              model,
-              current_hmr: hmr,
-              current_kwh: kwh,
-              current_balance:
-                balance
-            })
+            method:
+              "POST",
+
+            headers:
+              getHeaders(true),
+
+            body:
+              JSON.stringify({
+
+                site_id:
+                  siteId,
+
+                site_name:
+                  siteName,
+
+                model:
+                  model,
+
+                current_hmr:
+                  hmr,
+
+                current_kwh:
+                  kwh,
+
+                current_balance:
+                  balance
+
+              })
+
           }
         );
 
-      message(
+
+      setMessage(
         $("extractMessage"),
         data.message ||
-          "Extracted data saved successfully.",
+        "Extracted data saved successfully.",
         "success"
       );
 
-      await loadSiteSilently(
+
+      await refreshSite(
         siteId
       );
 
+
     } catch (error) {
 
-      message(
-        $("extractMessage"),
-        error?.message ||
-          "Unable to save extracted data.",
-        "error"
+      console.error(
+        "SAVE EXTRACTED ERROR:",
+        error
       );
 
-      console.error(
-        "Save extracted error:",
-        error
+
+      setMessage(
+        $("extractMessage"),
+        error &&
+        error.message
+          ? error.message
+          : "Unable to save extracted data.",
+        "error"
       );
 
     } finally {
 
       if (button) {
-        button.disabled = false;
+
+        button.disabled =
+          false;
+
         button.textContent =
           "✅ CONFIRM & SAVE";
+
       }
+
     }
+
   }
 
+
   /* =========================================================
-     MANUAL BUTTON
-  ========================================================= */
+     MANUAL SECTION
+     ========================================================= */
 
   function toggleManual() {
 
     const section =
       $("manualSection");
 
+
     const button =
       $("manualButton");
 
-    if (!section) return;
 
-    const open =
+    if (!section) {
+
+      return;
+
+    }
+
+
+    const currentlyVisible =
       section.style.display ===
       "block";
 
-    if (open) {
 
-      hide(section);
+    if (currentlyVisible) {
+
+      hide(
+        section
+      );
+
 
       if (button) {
+
         button.textContent =
           "＋ ENTER MANUAL READING";
+
       }
 
+
       return;
+
     }
 
-    show(section);
+
+    show(
+      section
+    );
+
 
     if (button) {
+
       button.textContent =
         "− HIDE MANUAL READING";
+
     }
 
+
     section.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
+      behavior:
+        "smooth",
+      block:
+        "start"
     });
+
   }
 
-  /* =========================================================
-     SAVE REQUESTS
-  ========================================================= */
 
-  function escapeHtml(value) {
+  /* =========================================================
+     ESCAPE HTML
+     ========================================================= */
+
+  function escapeHtml(
+    value
+  ) {
 
     return String(
       value ?? ""
@@ -1050,7 +1676,13 @@
         "'",
         "&#039;"
       );
+
   }
+
+
+  /* =========================================================
+     SAVE REQUESTS
+     ========================================================= */
 
   function renderRequests(
     requests
@@ -1059,20 +1691,33 @@
     const list =
       $("saveRequestsList");
 
+
     const count =
       $("requestCount");
+
 
     const items =
       Array.isArray(requests)
         ? requests
         : [];
 
+
     if (count) {
+
       count.textContent =
-        String(items.length);
+        String(
+          items.length
+        );
+
     }
 
-    if (!list) return;
+
+    if (!list) {
+
+      return;
+
+    }
+
 
     if (!items.length) {
 
@@ -1080,122 +1725,146 @@
         '<div class="message">No pending save requests.</div>';
 
       return;
+
     }
+
 
     list.innerHTML =
       items.map(
-        (item) => `
-      <div class="card" data-request-id="${escapeHtml(item.id)}">
+        function (item) {
 
-  <h3>
-    ${escapeHtml(
-      item.site_name ||
-      item.site_id ||
-      "Unnamed Site"
-    )}
-  </h3>
+          return `
+            <div
+              class="card"
+              data-request-id="${escapeHtml(item.id)}"
+            >
 
-  <p>
-    <strong>Site ID:</strong>
-    ${escapeHtml(
-      item.site_id
-    )}
-  </p>
+              <h3>
+                ${escapeHtml(
+                  item.site_name ||
+                  item.site_id ||
+                  "Unnamed Site"
+                )}
+              </h3>
 
-  <p>
-    <strong>Model:</strong>
-    ${escapeHtml(
-      formatModel(item.model)
-    )}
-  </p>
+              <p>
+                <strong>Site ID:</strong>
+                ${escapeHtml(
+                  item.site_id
+                )}
+              </p>
 
-  <p>
-    <strong>HMR:</strong>
-    ${escapeHtml(
-      item.current_hmr
-    )}
-  </p>
+              <p>
+                <strong>Model:</strong>
+                ${escapeHtml(
+                  formatModel(
+                    item.model
+                  )
+                )}
+              </p>
 
-  <p>
-    <strong>kWh:</strong>
-    ${escapeHtml(
-      item.current_kwh
-    )}
-  </p>
+              <p>
+                <strong>HMR:</strong>
+                ${escapeHtml(
+                  item.current_hmr
+                )}
+              </p>
 
-  <p>
-    <strong>Balance:</strong>
-    ${escapeHtml(
-      item.current_balance
-    )}
-  </p>
+              <p>
+                <strong>kWh:</strong>
+                ${escapeHtml(
+                  item.current_kwh
+                )}
+              </p>
 
-  <p>
-    <strong>Requested:</strong>
-    ${escapeHtml(
-      item.requested_at
-    )}
-  </p>
+              <p>
+                <strong>Balance:</strong>
+                ${escapeHtml(
+                  item.current_balance
+                )}
+              </p>
 
-  <div
-    style="
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    "
-  >
+              <p>
+                <strong>Requested:</strong>
+                ${escapeHtml(
+                  item.requested_at
+                )}
+              </p>
 
-    <button
-      type="button"
-      class="button button-success request-approve"
-      data-id="${escapeHtml(item.id)}"
-    >
-      ✅ APPROVE
-    </button>
+              <div
+                style="
+                  display:flex;
+                  gap:10px;
+                  flex-wrap:wrap;
+                  margin-top:12px;
+                "
+              >
 
-    <button
-      type="button"
-      class="button button-secondary request-reject"
-      data-id="${escapeHtml(item.id)}"
-    >
-      ❌ REJECT
-    </button>
+                <button
+                  type="button"
+                  class="button button-success request-approve"
+                  data-id="${escapeHtml(item.id)}"
+                >
+                  ✅ APPROVE
+                </button>
 
-  </div>
+                <button
+                  type="button"
+                  class="button button-secondary request-reject"
+                  data-id="${escapeHtml(item.id)}"
+                >
+                  ❌ REJECT
+                </button>
 
-</div>
+              </div>
 
-    ).join("");
+            </div>
+          `;
+
+        }
+      ).join("");
 
   }
+
+
+  /* =========================================================
+     LOAD SAVE REQUESTS
+     ========================================================= */
 
   async function loadSaveRequests(
     showStatus = false
   ) {
 
     if (!getAdminKey()) {
+
       return;
+
     }
+
 
     try {
 
       const data =
-        await requestJSON(
+        await request(
           "/api/admin/save-requests",
           {
-            method: "GET",
-            headers: headers()
+            method:
+              "GET",
+
+            headers:
+              getHeaders()
           }
         );
+
 
       renderRequests(
         data.requests || []
       );
 
+
       if (showStatus) {
 
-        message(
+        setMessage(
           $("requestMessage"),
           "Save requests loaded.",
           "success"
@@ -1203,28 +1872,36 @@
 
       }
 
+
     } catch (error) {
+
+      console.error(
+        "LOAD SAVE REQUESTS ERROR:",
+        error
+      );
+
 
       if (showStatus) {
 
-        message(
+        setMessage(
           $("requestMessage"),
-          error?.message ||
-            "Unable to load save requests.",
+          error &&
+          error.message
+            ? error.message
+            : "Unable to load save requests.",
           "error"
         );
 
       }
 
-      console.error(
-        "Load save requests error:",
-        error
-      );
-
     }
 
   }
 
+
+  /* =========================================================
+     REVIEW SAVE REQUEST
+     ========================================================= */
 
   async function reviewRequest(
     id,
@@ -1232,47 +1909,98 @@
   ) {
 
     if (!getAdminKey()) {
+
       return;
+
     }
+
+
+    const numericId =
+      Number(id);
+
+
+    if (
+      !Number.isFinite(
+        numericId
+      )
+    ) {
+
+      setMessage(
+        $("requestMessage"),
+        "Invalid save request ID.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      action !== "approve" &&
+      action !== "reject"
+    ) {
+
+      return;
+
+    }
+
 
     try {
 
       const data =
-        await requestJSON(
+        await request(
           "/api/admin/save-request/review",
           {
-            method: "POST",
-            headers: headers(true),
-            body: JSON.stringify({
-              id: Number(id),
-              action
-            })
+            method:
+              "POST",
+
+            headers:
+              getHeaders(true),
+
+            body:
+              JSON.stringify({
+
+                id:
+                  numericId,
+
+                action:
+                  action
+
+              })
+
           }
         );
 
-      message(
+
+      setMessage(
         $("requestMessage"),
         data.message ||
-          `Request ${action}d successfully.`,
+        `Request ${action}d successfully.`,
         "success"
       );
+
 
       await loadSaveRequests(
         false
       );
 
+
     } catch (error) {
 
-      message(
-        $("requestMessage"),
-        error?.message ||
-          `Unable to ${action} request.`,
-        "error"
+      console.error(
+        "REVIEW REQUEST ERROR:",
+        error
       );
 
-      console.error(
-        "Review request error:",
-        error
+
+      setMessage(
+        $("requestMessage"),
+        error &&
+        error.message
+          ? error.message
+          : `Unable to ${action} request.`,
+        "error"
       );
 
     }
@@ -1280,7 +2008,11 @@
   }
 
 
-  function requestListClick(
+  /* =========================================================
+     REQUEST LIST CLICK
+     ========================================================= */
+
+  function handleRequestClick(
     event
   ) {
 
@@ -1289,10 +2021,12 @@
         ".request-approve"
       );
 
+
     const reject =
       event.target.closest(
         ".request-reject"
       );
+
 
     if (approve) {
 
@@ -1302,7 +2036,9 @@
       );
 
       return;
+
     }
+
 
     if (reject) {
 
@@ -1317,17 +2053,18 @@
 
 
   /* =========================================================
-     EVENT LISTENERS
-  ========================================================= */
+     EVENT BINDING
+     ========================================================= */
 
   function bindEvents() {
 
-    const loadSiteButton =
+    const loadButton =
       $("loadSite");
 
-    if (loadSiteButton) {
 
-      loadSiteButton.addEventListener(
+    if (loadButton) {
+
+      loadButton.addEventListener(
         "click",
         loadSite
       );
@@ -1338,11 +2075,12 @@
     const editButton =
       $("editSiteButton");
 
+
     if (editButton) {
 
       editButton.addEventListener(
         "click",
-        openEditSite
+        openEdit
       );
 
     }
@@ -1350,6 +2088,7 @@
 
     const saveEditButton =
       $("saveSiteEdit");
+
 
     if (saveEditButton) {
 
@@ -1364,6 +2103,7 @@
     const llamaButton =
       $("activateLlama");
 
+
     if (llamaButton) {
 
       llamaButton.addEventListener(
@@ -1377,11 +2117,12 @@
     const imageInput =
       $("imageInput");
 
+
     if (imageInput) {
 
       imageInput.addEventListener(
         "change",
-        handleImageChange
+        handleImageSelection
       );
 
     }
@@ -1389,6 +2130,7 @@
 
     const extractButton =
       $("extractButton");
+
 
     if (extractButton) {
 
@@ -1403,6 +2145,7 @@
     const saveExtractedButton =
       $("saveExtracted");
 
+
     if (saveExtractedButton) {
 
       saveExtractedButton.addEventListener(
@@ -1416,11 +2159,12 @@
     const manualButton =
       $("manualButton");
 
+
     if (manualButton) {
 
       manualButton.addEventListener(
         "click",
-        toggleManualSection
+        toggleManual
       );
 
     }
@@ -1429,11 +2173,12 @@
     const refreshButton =
       $("refreshRequests");
 
+
     if (refreshButton) {
 
       refreshButton.addEventListener(
         "click",
-        () => {
+        function () {
 
           loadSaveRequests(
             true
@@ -1448,24 +2193,26 @@
     const requestList =
       $("saveRequestsList");
 
+
     if (requestList) {
 
       requestList.addEventListener(
         "click",
-        requestListClick
+        handleRequestClick
       );
 
     }
 
 
-    const siteIdInput =
+    const siteInput =
       $("siteId");
 
-    if (siteIdInput) {
 
-      siteIdInput.addEventListener(
+    if (siteInput) {
+
+      siteInput.addEventListener(
         "keydown",
-        event => {
+        function (event) {
 
           if (
             event.key ===
@@ -1484,14 +2231,15 @@
     }
 
 
-    const editSiteIdInput =
+    const editSiteId =
       $("editSiteId");
 
-    if (editSiteIdInput) {
 
-      editSiteIdInput.addEventListener(
+    if (editSiteId) {
+
+      editSiteId.addEventListener(
         "keydown",
-        event => {
+        function (event) {
 
           if (
             event.key ===
@@ -1514,7 +2262,7 @@
 
   /* =========================================================
      INITIALIZATION
-  ========================================================= */
+     ========================================================= */
 
   function initializeAdmin() {
 
@@ -1522,69 +2270,48 @@
 
       bindEvents();
 
-      const adminKey =
+
+      const key =
         getAdminKey();
 
-      if (!adminKey) {
+
+      if (!key) {
 
         console.warn(
-          "Admin key not found."
+          "Admin key is not available yet."
         );
 
         return;
+
       }
 
-
-      /*
-       * Load pending save requests
-       * after the admin page is unlocked.
-       */
 
       loadSaveRequests(
         false
       );
 
 
-      /*
-       * If a site ID is already present,
-       * do not automatically load it.
-       *
-       * The admin must explicitly press
-       * FIND / LOAD SITE.
-       */
+      console.log(
+        "ADMIN.JS INITIALIZED"
+      );
 
-      const siteIdInput =
-        $("siteId");
-
-      if (
-        siteIdInput &&
-        siteIdInput.value
-      ) {
-
-        siteIdInput.focus();
-
-      }
 
     } catch (error) {
 
       console.error(
-        "Admin initialization error:",
+        "ADMIN INITIALIZATION ERROR:",
         error
       );
 
-      const authMessage =
-        $("authMessage");
 
-      if (authMessage) {
-
-        message(
-          authMessage,
-          error?.message ||
-            "Unable to initialize admin panel.",
-          "error"
-        );
-
-      }
+      setMessage(
+        $("authMessage"),
+        error &&
+        error.message
+          ? error.message
+          : "Admin initialization failed.",
+        "error"
+      );
 
     }
 
@@ -1593,7 +2320,7 @@
 
   /* =========================================================
      DOM READY
-  ========================================================= */
+     ========================================================= */
 
   if (
     document.readyState ===
@@ -1604,7 +2331,8 @@
       "DOMContentLoaded",
       initializeAdmin,
       {
-        once: true
+        once:
+          true
       }
     );
 
@@ -1617,33 +2345,31 @@
 
   /* =========================================================
      AUTO REFRESH
-     Every 20 seconds
-  ========================================================= */
+     ========================================================= */
 
   setInterval(
-    () => {
+    function () {
 
       if (
-        document.visibilityState ===
+        document.visibilityState !==
         "visible"
       ) {
 
-        /*
-         * Only refresh if the
-         * admin session still exists.
-         */
-
-        if (
-          getAdminKey()
-        ) {
-
-          loadSaveRequests(
-            false
-          );
-
-        }
+        return;
 
       }
+
+
+      if (!getAdminKey()) {
+
+        return;
+
+      }
+
+
+      loadSaveRequests(
+        false
+      );
 
     },
     20000
@@ -1651,7 +2377,8 @@
 
 
   console.log(
-    "ADMIN JS FINISHED"
+    "ADMIN.JS FINISHED"
   );
+
 
 })();
