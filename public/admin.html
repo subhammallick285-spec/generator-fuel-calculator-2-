@@ -2261,10 +2261,14 @@
           );
 
 
-          setTimeout(
+                    setTimeout(
             function () {
 
               gate.remove();
+
+              document.dispatchEvent(
+                new Event("admin:unlocked")
+              );
 
             },
             1100
