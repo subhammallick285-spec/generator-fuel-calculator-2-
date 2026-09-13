@@ -1291,10 +1291,30 @@
 
   async function saveExtracted() {
 
-    const siteId =
-      $("siteId")?.value?.trim() || "";
+    let siteId =
+      $("siteId")?.value?.trim() ||
+      $("editSiteId")?.value?.trim() ||
+      "";
 
 
+    if (!siteId) {
+
+      const display =
+        $("siteIdDisplay")?.textContent?.trim() ||
+        "";
+
+      const match =
+        display.match(
+          /Site\s*ID\s*[:\-]?\s*(.+)$/i
+        );
+
+      if (match && match[1]) {
+
+        siteId = match[1].trim();
+
+      }
+
+    }
     const model =
       $("extractedModel")?.value || "";
 
