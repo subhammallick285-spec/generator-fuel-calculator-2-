@@ -603,10 +603,70 @@
 
   async function saveSiteEdit() {
 
-    const siteId =
+    /*
+     * Read the Site ID from any available source:
+     *   1. The edit form's own #editSiteId field
+     *   2. The main search #siteId field
+     *   3. The current site card #siteIdDisplay (e.g. "Site ID: ABC123")
+     */
+    let siteId =
       $("editSiteId")?.value?.trim() ||
       $("siteId")?.value?.trim() ||
       "";
+
+
+    if (!siteId) {
+
+      const display =
+        $("siteIdDisplay")?.textContent?.trim() ||
+        "";
+
+      const match =
+        display.match(
+          /Site\s*ID\s*[:\-]?\s*(.+)$/i
+        );
+
+      if (match && match[1]) {
+
+        siteId = match[1].trim();
+
+      }
+
+    }
+
+
+    /*
+     * If we still have no Site ID but we DO have a visible
+     * site card, we can't save — tell the user clearly.
+     */
+    if (
+      !siteId &&
+      $("siteInfo")?.classList?.contains("show")
+    ) {
+
+      setMessage(
+        $("editSiteMessage"),
+        "Site ID is missing. Please reload the site using the search box at the top, then try again.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * Keep the edit field in sync so the user sees what
+     * will be saved.
+     */
+    if (
+      $("editSiteId") &&
+      !$("editSiteId").value.trim()
+    ) {
+
+      $("editSiteId").value = siteId;
+
+    }
 
 
     const siteName =
