@@ -1,7 +1,7 @@
 /* =========================================================
    GENERATOR FUEL CALCULATOR
    ADMIN.JS
-   CLEAN REBUILD
+   FULL REWRITE — PART 1/2
    ========================================================= */
 
 (() => {
@@ -13,13 +13,18 @@
      --------------------------------------------------------- */
 
   if (window.__GENERATOR_ADMIN_JS_LOADED__) {
-    console.warn(
-      "ADMIN.JS already loaded."
-    );
+    console.warn("ADMIN.JS already loaded.");
     return;
   }
 
   window.__GENERATOR_ADMIN_JS_LOADED__ = true;
+
+
+  /* ---------------------------------------------------------
+     EVENT BINDING STATE
+     --------------------------------------------------------- */
+
+  let eventsBound = false;
 
 
   /* ---------------------------------------------------------
@@ -40,9 +45,7 @@
     try {
 
       const stored =
-        sessionStorage.getItem(
-          "adminKey"
-        );
+        sessionStorage.getItem("adminKey");
 
       if (stored) {
         return stored.trim();
@@ -80,23 +83,17 @@
      REQUEST HEADERS
      --------------------------------------------------------- */
 
-  function getHeaders(
-    json = false
-  ) {
+  function getHeaders(json = false) {
 
     const result = {
-      "Accept":
-        "application/json",
-      "X-Admin-Key":
-        getAdminKey()
+      "Accept": "application/json",
+      "X-Admin-Key": getAdminKey()
     };
 
 
     if (json) {
 
-      result[
-        "Content-Type"
-      ] =
+      result["Content-Type"] =
         "application/json";
 
     }
@@ -118,7 +115,14 @@
   ) {
 
     if (!element) {
+
+      console.error(
+        "ADMIN setMessage (no element):",
+        text
+      );
+
       return;
+
     }
 
 
@@ -131,17 +135,31 @@
         ? `message ${type}`
         : "message";
 
+
+    if (
+      text &&
+      type === "error"
+    ) {
+
+      try {
+
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest"
+        });
+
+      } catch (_) {
+        /* ignore */
+      }
+
+    }
+
   }
 
 
-  function clearMessage(
-    element
-  ) {
+  function clearMessage(element) {
 
-    setMessage(
-      element,
-      ""
-    );
+    setMessage(element, "");
 
   }
 
@@ -150,52 +168,38 @@
      SHOW / HIDE
      --------------------------------------------------------- */
 
-  function show(
-    element
-  ) {
+  function show(element) {
 
     if (!element) {
       return;
     }
 
 
-    element.style.display =
-      "block";
+    element.style.display = "block";
 
 
-    if (
-      element.classList
-    ) {
+    if (element.classList) {
 
-      element.classList.add(
-        "show"
-      );
+      element.classList.add("show");
 
     }
 
   }
 
 
-  function hide(
-    element
-  ) {
+  function hide(element) {
 
     if (!element) {
       return;
     }
 
 
-    element.style.display =
-      "none";
+    element.style.display = "none";
 
 
-    if (
-      element.classList
-    ) {
+    if (element.classList) {
 
-      element.classList.remove(
-        "show"
-      );
+      element.classList.remove("show");
 
     }
 
@@ -206,9 +210,7 @@
      SAFE JSON RESPONSE
      --------------------------------------------------------- */
 
-  async function parseResponse(
-    response
-  ) {
+  async function parseResponse(response) {
 
     const text =
       await response.text();
@@ -224,8 +226,7 @@
 
       try {
 
-        data =
-          JSON.parse(text);
+        data = JSON.parse(text);
 
       } catch (error) {
 
@@ -281,16 +282,13 @@
       await fetch(
         url,
         {
-          cache:
-            "no-store",
+          cache: "no-store",
           ...options
         }
       );
 
 
-    return parseResponse(
-      response
-    );
+    return parseResponse(response);
 
   }
 
@@ -299,26 +297,15 @@
      MODEL FORMAT
      ========================================================= */
 
-  function formatModel(
-    model
-  ) {
+  function formatModel(model) {
 
     const models = {
 
-      eicher10:
-        "Eicher 10 KVA",
-
-      mahindra10:
-        "Mahindra 10 KVA",
-
-      eicher20:
-        "Eicher 20 KVA",
-
-      mahindra20:
-        "Mahindra 20 KVA",
-
-      koel20:
-        "KOEL 20 KVA"
+      eicher10: "Eicher 10 KVA",
+      mahindra10: "Mahindra 10 KVA",
+      eicher20: "Eicher 20 KVA",
+      mahindra20: "Mahindra 20 KVA",
+      koel20: "KOEL 20 KVA"
 
     };
 
@@ -336,9 +323,7 @@
      SITE INFORMATION
      ========================================================= */
 
-  function fillSite(
-    site
-  ) {
+  function fillSite(site) {
 
     if (!site) {
       return;
@@ -348,8 +333,7 @@
     if ($("siteName")) {
 
       $("siteName").textContent =
-        site.site_name ||
-        "—";
+        site.site_name || "—";
 
     }
 
@@ -367,9 +351,7 @@
     if ($("siteModel")) {
 
       $("siteModel").textContent =
-        formatModel(
-          site.model
-        );
+        formatModel(site.model);
 
     }
 
@@ -377,8 +359,7 @@
     if ($("siteHmr")) {
 
       $("siteHmr").textContent =
-        site.current_hmr ??
-        "—";
+        site.current_hmr ?? "—";
 
     }
 
@@ -386,8 +367,7 @@
     if ($("siteKwh")) {
 
       $("siteKwh").textContent =
-        site.current_kwh ??
-        "—";
+        site.current_kwh ?? "—";
 
     }
 
@@ -395,8 +375,7 @@
     if ($("siteBalance")) {
 
       $("siteBalance").textContent =
-        site.current_balance ??
-        "—";
+        site.current_balance ?? "—";
 
     }
 
@@ -404,8 +383,7 @@
     if ($("siteId")) {
 
       $("siteId").value =
-        site.site_id ||
-        "";
+        site.site_id || "";
 
     }
 
@@ -413,8 +391,7 @@
     if ($("editSiteId")) {
 
       $("editSiteId").value =
-        site.site_id ||
-        "";
+        site.site_id || "";
 
     }
 
@@ -422,8 +399,7 @@
     if ($("editSiteName")) {
 
       $("editSiteName").value =
-        site.site_name ||
-        "";
+        site.site_name || "";
 
     }
 
@@ -431,8 +407,7 @@
     if ($("editModel")) {
 
       $("editModel").value =
-        site.model ||
-        "";
+        site.model || "";
 
     }
 
@@ -440,8 +415,7 @@
     if ($("editHmr")) {
 
       $("editHmr").value =
-        site.current_hmr ??
-        "";
+        site.current_hmr ?? "";
 
     }
 
@@ -449,8 +423,7 @@
     if ($("editKwh")) {
 
       $("editKwh").value =
-        site.current_kwh ??
-        "";
+        site.current_kwh ?? "";
 
     }
 
@@ -458,8 +431,7 @@
     if ($("editBalance")) {
 
       $("editBalance").value =
-        site.current_balance ??
-        "";
+        site.current_balance ?? "";
 
     }
 
@@ -467,15 +439,12 @@
     if ($("model")) {
 
       $("model").value =
-        site.model ||
-        "";
+        site.model || "";
 
     }
 
 
-    show(
-      $("siteInfo")
-    );
+    show($("siteInfo"));
 
   }
 
@@ -486,14 +455,11 @@
 
   async function loadSite() {
 
-    const siteInput =
-      $("siteId");
-
+    const siteInput = $("siteId");
 
     const siteId =
       siteInput &&
-      typeof siteInput.value ===
-        "string"
+      typeof siteInput.value === "string"
         ? siteInput.value.trim()
         : "";
 
@@ -524,24 +490,19 @@
     }
 
 
-    const button =
-      $("loadSite");
+    const button = $("loadSite");
 
 
     if (button) {
 
-      button.disabled =
-        true;
+      button.disabled = true;
 
-      button.textContent =
-        "LOADING...";
+      button.textContent = "LOADING...";
 
     }
 
 
-    clearMessage(
-      $("authMessage")
-    );
+    clearMessage($("authMessage"));
 
 
     try {
@@ -550,18 +511,13 @@
         await request(
           `/api/site?site_id=${encodeURIComponent(siteId)}`,
           {
-            method:
-              "GET",
-            headers:
-              getHeaders()
+            method: "GET",
+            headers: getHeaders()
           }
         );
 
 
-      if (
-        !data ||
-        !data.site
-      ) {
+      if (!data || !data.site) {
 
         throw new Error(
           "Site data was not returned."
@@ -570,9 +526,7 @@
       }
 
 
-      fillSite(
-        data.site
-      );
+      fillSite(data.site);
 
 
       setMessage(
@@ -581,12 +535,6 @@
         "success"
       );
 
-
-      /*
-       * Open the edit section only
-       * when the user explicitly clicks
-       * EDIT SITE.
-       */
 
     } catch (error) {
 
@@ -598,8 +546,7 @@
 
       setMessage(
         $("authMessage"),
-        error &&
-        error.message
+        error && error.message
           ? error.message
           : "Unable to load site.",
         "error"
@@ -609,8 +556,7 @@
 
       if (button) {
 
-        button.disabled =
-          false;
+        button.disabled = false;
 
         button.textContent =
           "🔄 LOAD EXISTING SITE";
@@ -628,31 +574,24 @@
 
   function openEdit() {
 
-    const section =
-      $("editSiteSection");
+    const section = $("editSiteSection");
 
 
     if (!section) {
 
-      console.warn(
-        "editSiteSection not found."
-      );
+      console.warn("editSiteSection not found.");
 
       return;
 
     }
 
 
-    show(
-      section
-    );
+    show(section);
 
 
     section.scrollIntoView({
-      behavior:
-        "smooth",
-      block:
-        "start"
+      behavior: "smooth",
+      block: "start"
     });
 
   }
@@ -676,26 +615,22 @@
 
 
     const model =
-      $("editModel")?.value ||
-      "";
+      $("editModel")?.value || "";
 
 
-    const hmr =
-      Number(
-        $("editHmr")?.value
-      );
+    const hmrRaw =
+      $("editHmr")?.value?.trim() ?? "";
+
+    const kwhRaw =
+      $("editKwh")?.value?.trim() ?? "";
+
+    const balanceRaw =
+      $("editBalance")?.value?.trim() ?? "";
 
 
-    const kwh =
-      Number(
-        $("editKwh")?.value
-      );
-
-
-    const balance =
-      Number(
-        $("editBalance")?.value
-      );
+    const hmr = Number(hmrRaw);
+    const kwh = Number(kwhRaw);
+    const balance = Number(balanceRaw);
 
 
     if (!siteId) {
@@ -716,6 +651,23 @@
       setMessage(
         $("editSiteMessage"),
         "Please select a generator model.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      hmrRaw === "" ||
+      kwhRaw === "" ||
+      balanceRaw === ""
+    ) {
+
+      setMessage(
+        $("editSiteMessage"),
+        "Please fill in HMR, kWh and Balance before saving.",
         "error"
       );
 
@@ -754,24 +706,19 @@
     }
 
 
-    const button =
-      $("saveSiteEdit");
+    const button = $("saveSiteEdit");
 
 
     if (button) {
 
-      button.disabled =
-        true;
+      button.disabled = true;
 
-      button.textContent =
-        "SAVING...";
+      button.textContent = "SAVING...";
 
     }
 
 
-    clearMessage(
-      $("editSiteMessage")
-    );
+    clearMessage($("editSiteMessage"));
 
 
     try {
@@ -780,35 +727,16 @@
         await request(
           "/api/admin/update-site",
           {
-            method:
-              "POST",
-
-            headers:
-              getHeaders(true),
-
-            body:
-              JSON.stringify({
-
-                site_id:
-                  siteId,
-
-                site_name:
-                  siteName,
-
-                model:
-                  model,
-
-                current_hmr:
-                  hmr,
-
-                current_kwh:
-                  kwh,
-
-                current_balance:
-                  balance
-
-              })
-
+            method: "POST",
+            headers: getHeaders(true),
+            body: JSON.stringify({
+              site_id: siteId,
+              site_name: siteName,
+              model: model,
+              current_hmr: hmr,
+              current_kwh: kwh,
+              current_balance: balance
+            })
           }
         );
 
@@ -816,14 +744,12 @@
       setMessage(
         $("editSiteMessage"),
         data.message ||
-        "Site updated successfully.",
+          "Site updated successfully.",
         "success"
       );
 
 
-      await refreshSite(
-        siteId
-      );
+      await refreshSite(siteId);
 
 
     } catch (error) {
@@ -836,8 +762,7 @@
 
       setMessage(
         $("editSiteMessage"),
-        error &&
-        error.message
+        error && error.message
           ? error.message
           : "Unable to save site changes.",
         "error"
@@ -847,8 +772,7 @@
 
       if (button) {
 
-        button.disabled =
-          false;
+        button.disabled = false;
 
         button.textContent =
           "💾 SAVE SITE CHANGES";
@@ -864,9 +788,7 @@
      REFRESH SITE WITHOUT UI MESSAGE
      ========================================================= */
 
-  async function refreshSite(
-    siteId
-  ) {
+  async function refreshSite(siteId) {
 
     if (!siteId) {
       return;
@@ -879,19 +801,15 @@
         await request(
           `/api/site?site_id=${encodeURIComponent(siteId)}`,
           {
-            method:
-              "GET",
-            headers:
-              getHeaders()
+            method: "GET",
+            headers: getHeaders()
           }
         );
 
 
       if (data.site) {
 
-        fillSite(
-          data.site
-        );
+        fillSite(data.site);
 
       }
 
@@ -905,6 +823,7 @@
     }
 
   }
+
 
 
   /* =========================================================
@@ -926,24 +845,19 @@
     }
 
 
-    const button =
-      $("activateLlama");
+    const button = $("activateLlama");
 
 
     if (button) {
 
-      button.disabled =
-        true;
+      button.disabled = true;
 
-      button.textContent =
-        "ACTIVATING...";
+      button.textContent = "ACTIVATING...";
 
     }
 
 
-    clearMessage(
-      $("llamaMessage")
-    );
+    clearMessage($("llamaMessage"));
 
 
     try {
@@ -952,14 +866,9 @@
         await request(
           "/api/admin/agree-llama",
           {
-            method:
-              "POST",
-
-            headers:
-              getHeaders(true),
-
-            body:
-              JSON.stringify({})
+            method: "POST",
+            headers: getHeaders(true),
+            body: JSON.stringify({})
           }
         );
 
@@ -967,7 +876,7 @@
       setMessage(
         $("llamaMessage"),
         data.message ||
-        "Llama AI activated successfully.",
+          "Llama AI activated successfully.",
         "success"
       );
 
@@ -976,6 +885,8 @@
 
         button.textContent =
           "✅ LLAMA AI ACTIVATED";
+
+        button.disabled = false;
 
       }
 
@@ -990,8 +901,7 @@
 
       setMessage(
         $("llamaMessage"),
-        error &&
-        error.message
+        error && error.message
           ? error.message
           : "Unable to activate Llama AI.",
         "error"
@@ -1000,8 +910,7 @@
 
       if (button) {
 
-        button.disabled =
-          false;
+        button.disabled = false;
 
         button.textContent =
           "🤖 ACTIVATE LLAMA AI";
@@ -1019,19 +928,14 @@
 
   function handleImageSelection() {
 
-    const input =
-      $("imageInput");
+    const input = $("imageInput");
 
-
-    const file =
-      input?.files?.[0];
+    const file = input?.files?.[0];
 
 
     if (!file) {
 
-      hide(
-        $("preview")
-      );
+      hide($("preview"));
 
       return;
 
@@ -1040,9 +944,7 @@
 
     if (
       !file.type ||
-      !file.type.startsWith(
-        "image/"
-      )
+      !file.type.startsWith("image/")
     ) {
 
       setMessage(
@@ -1053,10 +955,7 @@
 
 
       if (input) {
-
-        input.value =
-          "";
-
+        input.value = "";
       }
 
 
@@ -1065,55 +964,44 @@
     }
 
 
-    const reader =
-      new FileReader();
+    const reader = new FileReader();
 
 
-    reader.onload =
-      function (event) {
+    reader.onload = function (event) {
 
-        if (
-          $("previewImage")
-        ) {
+      if ($("previewImage")) {
 
-          $("previewImage").src =
-            event.target.result;
+        $("previewImage").src =
+          event.target.result;
 
-        }
+      }
 
 
-        if (
-          $("fileName")
-        ) {
+      if ($("fileName")) {
 
-          $("fileName").textContent =
-            file.name;
+        $("fileName").textContent =
+          file.name;
 
-        }
+      }
 
 
-        show(
-          $("preview")
-        );
+      show($("preview"));
 
-      };
+    };
 
 
-    reader.onerror =
-      function () {
+    reader.onerror = function () {
 
-        setMessage(
-          $("llamaMessage"),
-          "Unable to read the selected image.",
-          "error"
-        );
+      setMessage(
+        $("llamaMessage"),
+        "Unable to read the selected image.",
+        "error"
+      );
 
-      };
+    };
 
 
-    reader.readAsDataURL(
-      file
-    );
+    reader.readAsDataURL(file);
 
   }
 
@@ -1124,17 +1012,12 @@
 
   async function extractImage() {
 
-    const input =
-      $("imageInput");
+    const input = $("imageInput");
 
-
-    const file =
-      input?.files?.[0];
-
+    const file = input?.files?.[0];
 
     const siteId =
-      $("siteId")?.value?.trim() ||
-      "";
+      $("siteId")?.value?.trim() || "";
 
 
     if (!getAdminKey()) {
@@ -1176,61 +1059,39 @@
     }
 
 
-    const button =
-      $("extractButton");
+    const button = $("extractButton");
 
 
     if (button) {
 
-      button.disabled =
-        true;
+      button.disabled = true;
 
-      button.textContent =
-        "EXTRACTING...";
+      button.textContent = "EXTRACTING...";
 
     }
 
 
-    show(
-      $("extractLoading")
-    );
+    show($("extractLoading"));
 
 
     try {
 
-      const form =
-        new FormData();
+      const form = new FormData();
 
-
-      form.append(
-        "image",
-        file
-      );
-
-
-      form.append(
-        "site_id",
-        siteId
-      );
+      form.append("image", file);
+      form.append("site_id", siteId);
 
 
       const data =
         await request(
           "/api/admin/extract-image",
           {
-            method:
-              "POST",
-
+            method: "POST",
             headers: {
-              "Accept":
-                "application/json",
-
-              "X-Admin-Key":
-                getAdminKey()
+              "Accept": "application/json",
+              "X-Admin-Key": getAdminKey()
             },
-
-            body:
-              form
+            body: form
           }
         );
 
@@ -1313,18 +1174,13 @@
       }
 
 
-      show(
-        $("extractionSection")
-      );
+      show($("extractionSection"));
 
 
-      $("extractionSection")
-        ?.scrollIntoView({
-          behavior:
-            "smooth",
-          block:
-            "start"
-        });
+      $("extractionSection")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
 
 
       setMessage(
@@ -1344,8 +1200,7 @@
 
       setMessage(
         $("extractMessage"),
-        error &&
-        error.message
+        error && error.message
           ? error.message
           : "Image extraction failed.",
         "error"
@@ -1353,15 +1208,12 @@
 
     } finally {
 
-      hide(
-        $("extractLoading")
-      );
+      hide($("extractLoading"));
 
 
       if (button) {
 
-        button.disabled =
-          false;
+        button.disabled = false;
 
         button.textContent =
           "✨ EXTRACT DETAILS";
@@ -1373,38 +1225,33 @@
   }
 
 
-    /* =========================================================
+  /* =========================================================
      SAVE EXTRACTED DATA
      ========================================================= */
 
   async function saveExtracted() {
 
     const siteId =
-      $("siteId")?.value?.trim() ||
-      "";
+      $("siteId")?.value?.trim() || "";
 
 
     const model =
-      $("extractedModel")?.value ||
-      "";
+      $("extractedModel")?.value || "";
 
 
-    const hmr =
-      Number(
-        $("extractedHmr")?.value
-      );
+    const hmrRaw =
+      $("extractedHmr")?.value?.trim() ?? "";
+
+    const kwhRaw =
+      $("extractedKwh")?.value?.trim() ?? "";
+
+    const balanceRaw =
+      $("extractedBalance")?.value?.trim() ?? "";
 
 
-    const kwh =
-      Number(
-        $("extractedKwh")?.value
-      );
-
-
-    const balance =
-      Number(
-        $("extractedBalance")?.value
-      );
+    const hmr = Number(hmrRaw);
+    const kwh = Number(kwhRaw);
+    const balance = Number(balanceRaw);
 
 
     if (!siteId) {
@@ -1425,6 +1272,23 @@
       setMessage(
         $("extractMessage"),
         "Please confirm the generator model.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      hmrRaw === "" ||
+      kwhRaw === "" ||
+      balanceRaw === ""
+    ) {
+
+      setMessage(
+        $("extractMessage"),
+        "Please fill in HMR, kWh and Current Balance before saving.",
         "error"
       );
 
@@ -1463,17 +1327,14 @@
     }
 
 
-    const button =
-      $("saveExtracted");
+    const button = $("saveExtracted");
 
 
     if (button) {
 
-      button.disabled =
-        true;
+      button.disabled = true;
 
-      button.textContent =
-        "SAVING...";
+      button.textContent = "SAVING...";
 
     }
 
@@ -1481,14 +1342,8 @@
     try {
 
       const siteName =
-        $("editSiteName")
-          ?.value
-          ?.trim() ||
-
-        $("siteName")
-          ?.textContent
-          ?.trim() ||
-
+        $("editSiteName")?.value?.trim() ||
+        $("siteName")?.textContent?.trim() ||
         siteId;
 
 
@@ -1496,35 +1351,16 @@
         await request(
           "/api/admin/update-site",
           {
-            method:
-              "POST",
-
-            headers:
-              getHeaders(true),
-
-            body:
-              JSON.stringify({
-
-                site_id:
-                  siteId,
-
-                site_name:
-                  siteName,
-
-                model:
-                  model,
-
-                current_hmr:
-                  hmr,
-
-                current_kwh:
-                  kwh,
-
-                current_balance:
-                  balance
-
-              })
-
+            method: "POST",
+            headers: getHeaders(true),
+            body: JSON.stringify({
+              site_id: siteId,
+              site_name: siteName,
+              model: model,
+              current_hmr: hmr,
+              current_kwh: kwh,
+              current_balance: balance
+            })
           }
         );
 
@@ -1532,14 +1368,12 @@
       setMessage(
         $("extractMessage"),
         data.message ||
-        "Extracted data saved successfully.",
+          "Extracted data saved successfully.",
         "success"
       );
 
 
-      await refreshSite(
-        siteId
-      );
+      await refreshSite(siteId);
 
 
     } catch (error) {
@@ -1552,8 +1386,7 @@
 
       setMessage(
         $("extractMessage"),
-        error &&
-        error.message
+        error && error.message
           ? error.message
           : "Unable to save extracted data.",
         "error"
@@ -1563,8 +1396,7 @@
 
       if (button) {
 
-        button.disabled =
-          false;
+        button.disabled = false;
 
         button.textContent =
           "✅ CONFIRM & SAVE";
@@ -1582,39 +1414,37 @@
 
   function toggleManual() {
 
-    const section =
-      $("manualSection");
+    const section = $("manualSection");
 
-
-    const button =
-      $("manualButton");
+    const button = $("manualButton");
 
 
     if (!section) {
-
       return;
-
     }
 
 
-    const currentlyVisible =
-      section.style.display ===
-      "block";
+    const isHidden =
+      !section.classList.contains("show");
 
 
-    if (currentlyVisible) {
+    if (isHidden) {
 
-      hide(
-        section
-      );
+      show(section);
 
 
       if (button) {
 
         button.textContent =
-          "＋ ENTER MANUAL READING";
+          "− HIDE MANUAL READING";
 
       }
+
+
+      section.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
 
 
       return;
@@ -1622,25 +1452,15 @@
     }
 
 
-    show(
-      section
-    );
+    hide(section);
 
 
     if (button) {
 
       button.textContent =
-        "− HIDE MANUAL READING";
+        "＋ ENTER MANUAL READING";
 
     }
-
-
-    section.scrollIntoView({
-      behavior:
-        "smooth",
-      block:
-        "start"
-    });
 
   }
 
@@ -1649,51 +1469,29 @@
      ESCAPE HTML
      ========================================================= */
 
-  function escapeHtml(
-    value
-  ) {
+  function escapeHtml(value) {
 
-    return String(
-      value ?? ""
-    )
-      .replaceAll(
-        "&",
-        "&amp;"
-      )
-      .replaceAll(
-        "<",
-        "&lt;"
-      )
-      .replaceAll(
-        ">",
-        "&gt;"
-      )
-      .replaceAll(
-        '"',
-        "&quot;"
-      )
-      .replaceAll(
-        "'",
-        "&#039;"
-      );
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
 
   }
 
 
   /* =========================================================
-     SAVE REQUESTS
+     SAVE REQUESTS — RENDER
      ========================================================= */
 
-  function renderRequests(
-    requests
-  ) {
+  function renderRequests(requests) {
 
-    const list =
-      $("saveRequestsList");
+    const list = $("saveRequestsList");
 
+    const count = $("requestCount");
 
-    const count =
-      $("requestCount");
+    const countInline = $("requestCountInline");
 
 
     const items =
@@ -1705,17 +1503,27 @@
     if (count) {
 
       count.textContent =
-        String(
-          items.length
-        );
+        String(items.length);
+
+      count.style.display =
+        items.length ? "inline-flex" : "none";
+
+    }
+
+
+    if (countInline) {
+
+      countInline.textContent =
+        String(items.length);
+
+      countInline.style.display =
+        items.length ? "inline-flex" : "none";
 
     }
 
 
     if (!list) {
-
       return;
-
     }
 
 
@@ -1730,99 +1538,85 @@
 
 
     list.innerHTML =
-      items.map(
-        function (item) {
+      items.map(function (item) {
 
-          return `
+        return `
+          <div
+            class="card"
+            data-request-id="${escapeHtml(item.id)}"
+          >
+
+            <h3>
+              ${escapeHtml(
+                item.site_name ||
+                item.site_id ||
+                "Unnamed Site"
+              )}
+            </h3>
+
+            <p>
+              <strong>Site ID:</strong>
+              ${escapeHtml(item.site_id)}
+            </p>
+
+            <p>
+              <strong>Model:</strong>
+              ${escapeHtml(
+                formatModel(item.model)
+              )}
+            </p>
+
+            <p>
+              <strong>HMR:</strong>
+              ${escapeHtml(item.current_hmr)}
+            </p>
+
+            <p>
+              <strong>kWh:</strong>
+              ${escapeHtml(item.current_kwh)}
+            </p>
+
+            <p>
+              <strong>Balance:</strong>
+              ${escapeHtml(item.current_balance)}
+            </p>
+
+            <p>
+              <strong>Requested:</strong>
+              ${escapeHtml(item.requested_at)}
+            </p>
+
             <div
-              class="card"
-              data-request-id="${escapeHtml(item.id)}"
+              style="
+                display:flex;
+                gap:10px;
+                flex-wrap:wrap;
+                margin-top:12px;
+              "
             >
 
-              <h3>
-                ${escapeHtml(
-                  item.site_name ||
-                  item.site_id ||
-                  "Unnamed Site"
-                )}
-              </h3>
-
-              <p>
-                <strong>Site ID:</strong>
-                ${escapeHtml(
-                  item.site_id
-                )}
-              </p>
-
-              <p>
-                <strong>Model:</strong>
-                ${escapeHtml(
-                  formatModel(
-                    item.model
-                  )
-                )}
-              </p>
-
-              <p>
-                <strong>HMR:</strong>
-                ${escapeHtml(
-                  item.current_hmr
-                )}
-              </p>
-
-              <p>
-                <strong>kWh:</strong>
-                ${escapeHtml(
-                  item.current_kwh
-                )}
-              </p>
-
-              <p>
-                <strong>Balance:</strong>
-                ${escapeHtml(
-                  item.current_balance
-                )}
-              </p>
-
-              <p>
-                <strong>Requested:</strong>
-                ${escapeHtml(
-                  item.requested_at
-                )}
-              </p>
-
-              <div
-                style="
-                  display:flex;
-                  gap:10px;
-                  flex-wrap:wrap;
-                  margin-top:12px;
-                "
+              <button
+                type="button"
+                class="button button-success request-approve"
+                data-id="${escapeHtml(item.id)}"
               >
+                ✅ APPROVE
+              </button>
 
-                <button
-                  type="button"
-                  class="button button-success request-approve"
-                  data-id="${escapeHtml(item.id)}"
-                >
-                  ✅ APPROVE
-                </button>
-
-                <button
-                  type="button"
-                  class="button button-secondary request-reject"
-                  data-id="${escapeHtml(item.id)}"
-                >
-                  ❌ REJECT
-                </button>
-
-              </div>
+              <button
+                type="button"
+                class="button button-secondary request-reject"
+                data-id="${escapeHtml(item.id)}"
+              >
+                ❌ REJECT
+              </button>
 
             </div>
-          `;
 
-        }
-      ).join("");
+          </div>
+        `;
+
+      }).join("");
 
   }
 
@@ -1831,14 +1625,10 @@
      LOAD SAVE REQUESTS
      ========================================================= */
 
-  async function loadSaveRequests(
-    showStatus = false
-  ) {
+  async function loadSaveRequests(showStatus = false) {
 
     if (!getAdminKey()) {
-
       return;
-
     }
 
 
@@ -1848,18 +1638,13 @@
         await request(
           "/api/admin/save-requests",
           {
-            method:
-              "GET",
-
-            headers:
-              getHeaders()
+            method: "GET",
+            headers: getHeaders()
           }
         );
 
 
-      renderRequests(
-        data.requests || []
-      );
+      renderRequests(data.requests || []);
 
 
       if (showStatus) {
@@ -1885,8 +1670,7 @@
 
         setMessage(
           $("requestMessage"),
-          error &&
-          error.message
+          error && error.message
             ? error.message
             : "Unable to load save requests.",
           "error"
@@ -1903,27 +1687,17 @@
      REVIEW SAVE REQUEST
      ========================================================= */
 
-  async function reviewRequest(
-    id,
-    action
-  ) {
+  async function reviewRequest(id, action) {
 
     if (!getAdminKey()) {
-
       return;
-
     }
 
 
-    const numericId =
-      Number(id);
+    const numericId = Number(id);
 
 
-    if (
-      !Number.isFinite(
-        numericId
-      )
-    ) {
+    if (!Number.isFinite(numericId)) {
 
       setMessage(
         $("requestMessage"),
@@ -1952,23 +1726,12 @@
         await request(
           "/api/admin/save-request/review",
           {
-            method:
-              "POST",
-
-            headers:
-              getHeaders(true),
-
-            body:
-              JSON.stringify({
-
-                id:
-                  numericId,
-
-                action:
-                  action
-
-              })
-
+            method: "POST",
+            headers: getHeaders(true),
+            body: JSON.stringify({
+              id: numericId,
+              action: action
+            })
           }
         );
 
@@ -1976,14 +1739,12 @@
       setMessage(
         $("requestMessage"),
         data.message ||
-        `Request ${action}d successfully.`,
+          `Request ${action}d successfully.`,
         "success"
       );
 
 
-      await loadSaveRequests(
-        false
-      );
+      await loadSaveRequests(false);
 
 
     } catch (error) {
@@ -1996,8 +1757,7 @@
 
       setMessage(
         $("requestMessage"),
-        error &&
-        error.message
+        error && error.message
           ? error.message
           : `Unable to ${action} request.`,
         "error"
@@ -2012,28 +1772,18 @@
      REQUEST LIST CLICK
      ========================================================= */
 
-  function handleRequestClick(
-    event
-  ) {
+  function handleRequestClick(event) {
 
     const approve =
-      event.target.closest(
-        ".request-approve"
-      );
-
+      event.target.closest(".request-approve");
 
     const reject =
-      event.target.closest(
-        ".request-reject"
-      );
+      event.target.closest(".request-reject");
 
 
     if (approve) {
 
-      reviewRequest(
-        approve.dataset.id,
-        "approve"
-      );
+      reviewRequest(approve.dataset.id, "approve");
 
       return;
 
@@ -2042,10 +1792,7 @@
 
     if (reject) {
 
-      reviewRequest(
-        reject.dataset.id,
-        "reject"
-      );
+      reviewRequest(reject.dataset.id, "reject");
 
     }
 
@@ -2058,37 +1805,36 @@
 
   function bindEvents() {
 
-    const loadButton =
-      $("loadSite");
+    if (eventsBound) {
 
+      console.log("ADMIN: bindEvents skipped (already bound)");
+
+      return;
+
+    }
+
+    eventsBound = true;
+
+
+    const loadButton = $("loadSite");
 
     if (loadButton) {
 
-      loadButton.addEventListener(
-        "click",
-        loadSite
-      );
+      loadButton.addEventListener("click", loadSite);
 
     }
 
 
-    const editButton =
-      $("editSiteButton");
-
+    const editButton = $("editSiteButton");
 
     if (editButton) {
 
-      editButton.addEventListener(
-        "click",
-        openEdit
-      );
+      editButton.addEventListener("click", openEdit);
 
     }
 
 
-    const saveEditButton =
-      $("saveSiteEdit");
-
+    const saveEditButton = $("saveSiteEdit");
 
     if (saveEditButton) {
 
@@ -2100,9 +1846,7 @@
     }
 
 
-    const llamaButton =
-      $("activateLlama");
-
+    const llamaButton = $("activateLlama");
 
     if (llamaButton) {
 
@@ -2114,9 +1858,7 @@
     }
 
 
-    const imageInput =
-      $("imageInput");
-
+    const imageInput = $("imageInput");
 
     if (imageInput) {
 
@@ -2128,9 +1870,7 @@
     }
 
 
-    const extractButton =
-      $("extractButton");
-
+    const extractButton = $("extractButton");
 
     if (extractButton) {
 
@@ -2142,9 +1882,7 @@
     }
 
 
-    const saveExtractedButton =
-      $("saveExtracted");
-
+    const saveExtractedButton = $("saveExtracted");
 
     if (saveExtractedButton) {
 
@@ -2156,9 +1894,7 @@
     }
 
 
-    const manualButton =
-      $("manualButton");
-
+    const manualButton = $("manualButton");
 
     if (manualButton) {
 
@@ -2170,9 +1906,7 @@
     }
 
 
-    const refreshButton =
-      $("refreshRequests");
-
+    const refreshButton = $("refreshRequests");
 
     if (refreshButton) {
 
@@ -2180,9 +1914,7 @@
         "click",
         function () {
 
-          loadSaveRequests(
-            true
-          );
+          loadSaveRequests(true);
 
         }
       );
@@ -2190,9 +1922,7 @@
     }
 
 
-    const requestList =
-      $("saveRequestsList");
-
+    const requestList = $("saveRequestsList");
 
     if (requestList) {
 
@@ -2204,9 +1934,7 @@
     }
 
 
-    const siteInput =
-      $("siteId");
-
+    const siteInput = $("siteId");
 
     if (siteInput) {
 
@@ -2214,10 +1942,7 @@
         "keydown",
         function (event) {
 
-          if (
-            event.key ===
-            "Enter"
-          ) {
+          if (event.key === "Enter") {
 
             event.preventDefault();
 
@@ -2231,9 +1956,7 @@
     }
 
 
-    const editSiteId =
-      $("editSiteId");
-
+    const editSiteId = $("editSiteId");
 
     if (editSiteId) {
 
@@ -2241,10 +1964,7 @@
         "keydown",
         function (event) {
 
-          if (
-            event.key ===
-            "Enter"
-          ) {
+          if (event.key === "Enter") {
 
             event.preventDefault();
 
@@ -2256,6 +1976,9 @@
       );
 
     }
+
+
+    console.log("ADMIN: events bound");
 
   }
 
@@ -2271,14 +1994,10 @@
       bindEvents();
 
 
-      const key =
-        getAdminKey();
-
-
-      if (!key) {
+      if (!getAdminKey()) {
 
         console.warn(
-          "Admin key is not available yet."
+          "Admin key is not available yet. Waiting for unlock."
         );
 
         return;
@@ -2286,14 +2005,10 @@
       }
 
 
-      loadSaveRequests(
-        false
-      );
+      loadSaveRequests(false);
 
 
-      console.log(
-        "ADMIN.JS INITIALIZED"
-      );
+      console.log("ADMIN.JS INITIALIZED");
 
 
     } catch (error) {
@@ -2306,8 +2021,7 @@
 
       setMessage(
         $("authMessage"),
-        error &&
-        error.message
+        error && error.message
           ? error.message
           : "Admin initialization failed.",
         "error"
@@ -2322,18 +2036,12 @@
      DOM READY
      ========================================================= */
 
-  if (
-    document.readyState ===
-    "loading"
-  ) {
+  if (document.readyState === "loading") {
 
     document.addEventListener(
       "DOMContentLoaded",
       initializeAdmin,
-      {
-        once:
-          true
-      }
+      { once: true }
     );
 
   } else {
@@ -2344,41 +2052,52 @@
 
 
   /* =========================================================
+     REBIND AFTER ADMIN GATE UNLOCK
+     ========================================================= */
+
+  document.addEventListener(
+    "admin:unlocked",
+    function () {
+
+      console.log("ADMIN: gate unlocked — rebinding");
+
+      bindEvents();
+
+
+      if (getAdminKey()) {
+
+        loadSaveRequests(false);
+
+      }
+
+    }
+  );
+
+
+  /* =========================================================
      AUTO REFRESH
      ========================================================= */
 
   setInterval(
     function () {
 
-      if (
-        document.visibilityState !==
-        "visible"
-      ) {
-
+      if (document.visibilityState !== "visible") {
         return;
-
       }
 
 
       if (!getAdminKey()) {
-
         return;
-
       }
 
 
-      loadSaveRequests(
-        false
-      );
+      loadSaveRequests(false);
 
     },
     20000
   );
 
 
-  console.log(
-    "ADMIN.JS FINISHED"
-  );
-
+  console.log("ADMIN.JS FINISHED");
 
 })();
