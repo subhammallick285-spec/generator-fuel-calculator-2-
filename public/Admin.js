@@ -862,6 +862,131 @@
     }
 
 
+  /* =========================================================
+     SAVE EDITED SITE
+     ========================================================= */
+
+  async function saveSiteEdit() {
+
+    /* -------------------------------------------------------
+       Read Site ID from every possible source (first match wins):
+         1. #editSiteId      — the edit form's own field
+         2. #siteId          — the top "Find Site" search box
+         3. #siteIdDisplay   — the card that shows "Site ID: ABC123"
+    ------------------------------------------------------- */
+
+    let siteId =
+      $("editSiteId")?.value?.trim() ||
+      $("siteId")?.value?.trim() ||
+      "";
+
+    if (!siteId) {
+
+      const display =
+        $("siteIdDisplay")?.textContent?.trim() || "";
+
+      const match =
+        display.match(/Site\s*ID\s*[:\-]?\s*(.+)$/i);
+
+      if (match && match[1]) {
+
+        siteId = match[1].trim();
+
+      }
+
+    }
+
+
+    /* -------------------------------------------------------
+       Read the OTHER fields from the EDIT form ONLY.
+    ------------------------------------------------------- */
+
+    const siteName =
+      $("editSiteName")?.value?.trim() ||
+      $("siteName")?.textContent?.trim() ||
+      siteId;
+
+    const model =
+      $("editModel")?.value || "";
+
+    const hmrRaw =
+      $("editHmr")?.value?.trim() ?? "";
+
+    const kwhRaw =
+      $("editKwh")?.value?.trim() ?? "";
+
+    const balanceRaw =
+      $("editBalance")?.value?.trim() ?? "";
+
+    const hmr = Number(hmrRaw);
+    const kwh = Number(kwhRaw);
+    const balance = Number(balanceRaw);
+
+
+    /* -------------------------------------------------------
+       Validation — the ONLY siteId check in this function.
+    ------------------------------------------------------- */
+
+    if (!siteId) {
+
+      setMessage(
+        $("editSiteMessage"),
+        "Site ID is required. Please load a site first.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (!model) {
+
+      setMessage(
+        $("editSiteMessage"),
+        "Please select a generator model.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      hmrRaw === "" ||
+      kwhRaw === "" ||
+      balanceRaw === ""
+    ) {
+
+      setMessage(
+        $("editSiteMessage"),
+        "Please fill in HMR, kWh and Balance before saving.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !Number.isFinite(hmr) ||
+      !Number.isFinite(kwh) ||
+      !Number.isFinite(balance)
+    ) {
+
+      setMessage(
+        $("editSiteMessage"),
+        "Please enter valid HMR, kWh and Balance.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
     if (!getAdminKey()) {
 
       setMessage(
@@ -875,13 +1000,15 @@
     }
 
 
-    const button = $("saveSiteEdit");
+    /* -------------------------------------------------------
+       Disable the button while saving.
+    ------------------------------------------------------- */
 
+    const button = $("saveSiteEdit");
 
     if (button) {
 
       button.disabled = true;
-
       button.textContent = "SAVING...";
 
     }
@@ -889,6 +1016,10 @@
 
     clearMessage($("editSiteMessage"));
 
+
+    /* -------------------------------------------------------
+       Send the update.
+    ------------------------------------------------------- */
 
     try {
 
@@ -942,9 +1073,7 @@
       if (button) {
 
         button.disabled = false;
-
-        button.textContent =
-          "💾 SAVE SITE CHANGES";
+        button.textContent = "💾 SAVE SITE CHANGES";
 
       }
 
