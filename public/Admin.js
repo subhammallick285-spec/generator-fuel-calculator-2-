@@ -1398,7 +1398,7 @@
      SAVE EXTRACTED DATA
      ========================================================= */
 
-    async function saveSiteEdit() {
+      async function saveExtracted() {
 
     /*
      * Read the Site ID from any available source:
