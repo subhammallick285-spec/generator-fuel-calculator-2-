@@ -2419,6 +2419,11 @@ window.addEventListener("unhandledrejection", function (event) {
 
 
 
+</script>
+<script src="/Admin.js?v=4"></script>
+
+
+
   <!-- =====================================================
        NOTIFICATION BUTTON
        ===================================================== -->
@@ -2501,52 +2506,6 @@ window.addEventListener("unhandledrejection", function (event) {
 
   </script>
 
-<!-- TEMPORARY DEBUG PANEL -->
-<div id="debugPanel" style="
-  position:fixed;
-  left:0; right:0; bottom:0;
-  max-height:35vh;
-  overflow-y:auto;
-  background:#000c;
-  color:#0f0;
-  font-family:monospace;
-  font-size:11px;
-  padding:10px;
-  z-index:999999;
-  white-space:pre-wrap;
-  border-top:2px solid #0f0;
-"></div>
-
-<script>
-(function () {
-  const panel = document.getElementById("debugPanel");
-  const log = (label, value) => {
-    panel.textContent +=
-      label + ": " +
-      (typeof value === "object"
-        ? JSON.stringify(value)
-        : String(value)) +
-      "\n";
-  };
-
-  // Wait a moment for Admin.js to load
-  setTimeout(function () {
-    log("Admin.js loaded", !!window.__GENERATOR_ADMIN_JS_LOADED__);
-    log("saveSiteEdit type", typeof saveSiteEdit);
-    log("saveSiteEdit element", document.getElementById("saveSiteEdit"));
-    log("#saveSiteEdit count", document.querySelectorAll("#saveSiteEdit").length);
-    log("#editSiteSection", document.getElementById("editSiteSection"));
-    log("#editSiteId", document.getElementById("editSiteId"));
-    log("#editSiteName", document.getElementById("editSiteName"));
-    log("#editModel", document.getElementById("editModel"));
-    log("#editHmr", document.getElementById("editHmr"));
-    log("#editKwh", document.getElementById("editKwh"));
-    log("#editBalance", document.getElementById("editBalance"));
-    log("adminKey", sessionStorage.getItem("adminKey") ? "set" : "empty");
-  }, 1500);
-})();
-</script>
-
 
 </body>
-</html>
+  </html>
