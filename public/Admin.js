@@ -567,12 +567,29 @@
 
   }
 
+     /* =========================================================
+     EXTRACT SITE ID FROM "Site ID: XXXXX" DISPLAY
+     ========================================================= */
+
+  function extractSiteIdFromDisplay() {
+
+    const display =
+      $("siteIdDisplay")?.textContent?.trim() || "";
+
+    const match =
+      display.match(/Site\s*ID\s*[:\-]?\s*(.+)$/i);
+
+    return match && match[1]
+      ? match[1].trim()
+      : "";
+
+  }
 
   /* =========================================================
      OPEN EDIT SITE
      ========================================================= */
 
-  function openEdit() {
+    function openEdit() {
 
     const section = $("editSiteSection");
 
@@ -586,6 +603,98 @@
     }
 
 
+    /* -------------------------------------------------------
+       Pre-fill the edit form from whatever we currently know.
+       Priority: edit field (if set) → main search → site card.
+    ------------------------------------------------------- */
+
+    const siteId =
+      $("editSiteId")?.value?.trim() ||
+      $("siteId")?.value?.trim() ||
+      extractSiteIdFromDisplay() ||
+      "";
+
+
+    const siteName =
+      $("editSiteName")?.value?.trim() ||
+      $("siteName")?.textContent?.trim() ||
+      "";
+
+
+    const model =
+      $("editModel")?.value ||
+      "";
+
+
+    const hmr =
+      $("editHmr")?.value ??
+      "";
+
+
+    const kwh =
+      $("editKwh")?.value ??
+      "";
+
+
+    const balance =
+      $("editBalance")?.value ??
+      "";
+
+
+    /* Push values back into the fields so the form is usable */
+
+    if ($("editSiteId") && !$("editSiteId").value) {
+
+      $("editSiteId").value = siteId;
+
+    }
+
+
+    if ($("editSiteName") && !$("editSiteName").value) {
+
+      $("editSiteName").value = siteName;
+
+    }
+
+
+    if ($("editModel") && !$("editModel").value) {
+
+      $("editModel").value = model;
+
+    }
+
+
+    if ($("editHmr") && $("editHmr").value === "") {
+
+      $("editHmr").value = hmr;
+
+    }
+
+
+    if ($("editKwh") && $("editKwh").value === "") {
+
+      $("editKwh").value = kwh;
+
+    }
+
+
+    if ($("editBalance") && $("editBalance").value === "") {
+
+      $("editBalance").value = balance;
+
+    }
+
+
+    console.log("EDIT FORM OPENED WITH:", {
+      siteId: $("editSiteId")?.value,
+      siteName: $("editSiteName")?.value,
+      model: $("editModel")?.value,
+      hmr: $("editHmr")?.value,
+      kwh: $("editKwh")?.value,
+      balance: $("editBalance")?.value
+    });
+
+
     show(section);
 
 
@@ -594,7 +703,7 @@
       block: "start"
     });
 
-  }
+    }
 
 
   /* =========================================================
