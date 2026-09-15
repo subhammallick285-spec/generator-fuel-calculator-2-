@@ -402,12 +402,12 @@
     }
 
 
-    if ($("editSiteName")) {
+        if ($("editFillingDate")) {
 
-      $("editSiteName").value =
-        site.site_name || "";
+      $("editFillingDate").value =
+        site.date_of_filling || "";
 
-    }
+        }
 
 
     if ($("editModel")) {
