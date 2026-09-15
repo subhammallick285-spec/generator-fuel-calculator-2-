@@ -1414,17 +1414,17 @@
     const balance = Number(balanceRaw);
 
 
-    if (!siteId) {
+        if (!siteId) {
 
       setMessage(
         $("extractMessage"),
-        ""VERSION 5 — Site ID empty: [" + siteId + "]",",
+        "Site ID is required.",
         "error"
       );
 
       return;
 
-    }
+        }
 
 
     if (!model) {
