@@ -547,15 +547,12 @@ async function saveCalculatorSite(request, env) {
 
 
     const siteId =
-      String(
-        body.site_id || ""
-      ).trim();
+      normalizeSiteId(body.site_id);
 
-    const siteName =
+    const dateOfFilling =
       String(
-        body.site_name || siteId
+        body.date_of_filling || ""
       ).trim();
-
     const model =
       String(
         body.model || ""
