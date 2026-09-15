@@ -336,12 +336,12 @@
     }
 
 
-    if ($("siteName")) {
+        if ($("siteName")) {
 
       $("siteName").textContent =
-        site.site_name || "—";
+        site.site_id || "—";
 
-    }
+        }
 
 
     if ($("siteIdDisplay")) {
