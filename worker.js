@@ -1509,16 +1509,35 @@ async function extractImage(request, env) {
 
 
     const prompt = `
-You are reading a generator control-panel screenshot.
+You are reading a generator filling summary screen from an L&T app.
 
-Extract only information that is clearly visible.
+The image shows a numbered list of steps.
 
-Return ONLY valid JSON.
+Look for these exact patterns:
 
-Use exactly these fields:
+Step 1 — "Enter Site Details":
+  A line like "I-OR-PNRA-ENB-9028"
+  The number/letter string starting with "I-OR-" is site_id.
+
+Step 2 — "Take Meter Readings":
+  A line like "82838 kWh,6443 hrs,13 min,43Ltr"
+    - Number before "kWh" = current_kwh (e.g. 82838)
+    - Number before "hrs" = current_hmr (e.g. 6443)
+    - Number before "Ltr" = previous_balance (e.g. 43)
+    - Ignore "min" value entirely
+
+Step 3 — "Fill Diesel":
+  A line like "80 Ltr"
+    - Number = fuel_filled (e.g. 80)
+
+Step 4 — "Take Meter Readings":
+  A line like "123 Ltr"
+    - Number = current_balance (e.g. 123)
+
+Return ONLY valid JSON with these exact fields:
 
 {
-  "model": "",
+  "site_id": "",
   "current_hmr": null,
   "current_kwh": null,
   "previous_balance": null,
@@ -1527,17 +1546,12 @@ Use exactly these fields:
 }
 
 Rules:
-
-1. Do not guess.
+1. Numbers must have NO commas, NO spaces, NO unit suffixes.
 2. If a value is not visible, use null.
-3. current_hmr means the current HMR/hour-meter reading.
-4. current_kwh means the current kWh reading.
-5. previous_balance means the balance before filling.
-6. fuel_filled means fuel added during filling.
-7. current_balance means the balance after filling.
-8. Keep decimal values exactly as visible where possible.
-9. Return no markdown.
-10. Return JSON only.
+3. Do not combine numbers from different lines.
+4. Do not guess.
+5. site_id must be copied exactly as shown (e.g. "I-OR-PNRA-ENB-9028").
+6. Return JSON only — no markdown fences.
 `;
 
 
