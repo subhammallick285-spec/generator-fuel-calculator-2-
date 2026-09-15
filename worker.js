@@ -1198,10 +1198,10 @@ async function reviewSaveRequest(request, env) {
       new Date().toISOString();
 
 
-    const existingSite =
+        const existingSite =
       await env.DB.prepare(`
         SELECT
-          site_name
+          date_of_filling
         FROM sites
         WHERE site_id = ?
         LIMIT 1
@@ -1210,11 +1210,9 @@ async function reviewSaveRequest(request, env) {
       .first();
 
 
-    const siteName =
-      existingSite?.site_name ||
-      requestResult.site_name ||
-      siteId;
-
+    const dateOfFilling =
+      existingSite?.date_of_filling ||
+      "";
 
     const statements = [];
 
