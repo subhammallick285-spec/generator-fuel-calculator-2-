@@ -923,9 +923,7 @@
         error
       );
 
-      alert("SERVER SAID: " + (error && error.message ? error.message : "(no message)"));
-
-
+      
 
       setMessage(
         $("editSiteMessage"),
