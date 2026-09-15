@@ -1607,9 +1607,9 @@
           {
             method: "POST",
             headers: getHeaders(true),
-            body: JSON.stringify({
+                        body: JSON.stringify({
               site_id: siteId,
-              site_name: siteName,
+              date_of_filling: dateOfFilling,
               model: model,
               current_hmr: hmr,
               current_kwh: kwh,
