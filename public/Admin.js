@@ -790,19 +790,6 @@
 
     
 
-    if (!siteId) {
-
-      setMessage(
-        $("editSiteMessage"),
-        "Site ID is required. Please load a site first.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
     if (!model) {
 
       setMessage(
