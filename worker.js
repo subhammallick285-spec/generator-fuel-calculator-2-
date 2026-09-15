@@ -1771,26 +1771,26 @@ async function updateSite(request, env) {
       );
     }
 
-    const body =
+        const body =
       await request.json();
 
     const siteId =
-      String(body.siteId || "").trim();
+      String(body.site_id || "").trim();
 
     const siteName =
-      String(body.siteName || "").trim();
+      String(body.site_name || siteId).trim();
 
     const model =
       String(body.model || "").trim();
 
     const currentHmr =
-      Number(body.currentHmr);
+      Number(body.current_hmr);
 
     const currentKwh =
-      Number(body.currentKwh);
+      Number(body.current_kwh);
 
     const currentBalance =
-      Number(body.currentBalance);
+      Number(body.current_balance);
 
     if (!siteId) {
       return json(
