@@ -458,7 +458,7 @@
      LOAD SITE
      ========================================================= */
 
-  async function loadSite() {
+    async function loadSite() {
 
     const siteInput = $("siteId");
 
@@ -467,6 +467,9 @@
       typeof siteInput.value === "string"
         ? siteInput.value.trim()
         : "";
+
+    /* Reset cached Site ID so it doesn't leak from a previous site */
+    currentSiteId = "";
 
 
     if (!siteId) {
@@ -719,15 +722,16 @@
   async function saveSiteEdit() {
 
     /* -------------------------------------------------------
-       Read Site ID from every possible source (first match wins):
-         1. #editSiteId      — the edit form's own field
-         2. #siteId          — the top "Find Site" search box
-         3. #siteIdDisplay   — the card that shows "Site ID: ABC123"
+       Site ID priority:
+         1. What's actually typed in the edit form
+         2. What's in the top search box
+         3. The cached ID from the last loaded site  ← bulletproof
     ------------------------------------------------------- */
 
     let siteId =
       $("editSiteId")?.value?.trim() ||
       $("siteId")?.value?.trim() ||
+      currentSiteId ||
       "";
 
     if (!siteId) {
@@ -1379,11 +1383,12 @@
      SAVE EXTRACTED DATA
      ========================================================= */
 
-  async function saveExtracted() {
+    async function saveExtracted() {
 
     const siteId =
       $("siteId")?.value?.trim() ||
       $("editSiteId")?.value?.trim() ||
+      currentSiteId ||
       extractSiteIdFromDisplay() ||
       "";
 
