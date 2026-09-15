@@ -24,9 +24,8 @@
      EVENT BINDING STATE
      --------------------------------------------------------- */
 
-  let eventsBound = false;
+   let eventsBound = false;
    let currentSiteId = "";
-
 
   /* ---------------------------------------------------------
      SHORT DOM HELPER
