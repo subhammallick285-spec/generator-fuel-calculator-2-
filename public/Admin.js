@@ -1090,26 +1090,18 @@
      IMAGE SELECTION / PREVIEW
      ========================================================= */
 
-  function handleImageSelection() {
+    async function handleImageSelection() {
 
     const input = $("imageInput");
-
-    const file = input?.files?.[0];
-
+    const file  = input?.files?.[0];
 
     if (!file) {
-
       hide($("preview"));
-
+      processedImageFile = null;
       return;
-
     }
 
-
-    if (
-      !file.type ||
-      !file.type.startsWith("image/")
-    ) {
+    if (!file.type || !file.type.startsWith("image/")) {
 
       setMessage(
         $("llamaMessage"),
@@ -1117,42 +1109,33 @@
         "error"
       );
 
+      if (input) input.value = "";
 
-      if (input) {
-        input.value = "";
-      }
-
+      processedImageFile = null;
 
       return;
 
     }
 
+    /* Auto-crop tall screenshots */
+    processedImageFile = await autoCropImage(file);
 
+    /* Show preview */
     const reader = new FileReader();
-
 
     reader.onload = function (event) {
 
       if ($("previewImage")) {
-
-        $("previewImage").src =
-          event.target.result;
-
+        $("previewImage").src = event.target.result;
       }
-
 
       if ($("fileName")) {
-
-        $("fileName").textContent =
-          file.name;
-
+        $("fileName").textContent = file.name;
       }
-
 
       show($("preview"));
 
     };
-
 
     reader.onerror = function () {
 
@@ -1164,10 +1147,9 @@
 
     };
 
+    reader.readAsDataURL(processedImageFile);
 
-    reader.readAsDataURL(file);
-
-  }
+    }
 
 
   /* =========================================================
