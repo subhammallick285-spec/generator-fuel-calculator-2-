@@ -766,9 +766,7 @@ async function createSaveRequest(request, env) {
 
 
     const siteId =
-      String(
-        body.site_id || ""
-      ).trim();
+      normalizeSiteId(body.site_id);
 
     const model =
       String(
