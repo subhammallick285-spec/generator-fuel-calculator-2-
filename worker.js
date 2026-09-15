@@ -1725,10 +1725,19 @@ Rules:
 
 
     return json({
+    const rawSiteId =
+      String(extracted.site_id || "").trim();
+
+    const site_id =
+      normalizeSiteId(rawSiteId);
+
+
+    return json({
 
       success: true,
 
       data: {
+        site_id,
         model,
         current_hmr,
         current_kwh,
