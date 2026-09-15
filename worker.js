@@ -1800,10 +1800,10 @@ async function updateSite(request, env) {
       await request.json();
 
     const siteId =
-      String(body.site_id || "").trim();
+      normalizeSiteId(body.site_id);
 
-    const siteName =
-      String(body.site_name || siteId).trim();
+    const dateOfFilling =
+      String(body.date_of_filling || "").trim();
 
     const model =
       String(body.model || "").trim();
