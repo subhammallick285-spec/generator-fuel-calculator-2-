@@ -441,9 +441,9 @@ async function getSite(request, env) {
       new URL(request.url);
 
     const siteId =
-      String(
+      normalizeSiteId(
         url.searchParams.get("site_id") || ""
-      ).trim();
+      );
 
 
     if (!siteId) {
