@@ -750,10 +750,8 @@
        Read the OTHER fields from the EDIT form ONLY.
     ------------------------------------------------------- */
 
-    const siteName =
-      $("editSiteName")?.value?.trim() ||
-      $("siteName")?.textContent?.trim() ||
-      siteId;
+        const dateOfFilling =
+      $("editFillingDate")?.value?.trim() || "";
 
     const model =
       $("editModel")?.value || "";
