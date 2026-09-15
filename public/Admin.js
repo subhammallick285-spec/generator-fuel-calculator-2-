@@ -1158,7 +1158,7 @@
 
   async function extractImage() {
 
-    const input = $("imageInput");
+        const input = $("imageInput");
 
     const file = input?.files?.[0];
 
