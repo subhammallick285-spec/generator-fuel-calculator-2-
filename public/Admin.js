@@ -1496,17 +1496,8 @@
 
     async function saveExtracted() {
 
-    const siteId =
-      $("siteId")?.value?.trim() ||
-      $("editSiteId")?.value?.trim() ||
-      currentSiteId ||
-      extractSiteIdFromDisplay() ||
-      "";
-
-    const siteName =
-      $("siteName")?.textContent?.trim() ||
-      $("editSiteName")?.value?.trim() ||
-      siteId;
+        const dateOfFilling =
+      $("extractedFillingDate")?.value?.trim() || "";
 
     const model =
       $("extractedModel")?.value || "";
