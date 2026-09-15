@@ -721,8 +721,7 @@
 
     async function saveSiteEdit() {
 
-    alert("editSiteId=[" + ($("editSiteId")?.value || "NULL") + "] siteId=[" + ($("siteId")?.value || "NULL") + "] cached=[" + currentSiteId + "]");
-
+    
     let siteId =
       $("editSiteId")?.value?.trim() ||
       $("siteId")?.value?.trim() ||
@@ -775,11 +774,10 @@
     /* -------------------------------------------------------
        Validation — the ONLY siteId check in this function.
     ------------------------------------------------------- */
-      alert("BEFORE CHECK — siteId=[" + siteId + "] typeof=" + (typeof siteId) + " length=" + (siteId ? siteId.length : "0"));
-
+      
     if (!siteId) {
 
-      alert("INSIDE CHECK — siteId is FALSY");
+      
 
       setMessage(
         $("editSiteMessage"),
@@ -791,7 +789,7 @@
 
     }
 
-    alert("AFTER CHECK — passed");
+    
 
     if (!siteId) {
 
