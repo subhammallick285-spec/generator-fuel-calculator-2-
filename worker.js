@@ -464,7 +464,7 @@ async function getSite(request, env) {
         SELECT
           id,
           site_id,
-          site_name,
+          date_of_filling,
           model,
           current_hmr,
           current_kwh,
@@ -478,16 +478,6 @@ async function getSite(request, env) {
       `)
       .bind(siteId)
       .first();
-
-
-    if (!site) {
-
-      return json(
-        {
-          success: false,
-          error: "Site not found."
-        },
-        404
       );
 
     }
