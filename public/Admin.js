@@ -1479,11 +1479,18 @@
      SAVE EXTRACTED DATA
      ========================================================= */
 
-    async function saveExtracted() {
+        async function saveExtracted() {
 
-        const dateOfFilling =
+    const siteId =
+      $("extractedSiteId")?.value?.trim() ||
+      $("siteId")?.value?.trim() ||
+      $("editSiteId")?.value?.trim() ||
+      currentSiteId ||
+      extractSiteIdFromDisplay() ||
+      "";
+
+    const dateOfFilling =
       $("extractedFillingDate")?.value?.trim() || "";
-
     const model =
       $("extractedModel")?.value || "";
 
