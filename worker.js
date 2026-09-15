@@ -122,6 +122,31 @@ function number(value, name) {
   return n;
 
 }
+// ============================================================
+// NORMALIZE SITE ID
+// Converts "I-OR-PNRA-ENB-9028" → "PNRA 9028"
+// Returns input unchanged if it doesn't match the pattern.
+// ============================================================
+
+function normalizeSiteId(raw) {
+
+  const value =
+    String(raw || "").trim();
+
+  if (!value) {
+    return "";
+  }
+
+  const match =
+    value.match(/^I-OR-([A-Z0-9]+)-ENB-(\d+)$/i);
+
+  if (match) {
+    return `${match[1].toUpperCase()} ${match[2]}`;
+  }
+
+  return value;
+
+}
 
 
 // ============================================================
