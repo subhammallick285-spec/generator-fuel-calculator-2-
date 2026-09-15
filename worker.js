@@ -459,7 +459,7 @@ async function getSite(request, env) {
     }
 
 
-    const site =
+     const site =
       await env.DB.prepare(`
         SELECT
           id,
@@ -478,6 +478,16 @@ async function getSite(request, env) {
       `)
       .bind(siteId)
       .first();
+
+
+    if (!site) {
+
+      return json(
+        {
+          success: false,
+          error: "Site not found."
+        },
+        404
       );
 
     }
