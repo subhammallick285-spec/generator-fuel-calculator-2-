@@ -2096,16 +2096,7 @@
     }
 
 
-    const llamaButton = $("activateLlama");
-
-    if (llamaButton) {
-
-      llamaButton.addEventListener(
-        "click",
-        activateLlama
-      );
-
-    }
+    
 
 
     const imageInput = $("imageInput");
