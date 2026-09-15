@@ -1418,7 +1418,7 @@
 
       setMessage(
         $("extractMessage"),
-        "Site ID is required.",
+        ""VERSION 5 — Site ID empty: [" + siteId + "]",",
         "error"
       );
 
