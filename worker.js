@@ -1873,7 +1873,7 @@ async function updateSite(request, env) {
         env.DB.prepare(`
           UPDATE sites
           SET
-            site_name = ?,
+            date_of_filling = ?,
             model = ?,
             current_hmr = ?,
             current_kwh = ?,
@@ -1883,7 +1883,7 @@ async function updateSite(request, env) {
           WHERE id = ?
         `)
         .bind(
-          siteName,
+          dateOfFilling,
           model,
           currentHmr,
           currentKwh,
@@ -1899,7 +1899,7 @@ async function updateSite(request, env) {
         env.DB.prepare(`
           INSERT INTO sites (
             site_id,
-            site_name,
+            date_of_filling,
             model,
             current_hmr,
             current_kwh,
@@ -1911,7 +1911,7 @@ async function updateSite(request, env) {
         `)
         .bind(
           siteId,
-          siteName,
+          dateOfFilling,
           model,
           currentHmr,
           currentKwh,
@@ -1919,7 +1919,6 @@ async function updateSite(request, env) {
           now
         )
       );
-
     }
 
     statements.push(
