@@ -719,14 +719,9 @@
      SAVE EDITED SITE
      ========================================================= */
 
-  async function saveSiteEdit() {
+    async function saveSiteEdit() {
 
-    /* -------------------------------------------------------
-       Site ID priority:
-         1. What's actually typed in the edit form
-         2. What's in the top search box
-         3. The cached ID from the last loaded site  ← bulletproof
-    ------------------------------------------------------- */
+    alert("editSiteId=[" + ($("editSiteId")?.value || "NULL") + "] siteId=[" + ($("siteId")?.value || "NULL") + "] cached=[" + currentSiteId + "]");
 
     let siteId =
       $("editSiteId")?.value?.trim() ||
