@@ -1271,6 +1271,35 @@
         data;
 
 
+            if (
+        extracted &&
+        extracted.site_id != null &&
+        $("extractedSiteId")
+      ) {
+
+        const raw = String(extracted.site_id).trim();
+
+        const m = raw.match(
+          /^I-OR-([A-Z0-9]+)-ENB-(\d+)$/i
+        );
+
+        const clean = m
+          ? `${m[1].toUpperCase()} ${m[2]}`
+          : raw;
+
+        $("extractedSiteId").value = clean;
+
+        if ($("siteId")) {
+          $("siteId").value = clean;
+        }
+
+        if (!currentSiteId) {
+          currentSiteId = clean;
+        }
+
+      }
+
+
       if (
         extracted &&
         extracted.model != null &&
@@ -1281,6 +1310,7 @@
           extracted.model;
 
       }
+
 
 
       if (
