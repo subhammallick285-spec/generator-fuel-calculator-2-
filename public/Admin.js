@@ -1388,7 +1388,71 @@
 
   }
 
+  /* =========================================================
+     AUTO-CROP — Option C (center band)
+     Cuts top 8% and bottom 45% from tall screenshots.
+     Skips crop if the image is already roughly square.
+     ========================================================= */
 
+  function autoCropImage(file) {
+
+    return new Promise(function (resolve) {
+
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      img.onload = function () {
+
+        const aspect = img.width / img.height;
+
+        if (aspect > 0.7) {
+          URL.revokeObjectURL(objectUrl);
+          resolve(file);
+          return;
+        }
+
+        const cropTop    = Math.floor(img.height * 0.08);
+        const cropBottom = Math.floor(img.height * 0.55);
+        const cropHeight = cropBottom - cropTop;
+
+        const canvas = document.createElement("canvas");
+        canvas.width  = img.width;
+        canvas.height = cropHeight;
+
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(
+          img,
+          0, cropTop, img.width, cropHeight,
+          0, 0,       img.width, cropHeight
+        );
+
+        canvas.toBlob(
+          function (blob) {
+            URL.revokeObjectURL(objectUrl);
+            if (!blob) { resolve(file); return; }
+            resolve(new File(
+              [blob],
+              file.name || "image.jpg",
+              { type: "image/jpeg" }
+            ));
+          },
+          "image/jpeg",
+          0.92
+        );
+
+      };
+
+      img.onerror = function () {
+        URL.revokeObjectURL(objectUrl);
+        resolve(file);
+      };
+
+      img.src = objectUrl;
+
+    });
+
+  }
 
 
   /* =========================================================
