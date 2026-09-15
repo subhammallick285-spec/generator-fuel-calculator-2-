@@ -26,6 +26,7 @@
 
    let eventsBound = false;
    let currentSiteId = "";
+   let processedImageFile = null;
 
   /* ---------------------------------------------------------
      SHORT DOM HELPER
