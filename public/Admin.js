@@ -775,6 +775,23 @@
     /* -------------------------------------------------------
        Validation — the ONLY siteId check in this function.
     ------------------------------------------------------- */
+      alert("BEFORE CHECK — siteId=[" + siteId + "] typeof=" + (typeof siteId) + " length=" + (siteId ? siteId.length : "0"));
+
+    if (!siteId) {
+
+      alert("INSIDE CHECK — siteId is FALSY");
+
+      setMessage(
+        $("editSiteMessage"),
+        "Site ID is required. Please load a site first.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    alert("AFTER CHECK — passed");
 
     if (!siteId) {
 
