@@ -918,12 +918,15 @@
       await refreshSite(siteId);
 
 
-    } catch (error) {
+        } catch (error) {
 
       console.error(
         "SAVE SITE ERROR:",
         error
       );
+
+      alert("SERVER SAID: " + (error && error.message ? error.message : "(no message)"));
+
 
 
       setMessage(
