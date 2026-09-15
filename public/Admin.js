@@ -323,10 +323,15 @@
      SITE INFORMATION
      ========================================================= */
 
-  function fillSite(site) {
+    function fillSite(site) {
 
     if (!site) {
       return;
+    }
+
+    /* Cache the loaded site ID so save functions can rely on it */
+    if (site.site_id) {
+      currentSiteId = String(site.site_id).trim();
     }
 
 
