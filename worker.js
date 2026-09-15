@@ -1732,7 +1732,7 @@ Rules:
     }
 
 
-    return json({
+    
     const rawSiteId =
       String(extracted.site_id || "").trim();
 
