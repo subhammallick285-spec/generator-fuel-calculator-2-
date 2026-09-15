@@ -624,10 +624,8 @@
       "";
 
 
-    const siteName =
-      $("editSiteName")?.value?.trim() ||
-      $("siteName")?.textContent?.trim() ||
-      "";
+        const fillingDate =
+      $("editFillingDate")?.value?.trim() || "";
 
 
     const model =
@@ -659,11 +657,13 @@
     }
 
 
-    if ($("editSiteName") && !$("editSiteName").value) {
+        if ($("editFillingDate") && !$("editFillingDate").value) {
 
-      $("editSiteName").value = siteName;
+      $("editFillingDate").value = fillingDate;
 
-    }
+        }
+
+    
 
 
     if ($("editModel") && !$("editModel").value) {
