@@ -1217,7 +1217,30 @@
     }
 
 
-    show($("extractLoading"));
+        show($("extractLoading"));
+
+
+    /* Silently accept Cloudflare AI model terms once per session */
+    if (!sessionStorage.getItem("llamaAccepted")) {
+
+      try {
+
+        await request(
+          "/api/admin/agree-llama",
+          {
+            method: "POST",
+            headers: getHeaders(true),
+            body: JSON.stringify({})
+          }
+        );
+
+        sessionStorage.setItem("llamaAccepted", "1");
+
+      } catch (_) {
+        /* ignore — AI may still work without it */
+      }
+
+    }
 
 
     try {
