@@ -3,7 +3,8 @@
 A serverless web application for recording generator fuel consumption from field screenshots, with AI-powered OCR extraction and an admin approval workflow.
 
 **🔗 Live demo:** https://generator-fuel-calculator-2.balancecalc.workers.dev  
-**📱 Admin panel:** `/admin.html` (requires admin key)
+**📱 Admin panel:** `/admin.html` (requires admin key)  
+**✉️ Contact:** subhammallick285@gmail.com
 
 ---
 
@@ -116,6 +117,13 @@ Configure in Cloudflare dashboard → Workers → Settings → Variables:
 - [ ] CSV export of site history
 - [ ] Email notifications on new pending approvals
 - [ ] Historical charts per site
+
+## Author
+
+**Subham Mallick** — Full-Stack Developer  
+📍 Kendujhar, Odisha, India  
+📧 subhammallick285@gmail.com  
+🔗 [github.com/subhammallick285-spec](https://github.com/subhammallick285-spec)
 
 ## License
 
