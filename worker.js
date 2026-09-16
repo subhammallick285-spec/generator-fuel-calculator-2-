@@ -1872,9 +1872,9 @@ async function updateSite(request, env) {
     const now =
       new Date().toISOString();
 
-    const existing =
+        const existing =
       await env.DB.prepare(`
-        SELECT id
+        SELECT id, site_id
         FROM sites
         WHERE LOWER(site_id) = LOWER(?)
         LIMIT 1
@@ -1882,6 +1882,12 @@ async function updateSite(request, env) {
       .bind(siteId)
       .first();
 
+
+    /* Use the canonical (stored) site_id for all downstream inserts.
+       This preserves whatever case the site already has in the DB,
+       so foreign keys on the readings table match correctly. */
+    const canonicalSiteId =
+      existing ? existing.site_id : siteId;
     const statements = [];
 
     if (existing) {
