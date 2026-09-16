@@ -1944,7 +1944,7 @@ async function updateSite(request, env) {
       );
     }
 
-    statements.push(
+       statements.push(
       env.DB.prepare(`
         INSERT INTO readings (
           site_id,
@@ -1957,7 +1957,7 @@ async function updateSite(request, env) {
         VALUES (?, ?, ?, ?, ?, 'admin')
       `)
       .bind(
-        siteId,
+        canonicalSiteId,
         currentHmr,
         currentKwh,
         currentBalance,
