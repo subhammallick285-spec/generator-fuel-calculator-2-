@@ -665,7 +665,7 @@ async function saveCalculatorSite(request, env) {
         env.DB.prepare(`
           INSERT INTO sites (
             site_id,
-            site_name,
+            date_of_filling,
             model,
             current_hmr,
             current_kwh,
@@ -678,7 +678,7 @@ async function saveCalculatorSite(request, env) {
         `)
         .bind(
           siteId,
-          siteName,
+          dateOfFilling,
           model,
           currentHmr,
           currentKwh,
