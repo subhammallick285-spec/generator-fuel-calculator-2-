@@ -1234,10 +1234,10 @@ async function reviewSaveRequest(request, env) {
     if (existingSite) {
 
       statements.push(
-        env.DB.prepare(`
+               env.DB.prepare(`
           UPDATE sites
           SET
-            site_name = ?,
+            date_of_filling = ?,
             model = ?,
             current_hmr = ?,
             current_kwh = ?,
@@ -1247,7 +1247,7 @@ async function reviewSaveRequest(request, env) {
           WHERE site_id = ?
         `)
         .bind(
-          siteName,
+          dateOfFilling,
           model,
           currentHmr,
           currentKwh,
