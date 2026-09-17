@@ -1267,10 +1267,10 @@ async function reviewSaveRequest(request, env) {
     else {
 
       statements.push(
-        env.DB.prepare(`
+                env.DB.prepare(`
           INSERT INTO sites (
             site_id,
-            site_name,
+            date_of_filling,
             model,
             current_hmr,
             current_kwh,
@@ -1283,7 +1283,7 @@ async function reviewSaveRequest(request, env) {
         `)
         .bind(
           siteId,
-          siteName,
+          dateOfFilling,
           model,
           currentHmr,
           currentKwh,
