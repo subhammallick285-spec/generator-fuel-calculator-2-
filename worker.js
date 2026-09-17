@@ -636,9 +636,9 @@ async function saveCalculatorSite(request, env) {
 
       statements.push(
         env.DB.prepare(`
-          UPDATE sites
+                    UPDATE sites
           SET
-            site_name = ?,
+            date_of_filling = ?,
             model = ?,
             current_hmr = ?,
             current_kwh = ?,
@@ -648,7 +648,7 @@ async function saveCalculatorSite(request, env) {
           WHERE site_id = ?
         `)
         .bind(
-          siteName,
+          dateOfFilling,
           model,
           currentHmr,
           currentKwh,
