@@ -899,8 +899,12 @@ $("calculate").addEventListener(
     // E2
     // -------------------------
 
-    const E2 =
+       const E2 =
       Q1 + Q2;
+
+
+    // Remember E2 for the save handler
+    lastCalculatedE2 = E2;
 
 
     $("e2").textContent =
