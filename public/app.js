@@ -1232,12 +1232,21 @@ $("saveForFuture").addEventListener(
     const currentKwh =
       Number($("b").value);
 
-    const E2 =
-      Number(
-        $("e2").textContent
-          .replace(" L", "")
-          .trim()
-      );
+       // Use the value from the last successful calculation
+    const E2 = lastCalculatedE2;
+
+
+    if (
+      E2 === null ||
+      !Number.isFinite(E2)
+    ) {
+
+      $("saveMessage").textContent =
+        "Please click Calculate first.";
+
+      return;
+
+    }
 
     $("saveMessage").textContent =
       "Sending save request to Admin...";
