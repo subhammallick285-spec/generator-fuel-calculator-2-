@@ -1190,6 +1190,7 @@ $("clear").addEventListener(
     resetE2();
 
     resetResult();
+    lastCalculatedE2 = null;
 
 
     $("saveForFuture")
