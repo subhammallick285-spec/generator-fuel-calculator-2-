@@ -1512,9 +1512,32 @@ async function extractImage(request, env) {
       "image/jpeg";
 
 
-    const imageData =
+       const imageData =
       `data:${mime};base64,${base64}`;
 
+
+    // ============================================================
+    // STEP 1: OCR PROMPT & AI CALL (Restored)
+    // ============================================================
+    const prompt = `
+Transcribe all text from this image exactly as it appears. 
+Do not summarize. Do not format as JSON. Just output the raw text lines.
+`;
+
+    const aiResult = await env.AI.run(
+      "@cf/meta/llama-3.2-11b-vision-instruct",
+      {
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: imageData } }
+            ]
+          }
+        ]
+      }
+    );
 
     // ============================================================
     // STEP 2: DETERMINISTIC REGEX EXTRACTION (Guarantees valid JSON)
