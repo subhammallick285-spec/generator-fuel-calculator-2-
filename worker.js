@@ -1516,247 +1516,87 @@ async function extractImage(request, env) {
       `data:${mime};base64,${base64}`;
 
 
-    const prompt = `
-You are reading a generator filling summary screen from an L&T app.
-
-The image shows a numbered list of steps.
-
-Look for these exact patterns:
-
-Step 1 — "Enter Site Details":
-  A line like "I-OR-PNRA-ENB-9028"
-  The number/letter string starting with "I-OR-" is site_id.
-
-Step 2 — "Take Meter Readings":
-  A line like "82838 kWh,6443 hrs,13 min,43Ltr"
-    - Number before "kWh" = current_kwh (e.g. 82838)
-    - Number before "hrs" = current_hmr (e.g. 6443)
-    - Number before "Ltr" = previous_balance (e.g. 43)
-    - Ignore "min" value entirely
-
-Step 3 — "Fill Diesel":
-  A line like "80 Ltr"
-    - Number = fuel_filled (e.g. 80)
-
-Step 4 — "Take Meter Readings":
-  A line like "123 Ltr"
-    - Number = current_balance (e.g. 123)
-
-Return ONLY valid JSON with these exact fields:
-
-{
-  "site_id": "",
-  "current_hmr": null,
-  "current_kwh": null,
-  "previous_balance": null,
-  "fuel_filled": null,
-  "current_balance": null
-}
-
-Rules:
-1. Numbers must have NO commas, NO spaces, NO unit suffixes.
-2. If a value is not visible, use null.
-3. Do not combine numbers from different lines.
-4. Do not guess.
-5. site_id must be copied exactly as shown (e.g. "I-OR-PNRA-ENB-9028").
-6. Return JSON only — no markdown fences.
-`;
-
-
-    const aiResult =
-      await env.AI.run(
-        "@cf/meta/llama-3.2-11b-vision-instruct",
-        {
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: prompt
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: imageData
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      );
-
-
+    // ============================================================
+    // STEP 2: DETERMINISTIC REGEX EXTRACTION (Guarantees valid JSON)
+    // ============================================================
     let rawText = "";
-
-
-    if (
-      typeof aiResult === "string"
-    ) {
-
-      rawText =
-        aiResult;
-
+    
+    if (typeof aiResult === "string") {
+      rawText = aiResult;
     } else {
-
-      rawText =
-        aiResult?.response ||
-        aiResult?.result?.response ||
-        JSON.stringify(aiResult);
-
+      rawText = aiResult?.response || aiResult?.result?.response || JSON.stringify(aiResult);
     }
 
-
-    rawText =
-      String(rawText)
-        .trim()
-        .replace(/^```json\s*/i, "")
-        .replace(/^```\s*/i, "")
-        .replace(/\s*```$/i, "")
-        .trim();
-
-
-    let extracted;
-
-
-    try {
-
-      extracted =
-        JSON.parse(rawText);
-
-    } catch {
-
-      const match =
-        rawText.match(
-          /\{[\s\S]*\}/
-        );
-
-
-      if (!match) {
-
-        return json(
-          {
-            success: false,
-            error:
-              "AI returned invalid JSON.",
-            raw: rawText
-          },
-          502
-        );
-
-      }
-
-
-      extracted =
-        JSON.parse(match[0]);
-
-    }
-
+    // Clean up any accidental markdown the AI might add
+    rawText = String(rawText).replace(/```[a-z]*\n?/gi, "").trim();
 
     function cleanNumber(value) {
-
-      if (
-        value === null ||
-        value === undefined ||
-        value === ""
-      ) {
-        return null;
-      }
-
-
-      const cleaned =
-        String(value)
-          .replace(/,/g, "")
-          .replace(/[^\d.-]/g, "");
-
-
-      if (!cleaned) {
-        return null;
-      }
-
-
-      const n =
-        Number(cleaned);
-
-
-      return Number.isFinite(n)
-        ? n
-        : null;
-
+      if (!value) return null;
+      const cleaned = String(value).replace(/,/g, "").replace(/[^\d.-]/g, "");
+      return cleaned ? Number(cleaned) : null;
     }
 
+    let site_id = "";
+    let current_hmr = null;
+    let current_kwh = null;
+    let previous_balance = null;
+    let fuel_filled = null;
+    let current_balance = null;
 
-    const model =
-      String(
-        extracted.model || ""
-      ).trim();
+    // Split text into lines and process line-by-line
+    const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      // 1. Extract Site ID (e.g., I-OR-HRCD-ENB-9021)
+      const siteMatch = line.match(/(I-OR-[A-Z0-9]+-ENB-\d+)/i);
+      if (siteMatch) {
+        site_id = normalizeSiteId(siteMatch[1]);
+      }
 
-    const current_hmr =
-      cleanNumber(
-        extracted.current_hmr
-      );
+      // 2. Extract Step 2 Meter Readings (e.g., 144.1 kWh,47 hrs,13 min,13Ltr)
+      const meterMatch = line.match(/([\d,.]+)\s*kWh.*?([\d,.]+)\s*hrs.*?(\d+)\s*Ltr/i);
+      if (meterMatch) {
+        current_kwh = cleanNumber(meterMatch[1]);
+        current_hmr = cleanNumber(meterMatch[2]);
+        previous_balance = cleanNumber(meterMatch[3]);
+      }
 
-    const current_kwh =
-      cleanNumber(
-        extracted.current_kwh
-      );
+      // 3. Extract Step 3 Fill Diesel (e.g., 100 Ltr)
+      if (line.match(/^\d+\s*Ltr$/i) && i > 0 && lines[i-1].includes("Fill Diesel")) {
+        fuel_filled = cleanNumber(line.match(/\d+/)[0]);
+      }
 
-    const previous_balance =
-      cleanNumber(
-        extracted.previous_balance
-      );
-
-    const fuel_filled =
-      cleanNumber(
-        extracted.fuel_filled
-      );
-
-    let current_balance =
-      cleanNumber(
-        extracted.current_balance
-      );
-
-
-    if (
-      current_balance === null &&
-      previous_balance !== null &&
-      fuel_filled !== null
-    ) {
-
-      current_balance =
-        previous_balance +
-        fuel_filled;
-
+      // 4. Extract Step 4 Meter Readings (e.g., 113 Ltr)
+      if (line.match(/^\d+\s*Ltr$/i) && i > 0 && lines[i-1].includes("Take Meter Readings") && fuel_filled !== null) {
+        current_balance = cleanNumber(line.match(/\d+/)[0]);
+      }
     }
 
+    // Fallback: If line-by-line failed, try a global regex search
+    if (!current_kwh) {
+       const globalMeter = rawText.match(/([\d,.]+)\s*kWh.*?([\d,.]+)\s*hrs.*?(\d+)\s*Ltr/i);
+       if (globalMeter) {
+          current_kwh = cleanNumber(globalMeter[1]);
+          current_hmr = cleanNumber(globalMeter[2]);
+          previous_balance = cleanNumber(globalMeter[3]);
+       }
+    }
 
-    
-    const rawSiteId =
-      String(extracted.site_id || "").trim();
-
-    const site_id =
-      normalizeSiteId(rawSiteId);
-
-
+    // Return the exact same JSON structure that admin.js expects
     return json({
-
       success: true,
-
       data: {
         site_id,
-        model,
+        model: "", // Model isn't in the screenshot, so we leave it blank
         current_hmr,
         current_kwh,
         previous_balance,
         fuel_filled,
         current_balance
       }
-
     });
-
-
   } catch (error) {
 
     console.error(
