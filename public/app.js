@@ -1322,6 +1322,7 @@ if (gcuCheck) {
     $("btn_estimate").addEventListener("click", async () => {
         const selectedModel = getCurrentModel();
         if (!selectedModel) {
+            $("estimate_msg").style.color = "#d32f2f";
             $("estimate_msg").textContent = "Please select a model first.";
             return;
         }
@@ -1335,15 +1336,18 @@ if (gcuCheck) {
         const currentBalance = Number($("gcu_current_balance").value);
 
         if (!Number.isFinite(previousHmr) || !Number.isFinite(previousKwh) || !Number.isFinite(previousBalance)) {
+            $("estimate_msg").style.color = "#d32f2f";
             $("estimate_msg").textContent = "Please ensure Previous HMR, kWh, and Balance are loaded above.";
             return;
         }
         
         if (!Number.isFinite(currentBalance)) {
+            $("estimate_msg").style.color = "#d32f2f";
             $("estimate_msg").textContent = "Please enter a valid Current Balance.";
             return;
         }
 
+        $("estimate_msg").style.color = "#666";
         $("estimate_msg").textContent = "Calculating...";
 
         try {
@@ -1355,7 +1359,7 @@ if (gcuCheck) {
                     previous_hmr: previousHmr,
                     previous_kwh: previousKwh,
                     previous_balance: previousBalance,
-                    current_balance_before_filling: currentBalance
+                    current_balance_before_filling: currentBalance // <--- NEW VARIABLE NAME
                 })
             });
 
@@ -1377,7 +1381,6 @@ if (gcuCheck) {
         }
     });
 }
-
 
 window.addEventListener(
   "DOMContentLoaded",
