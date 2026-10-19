@@ -1301,6 +1301,83 @@ $("saveForFuture").addEventListener(
 // ============================================================
 // LOAD LAST SITE ID
 // ============================================================
+// ============================================================
+// GCU FAULT MODE ESTIMATION
+// ============================================================
+
+const gcuCheck = $("gcu_faulty_check");
+const gcuBox = $("gcu_fault_box");
+
+if (gcuCheck) {
+    // Show/Hide the input box when checkbox is clicked
+    gcuCheck.addEventListener("change", () => {
+        if (gcuCheck.checked) {
+            gcuBox.classList.remove("hidden");
+        } else {
+            gcuBox.classList.add("hidden");
+        }
+    });
+
+    // Handle the Estimate button click
+    $("btn_estimate").addEventListener("click", async () => {
+        const selectedModel = getCurrentModel();
+        if (!selectedModel) {
+            $("estimate_msg").textContent = "Please select a model first.";
+            return;
+        }
+
+        // We get previous values from the form
+        const previousHmr = Number($("c").value);
+        const previousKwh = Number($("d").value);
+        const previousBalance = Number($("e1").value);
+        
+        // We get the current balance before filling from the new input
+        const currentBalance = Number($("gcu_current_balance").value);
+
+        if (!Number.isFinite(previousHmr) || !Number.isFinite(previousKwh) || !Number.isFinite(previousBalance)) {
+            $("estimate_msg").textContent = "Please ensure Previous HMR, kWh, and Balance are loaded above.";
+            return;
+        }
+        
+        if (!Number.isFinite(currentBalance)) {
+            $("estimate_msg").textContent = "Please enter a valid Current Balance.";
+            return;
+        }
+
+        $("estimate_msg").textContent = "Calculating...";
+
+        try {
+            const res = await fetch("/api/estimate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: selectedModel,
+                    previous_hmr: previousHmr,
+                    previous_kwh: previousKwh,
+                    previous_balance: previousBalance,
+                    current_balance_before_filling: currentBalance
+                })
+            });
+
+            const data = await res.json();
+            
+            if (!data.success) throw new Error(data.error);
+
+            // Automatically fill the blank boxes
+            $("a").value = data.data.estimated_current_hmr; // Current HMR
+            $("b").value = data.data.estimated_current_kwh; // Current kWh
+
+            // Show success message
+            $("estimate_msg").style.color = "#2e7d32";
+            $("estimate_msg").textContent = `Success! Consumed ${data.data.total_fuel_consumed}L. Values auto-filled.`;
+            
+        } catch (err) {
+            $("estimate_msg").style.color = "#d32f2f";
+            $("estimate_msg").textContent = err.message;
+        }
+    });
+}
+
 
 window.addEventListener(
   "DOMContentLoaded",
