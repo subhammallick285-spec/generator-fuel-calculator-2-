@@ -2351,27 +2351,3 @@ function getTimeRemaining(requestedAt) {
   console.log("ADMIN.JS FINISHED");
 
 })();
-
-
-
-
-
-
-
-
-/* =========================================================
-   AUTO-REFRESH SAVE REQUESTS (EVERY 60 SECONDS)
-   ========================================================= */
-   
-// This will silently check the database every minute. 
-// If a request hits 24 hours old, the Worker will stop sending it, 
-// and it will vanish from the screen automatically.
-setInterval(async () => {
-    // Only auto-refresh if the admin is actually on the page and has a key
-    if (typeof getAdminKey === 'function' && getAdminKey()) {
-        // We check if the function exists to prevent errors
-        if (typeof loadSaveRequests === 'function') {
-            await loadSaveRequests(false); 
-        }
-    }
-}, 60000); // 60,000 milliseconds = 1 minute
