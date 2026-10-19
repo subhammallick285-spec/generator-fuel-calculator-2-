@@ -1,3 +1,18 @@
+function getTimeRemaining(requestedAt) {
+    // 24 hours in milliseconds
+    const expiryTime = new Date(requestedAt).getTime() + (24 * 60 * 60 * 1000);
+    const now = new Date().getTime();
+    const diff = expiryTime - now;
+
+    if (diff <= 0) return "EXPIRED";
+
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    
+    return `${hours}h ${minutes}m left`;
+}
+
+
 /* =========================================================
    GENERATOR FUEL CALCULATOR
    ADMIN.JS
@@ -2336,3 +2351,27 @@
   console.log("ADMIN.JS FINISHED");
 
 })();
+
+
+
+
+
+
+
+
+/* =========================================================
+   AUTO-REFRESH SAVE REQUESTS (EVERY 60 SECONDS)
+   ========================================================= */
+   
+// This will silently check the database every minute. 
+// If a request hits 24 hours old, the Worker will stop sending it, 
+// and it will vanish from the screen automatically.
+setInterval(async () => {
+    // Only auto-refresh if the admin is actually on the page and has a key
+    if (typeof getAdminKey === 'function' && getAdminKey()) {
+        // We check if the function exists to prevent errors
+        if (typeof loadSaveRequests === 'function') {
+            await loadSaveRequests(false); 
+        }
+    }
+}, 60000); // 60,000 milliseconds = 1 minute
