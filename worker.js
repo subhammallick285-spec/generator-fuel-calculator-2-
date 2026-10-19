@@ -1327,10 +1327,17 @@ async function reviewSaveRequest(request, env) {
       WHERE id = ?
     `).bind(id).run();
 
-    return json({
+     return json({
       success: true,
       message: "Site updated successfully and request removed."
     });
+
+  } catch (error) {
+    console.error("reviewSaveRequest error:", error);
+    return json({ success: false, error: error?.message || "Unable to review request." }, 500);
+  }
+}
+
 // ============================================================
 // EXTRACT DATA FROM SCREENSHOT USING LLAMA VISION
 // ============================================================
