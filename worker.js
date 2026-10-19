@@ -904,16 +904,13 @@ async function createSaveRequest(request, env) {
 
 async function getSaveRequests(request, env) {
 
-  const auth =
-    checkAdminKey(request, env);
+  const auth = checkAdminKey(request, env);
 
   if (!auth.ok) {
     return auth.response;
   }
 
-
   if (!env.DB) {
-
     return json(
       {
         success: false,
@@ -921,14 +918,14 @@ async function getSaveRequests(request, env) {
       },
       500
     );
-
   }
 
-
   try {
+    // 1. Calculate exactly 24 hours ago
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    const result =
-      await env.DB.prepare(`
+    // 2. Fetch only requests newer than 24 hours
+    const result = await env.DB.prepare(`
         SELECT
           id,
           site_id,
@@ -941,37 +938,27 @@ async function getSaveRequests(request, env) {
           status
         FROM save_requests
         WHERE status = 'pending'
+          AND requested_at >= ? 
         ORDER BY requested_at DESC
       `)
+      .bind(twentyFourHoursAgo)
       .all();
-
 
     return json({
       success: true,
-      requests:
-        result.results || []
+      requests: result.results || []
     });
 
-
   } catch (error) {
-
-    console.error(
-      "getSaveRequests error:",
-      error
-    );
-
+    console.error("getSaveRequests error:", error);
     return json(
       {
         success: false,
-        error:
-          error?.message ||
-          "Unable to load save requests."
+        error: error?.message || "Unable to load save requests."
       },
       500
     );
-
   }
-
 }
 
 
@@ -1324,7 +1311,7 @@ async function reviewSaveRequest(request, env) {
     );
 
 
-    // --------------------------------------------------------
+       // --------------------------------------------------------
     // EXECUTE DATABASE CHANGES
     // --------------------------------------------------------
 
@@ -1332,35 +1319,18 @@ async function reviewSaveRequest(request, env) {
       statements
     );
 
+    // --------------------------------------------------------
+    // DELETE THE REQUEST SO IT VANISHES FROM THE PORTAL
+    // --------------------------------------------------------
+    await env.DB.prepare(`
+      DELETE FROM save_requests
+      WHERE id = ?
+    `).bind(id).run();
 
     return json({
       success: true,
-      message: "Site updated successfully."
+      message: "Site updated successfully and request removed."
     });
-
-
-  } catch (error) {
-
-    console.error(
-      "updateSite error:",
-      error
-    );
-
-    return json(
-      {
-        success: false,
-        error:
-          error?.message ||
-          "Unable to update site."
-      },
-      500
-    );
-
-  }
-
-}
-
-
 // ============================================================
 // EXTRACT DATA FROM SCREENSHOT USING LLAMA VISION
 // ============================================================
