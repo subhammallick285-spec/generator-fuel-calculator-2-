@@ -565,6 +565,28 @@
 
 
 
+    <!-- Add this below your main calculate button -->
+<div style="margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; background: #f9f9f9;">
+    <h3 style="margin-top: 0; font-size: 16px;">GCU Fault Mode (Estimate)</h3>
+    <p style="font-size: 12px; color: #666;">Use this if the GCU is broken and HMR/kWh didn't increase, but fuel was consumed.</p>
+    
+    <!-- You will need to link these inputs to your JS, but here is the HTML structure -->
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <input type="number" id="est_fuel_filled" placeholder="Fuel Filled (Ltr)" style="flex: 1; padding: 8px;">
+        <input type="number" id="est_current_balance" placeholder="Current Fuel Balance (Ltr)" style="flex: 1; padding: 8px;">
+    </div>
+    
+    <button id="btn_estimate" style="width: 100%; padding: 10px; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Calculate Estimate
+    </button>
+    
+    <div id="estimate_result" style="margin-top: 15px; display: none; font-size: 14px;">
+        <!-- Results will appear here -->
+    </div>
+</div>
+
+
+
     <!-- =========================
          RESULT
     ========================== -->
