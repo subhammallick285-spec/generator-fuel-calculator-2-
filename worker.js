@@ -219,6 +219,76 @@ function checkAdminKey(request, env) {
 // CALCULATOR
 // ============================================================
 
+
+// ============================================================
+// ESTIMATE HMR & KWH FROM FUEL CONSUMED (GCU FAULT MODE)
+// ============================================================
+
+async function estimateFromFuel(request, env) {
+  try {
+    const body = await request.json();
+    
+    const model = String(body.model || "").trim();
+    const previousHmr = Number(body.previous_hmr);
+    const previousKwh = Number(body.previous_kwh);
+    const previousBalance = Number(body.previous_balance);
+    const fuelFilled = Number(body.fuel_filled);
+    const currentBalance = Number(body.current_balance);
+
+    if (!CHARTS[model]) {
+      return json({ success: false, error: "Invalid generator model." }, 400);
+    }
+
+    if (!Number.isFinite(previousHmr) || !Number.isFinite(previousKwh) || !Number.isFinite(previousBalance) || !Number.isFinite(fuelFilled) || !Number.isFinite(currentBalance)) {
+      return json({ success: false, error: "All fields must be valid numbers." }, 400);
+    }
+
+    // 1. Calculate total fuel consumed
+    // (Previous Balance + New Fuel) - Current Balance = Total Consumed
+    const totalFuelConsumed = (previousBalance + fuelFilled) - currentBalance;
+
+    if (totalFuelConsumed <= 0) {
+      return json({ success: false, error: "Calculated fuel consumption is 0 or negative. Please check the balances." }, 400);
+    }
+
+    // 2. We need the previous X (kWh/HMR ratio) to estimate accurately.
+    // Since we are estimating, we will use the previous average or a default chart ratio.
+    // Let's assume the generator ran at an average load (e.g., mid-point of the chart).
+    const chart = CHARTS[model];
+    
+    // Pick a mid-point row to get the standard L (Liters per Hour) and X (kWh per Hour)
+    const midRow = chart.rows[Math.floor(chart.rows.length / 2)];
+    const estimatedL = midRow[2]; // Liters per hour
+    const estimatedX = (midRow[0] + midRow[1]) / 2; // Average kWh per hour for that range
+
+    // 3. Calculate Estimated HMR (Hours Run)
+    // Hours = Fuel Consumed / Liters per Hour
+    const estimatedHmrDiff = totalFuelConsumed / estimatedL;
+    const estimatedCurrentHmr = previousHmr + estimatedHmrDiff;
+
+    // 4. Calculate Estimated kWh
+    // kWh = Hours Run * Average kWh per Hour
+    const estimatedKwhDiff = estimatedHmrDiff * estimatedX;
+    const estimatedCurrentKwh = previousKwh + estimatedKwhDiff;
+
+    return json({
+      success: true,
+      data: {
+        total_fuel_consumed: Number(totalFuelConsumed.toFixed(2)),
+        estimated_liters_per_hour: estimatedL,
+        estimated_current_hmr: Number(estimatedCurrentHmr.toFixed(2)),
+        estimated_current_kwh: Number(estimatedCurrentKwh.toFixed(2)),
+        hmr_difference: Number(estimatedHmrDiff.toFixed(2)),
+        kwh_difference: Number(estimatedKwhDiff.toFixed(2))
+      }
+    });
+
+  } catch (error) {
+    console.error("estimateFromFuel error:", error);
+    return json({ success: false, error: error?.message || "Unable to estimate data." }, 500);
+  }
+}
+
 async function calculate(request, env) {
 
   try {
@@ -2015,6 +2085,14 @@ export default {
         );
 
       }
+
+            if (
+        path === "/api/estimate" &&
+        method === "POST"
+      ) {
+        return await estimateFromFuel(request, env);
+      }
+      
 
 
       // ------------------------------------------------------
