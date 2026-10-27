@@ -403,6 +403,20 @@ async function findSite() {
 // ============================================================
 
 function displaySite(site) {
+  // ... existing code ...
+
+  // Add this to show the date
+  if ($("displayDate")) {
+    $("displayDate").textContent = site.date_of_filling || "—";
+  }
+
+  // Also update the input box so it's ready for the new calculation
+  if (site.date_of_filling) {
+    $("dateOfFilling").value = site.date_of_filling;
+  }
+
+  // ... rest of existing code ...
+}
 
   // Store model directly on site card
   siteInfoCard.dataset.model =
@@ -1395,6 +1409,79 @@ window.addEventListener(
 
       siteIdInput.value =
         lastSite;
+
+
+      window.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    // 1. Auto-fill today's date
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const formattedDate = `${yyyy}-${mm}-${dd}`; // Format: YYYY-MM-DD
+    
+    const dateInput = $("dateOfFilling");
+    if (dateInput && !dateInput.value) {
+      dateInput.value = formattedDate;
+    }
+
+    // 2. Load last site
+    const lastSite = localStorage.getItem("lastSiteId");
+    if (lastSite) {
+      siteIdInput.value = lastSite;
+
+    
+    // --- NEW VALIDATION ---
+    if (!dateOfFilling) {
+      $("saveMessage").textContent = "Error: Please select a Date of Filling before saving.";
+      $("saveMessage").style.color = "#d32f2f"; // Red text
+      return;
+    }
+    // ----------------------
+
+    const model = getCurrentModel();
+    const currentHmr = Number($("a").value);
+    const currentKwh = Number($("b").value);
+    const E2 = lastCalculatedE2;
+
+    if (E2 === null || !Number.isFinite(E2)) {
+      $("saveMessage").textContent = "Please click Calculate first.";
+      return;
+    }
+
+    $("saveMessage").textContent = "Sending save request to Admin...";
+    $("saveMessage").style.color = ""; // Reset color
+
+    try {
+      const response = await fetch(
+        "/api/save-request",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            site_id: siteId,
+            date_of_filling: dateOfFilling, // <--- SEND DATE
+            model: model,
+            current_hmr: currentHmr,
+            current_kwh: currentKwh,
+            current_balance: E2
+          })
+        }
+      );
+
+      const data = await response.json();
+      $("saveMessage").textContent = data.message || "Save request sent.";
+      $("saveMessage").style.color = "#2e7d32"; // Green text
+
+    } catch (error) {
+      console.error(error);
+      $("saveMessage").textContent = error?.message || "Unable to send save request.";
+      $("saveMessage").style.color = "#d32f2f";
+
 
     }
 
