@@ -150,7 +150,28 @@
       ></p>
 
     </section>
+      <label class="field">
+        <span>
+          Site ID
+        </span>
+        <input
+          id="siteId"
+          type="text"
+          autocomplete="off"
+          placeholder="e.g. PNRA 9016"
+        >
+      </label>
 
+      <!-- ADD THIS NEW DATE FIELD -->
+      <label class="field">
+        <span>
+          Date of Filling
+        </span>
+        <input
+          id="dateOfFilling"
+          type="date"
+        >
+      </label>
 
 
     <!-- =========================
@@ -185,6 +206,28 @@
 
 
       <div class="site-grid">
+
+
+              <div class="site-grid">
+        <!-- ADD THIS NEW STAT -->
+        <div class="site-stat full">
+          <span>
+            DATE OF FILLING
+          </span>
+          <strong id="displayDate">
+            —
+          </strong>
+        </div>
+
+        <div class="site-stat">
+          <span>
+            MODEL
+          </span>
+          <strong id="displayModel">
+            —
+          </strong>
+        </div>
+        <!-- ... rest of your stats ... -->
 
 
         <div class="site-stat">
