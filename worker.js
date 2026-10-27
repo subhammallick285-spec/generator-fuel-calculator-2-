@@ -814,109 +814,33 @@ async function saveCalculatorSite(request, env) {
 // ============================================================
 
 async function createSaveRequest(request, env) {
-
   try {
-
     if (!env.DB) {
-
-      return json(
-        {
-          success: false,
-          error: "D1 database is not configured."
-        },
-        500
-      );
-
+      return json({ success: false, error: "D1 database is not configured." }, 500);
     }
 
+    const body = await request.json();
+    const siteId = normalizeSiteId(body.site_id);
+    const dateOfFilling = String(body.date_of_filling || "").trim(); // <--- NEW
+    const model = String(body.model || "").trim();
+    
+    // ... validation for siteId and model ...
 
-    const body =
-      await request.json();
-
-
-    const siteId =
-      normalizeSiteId(body.site_id);
-
-    const model =
-      String(
-        body.model || ""
-      ).trim();
-
-    const currentHmr =
-      Number(body.current_hmr);
-
-    const currentKwh =
-      Number(body.current_kwh);
-
-    const currentBalance =
-      Number(body.current_balance);
-
-
-    if (!siteId) {
-
-      return json(
-        {
-          success: false,
-          error: "Site ID is required."
-        },
-        400
-      );
-
+    if (!dateOfFilling) {
+      return json({ success: false, error: "Date of filling is required." }, 400);
     }
 
-
-    if (!model || !CHARTS[model]) {
-
-      return json(
-        {
-          success: false,
-          error: "Invalid generator model."
-        },
-        400
-      );
-
-    }
-
-
-    if (
-      !Number.isFinite(currentHmr) ||
-      !Number.isFinite(currentKwh) ||
-      !Number.isFinite(currentBalance)
-    ) {
-
-      return json(
-        {
-          success: false,
-          error:
-            "Invalid HMR, kWh or balance."
-        },
-        400
-      );
-
-    }
-
-
-    const now =
-      new Date().toISOString();
-
+    const now = new Date().toISOString();
 
     await env.DB.prepare(`
       INSERT INTO save_requests
-      (
-        site_id,
-        site_name,
-        model,
-        current_hmr,
-        current_kwh,
-        current_balance,
-        requested_at,
-        status
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (site_id, site_name, date_of_filling, model, current_hmr, current_kwh, current_balance, requested_at, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
     .bind(
       siteId,
       siteId,
+      dateOfFilling, // <--- NEW
       model,
       currentHmr,
       currentKwh,
@@ -926,16 +850,8 @@ async function createSaveRequest(request, env) {
     )
     .run();
 
-
-    return json({
-      success: true,
-      message:
-        "Save request sent to admin for approval."
-    });
-
-
+    return json({ success: true, message: "Save request sent to admin for approval." });
   } catch (error) {
-
     console.error(
       "createSaveRequest error:",
       error
@@ -962,6 +878,15 @@ async function createSaveRequest(request, env) {
 // ============================================================
 
 async function getSaveRequests(request, env) {
+      const result = await env.DB.prepare(`
+        SELECT
+          id, site_id, site_name, date_of_filling, model, current_hmr, current_kwh, current_balance, requested_at, status
+        FROM save_requests
+        WHERE status = 'pending' AND requested_at >= ? 
+        ORDER BY requested_at DESC
+      `)
+      .bind(twentyFourHoursAgo)
+      .all();
 
   const auth = checkAdminKey(request, env);
 
@@ -1027,6 +952,24 @@ async function getSaveRequests(request, env) {
 // ============================================================
 
 async function reviewSaveRequest(request, env) {
+      // Inside reviewSaveRequest -> APPROVE section
+    const dateOfFilling = String(requestResult.date_of_filling || "").trim();
+
+    // (Remove the old "existingSite" date lookup. Just use the requested date)
+    
+    const statements = [];
+    if (existingSite) {
+      statements.push(
+        env.DB.prepare(`
+          UPDATE sites
+          SET date_of_filling = ?, model = ?, current_hmr = ?, current_kwh = ?, current_balance = ?, last_updated = ?, data_source = ?
+          WHERE site_id = ?
+        `).bind(dateOfFilling, model, currentHmr, currentKwh, currentBalance, now, "calculator-approved", siteId)
+      );
+    } else {
+       // ... Insert site query (make sure dateOfFilling is used) ...
+    }
+    // ... rest of the function ...
 
   const auth =
     checkAdminKey(request, env);
