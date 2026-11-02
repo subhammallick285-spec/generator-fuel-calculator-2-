@@ -1411,49 +1411,20 @@ if (gcuCheck) {
     });
 }
 
-window.addEventListener(
-  "DOMContentLoaded",
-  () => {
+// ============================================================
+// SAVE DETAILS FOR FUTURE — REQUEST ADMIN APPROVAL
+// ============================================================
+$("saveForFuture").addEventListener("click", async () => {
+    const siteId = siteIdInput.value.trim();
+    const dateOfFilling = $("dateOfFilling").value; // Get date here
 
-    const lastSite =
-      localStorage.getItem(
-        "lastSiteId"
-      );
-
-    if (lastSite) {
-
-      siteIdInput.value =
-        lastSite;
-
-
-      window.addEventListener(
-  "DOMContentLoaded",
-  () => {
-    // 1. Auto-fill today's date
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const formattedDate = `${yyyy}-${mm}-${dd}`; // Format: YYYY-MM-DD
-    
-    const dateInput = $("dateOfFilling");
-    if (dateInput && !dateInput.value) {
-      dateInput.value = formattedDate;
-    }
-
-    // 2. Load last site
-    const lastSite = localStorage.getItem("lastSiteId");
-    if (lastSite) {
-      siteIdInput.value = lastSite;
-
-    
-    // --- NEW VALIDATION ---
+    // --- DATE VALIDATION (Only blocks save, not calculate) ---
     if (!dateOfFilling) {
       $("saveMessage").textContent = "Error: Please select a Date of Filling before saving.";
-      $("saveMessage").style.color = "#d32f2f"; // Red text
+      $("saveMessage").style.color = "#d32f2f";
       return;
     }
-    // ----------------------
+    // ---------------------------------------------------------
 
     const model = getCurrentModel();
     const currentHmr = Number($("a").value);
@@ -1469,9 +1440,7 @@ window.addEventListener(
     $("saveMessage").style.color = ""; // Reset color
 
     try {
-      const response = await fetch(
-        "/api/save-request",
-        {
+      const response = await fetch("/api/save-request", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1479,7 +1448,7 @@ window.addEventListener(
           },
           body: JSON.stringify({
             site_id: siteId,
-            date_of_filling: dateOfFilling, // <--- SEND DATE
+            date_of_filling: dateOfFilling, // Send to worker
             model: model,
             current_hmr: currentHmr,
             current_kwh: currentKwh,
@@ -1496,9 +1465,27 @@ window.addEventListener(
       console.error(error);
       $("saveMessage").textContent = error?.message || "Unable to send save request.";
       $("saveMessage").style.color = "#d32f2f";
+    }
+});
 
-
+// ============================================================
+// LOAD LAST SITE ID & AUTO-FILL TODAY'S DATE
+// ============================================================
+window.addEventListener("DOMContentLoaded", () => {
+    // 1. Auto-fill today's date
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    
+    const dateInput = $("dateOfFilling");
+    if (dateInput && !dateInput.value) {
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
     }
 
-  }
-);
+    // 2. Load last site
+    const lastSite = localStorage.getItem("lastSiteId");
+    if (lastSite) {
+      siteIdInput.value = lastSite;
+    }
+});
