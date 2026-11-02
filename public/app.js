@@ -355,6 +355,21 @@ async function findSite() {
 
     const site =
       data.site;
+        const site = data.site;
+
+    // --- ADD THIS BLOCK ---
+    // If the site has a previously saved date, show it in the input
+    if (site.date_of_filling && $("dateOfFilling")) {
+      $("dateOfFilling").value = site.date_of_filling;
+    } else if ($("dateOfFilling") && !$("dateOfFilling").value) {
+      // Otherwise, set today's date if it's empty
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      $("dateOfFilling").value = `${yyyy}-${mm}-${dd}`;
+    }
+    // ----------------------
 
 
     localStorage.setItem(
