@@ -74,81 +74,34 @@
          SITE SEARCH
     ========================== -->
 
-    <section
-      id="siteSearchCard"
-      class="card site-search-card"
-    >
-
-      <div class="section-icon">
-        ⌕
-      </div>
-
-
+    <section id="siteSearchCard" class="card site-search-card">
+      <div class="section-icon">⌕</div>
       <div class="section-heading">
-
-        <p class="section-kicker">
-          STEP 01
-        </p>
-
-        <h2>
-          Enter Site ID
-        </h2>
-
-        <p>
-          We'll check your saved site data automatically.
-        </p>
-
+        <p class="section-kicker">STEP 01</p>
+        <h2>Enter Site ID</h2>
+        <p>We'll check your saved site data automatically.</p>
       </div>
-
 
       <label class="field">
-
-        <span>
-          Site ID
-        </span>
-
-        <input
-          id="siteId"
-          type="text"
-          autocomplete="off"
-          placeholder="e.g. PNRA 9016"
-        >
-
+        <span>Site ID</span>
+        <input id="siteId" type="text" autocomplete="off" placeholder="e.g. PNRA 9016">
       </label>
 
+      <!-- THIS IS THE NEW DATE FIELD (Now safely inside the card) -->
+      <label class="field">
+        <span>Date of Filling</span>
+        <input id="dateOfFilling" type="date">
+      </label>
 
-      <button
-        id="findSite"
-        class="primary"
-        type="button"
-      >
-
-        <span id="findSiteText">
-          Find Site
-        </span>
-
-        <span
-          id="findSpinner"
-          class="spinner hidden"
-        ></span>
-
+      <button id="findSite" class="primary" type="button">
+        <span id="findSiteText">Find Site</span>
+        <span id="findSpinner" class="spinner hidden"></span>
       </button>
-
-
-      <button
-        id="incognitoMode"
-        class="secondary"
-        type="button"
-      >
+      
+      <button id="incognitoMode" class="secondary" type="button">
         🕶️ Incognito / Manual Mode
       </button>
-
-
-      <p
-        id="siteSearchMessage"
-        class="message"
-      ></p>
-
+      <p id="siteSearchMessage" class="message"></p>
     </section>
       <label class="field">
         <span>
