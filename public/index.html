@@ -74,54 +74,83 @@
          SITE SEARCH
     ========================== -->
 
-      <section id="siteSearchCard" class="card site-search-card">
-      <div class="section-icon">⌕</div>
-      <div class="section-heading">
-        <p class="section-kicker">STEP 01</p>
-        <h2>Enter Site ID</h2>
-        <p>We'll check your saved site data automatically.</p>
+    <section
+      id="siteSearchCard"
+      class="card site-search-card"
+    >
+
+      <div class="section-icon">
+        ⌕
       </div>
 
-      <label class="field">
-        <span>Site ID</span>
-        <input id="siteId" type="text" autocomplete="off" placeholder="e.g. PNRA 9016">
-      </label>
 
-      <!-- THIS IS THE NEW DATE FIELD (Now safely inside the card) -->
-     
+      <div class="section-heading">
 
-      <button id="findSite" class="primary" type="button">
-        <span id="findSiteText">Find Site</span>
-        <span id="findSpinner" class="spinner hidden"></span>
-      </button>
-      
-      <button id="incognitoMode" class="secondary" type="button">
-        🕶️ Incognito / Manual Mode
-      </button>
-      <p id="siteSearchMessage" class="message"></p>
-    </section>
+        <p class="section-kicker">
+          STEP 01
+        </p>
+
+        <h2>
+          Enter Site ID
+        </h2>
+
+        <p>
+          We'll check your saved site data automatically.
+        </p>
+
+      </div>
+
+
       <label class="field">
+
         <span>
           Site ID
         </span>
+
         <input
           id="siteId"
           type="text"
           autocomplete="off"
           placeholder="e.g. PNRA 9016"
         >
+
       </label>
 
-      <!-- ADD THIS NEW DATE FIELD -->
-      <label class="field">
-        <span>
-          Date of Filling
+
+      <button
+        id="findSite"
+        class="primary"
+        type="button"
+      >
+
+        <span id="findSiteText">
+          Find Site
         </span>
-        <input
-          id="dateOfFilling"
-          type="date"
-        >
-      </label>
+
+        <span
+          id="findSpinner"
+          class="spinner hidden"
+        ></span>
+
+      </button>
+
+
+      <button
+        id="incognitoMode"
+        class="secondary"
+        type="button"
+      >
+        🕶️ Incognito / Manual Mode
+      </button>
+
+
+      <p
+        id="siteSearchMessage"
+        class="message"
+      ></p>
+
+    </section>
+
 
 
     <!-- =========================
@@ -157,9 +186,6 @@
 
       <div class="site-grid">
 
-
-              <div class="site-grid">
-        <!-- ADD THIS NEW STAT -->
         <div class="site-stat full">
           <span>
             DATE OF FILLING
@@ -168,17 +194,6 @@
             —
           </strong>
         </div>
-
-        <div class="site-stat">
-          <span>
-            MODEL
-          </span>
-          <strong id="displayModel">
-            —
-          </strong>
-        </div>
-        <!-- ... rest of your stats ... -->
-
 
         <div class="site-stat">
 
@@ -436,17 +451,18 @@
           >
 
         </label>
-
            
-      <label class="field full">
-        <span>
-          Date of Filling
-        </span>
-        <input
-          id="dateOfFilling"
-          type="date"
-        >
-      </label>
+        <!-- DATE OF FILLING -->
+
+        <label class="field full">
+          <span>
+            Date of Filling
+          </span>
+          <input
+            id="dateOfFilling"
+            type="date"
+          >
+        </label>
 
 
 
@@ -569,27 +585,27 @@
 
 
 
-   <!-- GCU FAULT MODE -->
-<div style="margin: 20px 0; padding: 15px; border: 1px solid #ffcc00; border-radius: 8px; background: #fffdf5;">
-    <label style="display: flex; align-items: center; font-weight: bold; cursor: pointer; color: #b35900;">
-        <input type="checkbox" id="gcu_faulty_check" style="margin-right: 10px; width: 18px; height: 18px;">
-        GCU is Faulty (Meter readings didn't update)
-    </label>
-    
-    <!-- This box will only show if the checkbox is ticked -->
-    <div id="gcu_fault_box" class="hidden" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ffcc00;">
-        <label style="font-size: 13px; color: #666; display: block; margin-bottom: 5px;">
-            Enter Current Fuel Balance (Before Filling):
+    <!-- GCU FAULT MODE -->
+    <div style="margin: 20px 0; padding: 15px; border: 1px solid #ffcc00; border-radius: 8px; background: #fffdf5;">
+        <label style="display: flex; align-items: center; font-weight: bold; cursor: pointer; color: #b35900;">
+            <input type="checkbox" id="gcu_faulty_check" style="margin-right: 10px; width: 18px; height: 18px;">
+            GCU is Faulty (Meter readings didn't update)
         </label>
-        <input type="number" id="gcu_current_balance" placeholder="e.g. 50" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
         
-        <button type="button" id="btn_estimate" style="width: 100%; margin-top: 10px; padding: 10px; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-            Calculate Estimate
-        </button>
-        
-        <div id="estimate_msg" style="margin-top: 8px; font-size: 12px; font-weight: bold;"></div>
+        <!-- This box will only show if the checkbox is ticked -->
+        <div id="gcu_fault_box" class="hidden" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ffcc00;">
+            <label style="font-size: 13px; color: #666; display: block; margin-bottom: 5px;">
+                Enter Current Fuel Balance (Before Filling):
+            </label>
+            <input type="number" id="gcu_current_balance" placeholder="e.g. 50" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            
+            <button type="button" id="btn_estimate" style="width: 100%; margin-top: 10px; padding: 10px; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                Calculate Estimate
+            </button>
+            
+            <div id="estimate_msg" style="margin-top: 8px; font-size: 12px; font-weight: bold;"></div>
+        </div>
     </div>
-</div>
 
 
 
